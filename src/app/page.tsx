@@ -1,65 +1,64 @@
-import Image from "next/image";
+'use client'
+
+import { ThemeToggle } from '@/components/atoms/ThemeToggle/ThemeToggle'
+import { Button } from '@/components/atoms/Button/Button'
+import { CheckCircle, Plus, Target } from 'lucide-react'
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="container mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-12 animate-fade-in">
+          <h2 className="text-4xl font-bold mb-4">Build Your Perfect Streak</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-8">
+            Day 1: Foundation complete. Ready to build powerful habits.
           </p>
+          <ThemeToggle />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="grid md:grid-cols-3 gap-6 mb-12">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+            <Target className="w-10 h-10 text-primary-500 mb-4" />
+            <h3 className="text-xl font-semibold mb-2">Atomic Design</h3>
+            <p className="text-gray-600 dark:text-gray-400">
+              Component architecture following atomic design principles for scalability.
+            </p>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+            <CheckCircle className="w-10 h-10 text-green-500 mb-4" />
+            <h3 className="text-xl font-semibold mb-2">Type Safe</h3>
+            <p className="text-gray-600 dark:text-gray-400">
+              Full TypeScript support with strict type checking for robust development.
+            </p>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+            <div className="w-10 h-10 bg-gradient-to-r from-primary-500 to-purple-500 rounded-lg mb-4" />
+            <h3 className="text-xl font-semibold mb-2">Dark Mode</h3>
+            <p className="text-gray-600 dark:text-gray-400">
+              Seamless dark/light mode with system preference detection.
+            </p>
+          </div>
         </div>
-      </main>
-    </div>
-  );
+
+        <div className="bg-gradient-to-br from-primary-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-8 mb-8">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-2xl font-bold">Ready for Day 2</h3>
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Habit
+            </Button>
+          </div>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            Tomorrow: Setting up Zustand store for global state management.
+          </p>
+          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+            <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+            <span>Day 1 Complete • Foundation Built</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  )
 }
