@@ -1,7 +1,7 @@
 'use client'
 
 import { TrendingUp, Target, CheckCircle, Flame } from 'lucide-react'
-import { useAnalytics } from '@/store/useStore'
+import { useAnalytics } from '@/store/useStore' 
 
 export function QuickStats() {
   const analytics = useAnalytics()
