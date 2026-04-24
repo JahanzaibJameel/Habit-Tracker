@@ -1,0 +1,637 @@
+{
+  "config": {
+    "configFile": "D:\\NEXT,js\\habit-tracker\\playwright.config.ts",
+    "rootDir": "D:/NEXT,js/habit-tracker/src/__tests__/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 4
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "D:/NEXT,js/habit-tracker/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "D:/NEXT,js/habit-tracker/src/__tests__/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.e2e.{js,ts}"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "D:/NEXT,js/habit-tracker/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "D:/NEXT,js/habit-tracker/src/__tests__/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.e2e.{js,ts}"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "D:/NEXT,js/habit-tracker/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "D:/NEXT,js/habit-tracker/src/__tests__/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.e2e.{js,ts}"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "D:/NEXT,js/habit-tracker/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "Mobile Chrome",
+        "name": "Mobile Chrome",
+        "testDir": "D:/NEXT,js/habit-tracker/src/__tests__/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.e2e.{js,ts}"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "D:/NEXT,js/habit-tracker/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "Mobile Safari",
+        "name": "Mobile Safari",
+        "testDir": "D:/NEXT,js/habit-tracker/src/__tests__/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.e2e.{js,ts}"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results.json"
+        }
+      ],
+      [
+        "junit",
+        {
+          "outputFile": "test-results-junit.xml"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.59.1",
+    "workers": 4,
+    "webServer": {
+      "command": "npm run dev -- --hostname 127.0.0.1 --port 3100",
+      "url": "http://127.0.0.1:3100",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "habits.e2e.ts",
+      "file": "habits.e2e.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Habit Management",
+          "file": "habits.e2e.ts",
+          "line": 35,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should create a new habit",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10258,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-22T07:44:47.881Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "507275c01ce201ad027a-6bf0be49e78f6afea12c",
+              "file": "habits.e2e.ts",
+              "line": 40,
+              "column": 7
+            },
+            {
+              "title": "should mark habit as complete",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 10974,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-22T07:44:47.676Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "507275c01ce201ad027a-cd02a262388917a7f781",
+              "file": "habits.e2e.ts",
+              "line": 56,
+              "column": 7
+            },
+            {
+              "title": "should edit existing habit",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 10752,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-22T07:44:47.755Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "507275c01ce201ad027a-dd58135588a29beba3d8",
+              "file": "habits.e2e.ts",
+              "line": 70,
+              "column": 7
+            },
+            {
+              "title": "should delete habit",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 11342,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-22T07:44:47.699Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "507275c01ce201ad027a-9c36a920e4b2aadb5042",
+              "file": "habits.e2e.ts",
+              "line": 85,
+              "column": 7
+            },
+            {
+              "title": "should show analytics dashboard",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6839,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-22T07:44:59.022Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "507275c01ce201ad027a-47b1dd5a3ccbd12f10d6",
+              "file": "habits.e2e.ts",
+              "line": 99,
+              "column": 7
+            },
+            {
+              "title": "should handle drag and drop reordering",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 12301,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-22T07:44:59.237Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "507275c01ce201ad027a-7dbc1da0657fc6d92fb6",
+              "file": "habits.e2e.ts",
+              "line": 109,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "Responsive Design",
+          "file": "habits.e2e.ts",
+          "line": 134,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should work on mobile devices",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 7640,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-22T07:44:59.250Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "507275c01ce201ad027a-bed77b96de485a7b42bf",
+              "file": "habits.e2e.ts",
+              "line": 135,
+              "column": 7
+            },
+            {
+              "title": "should work on tablet devices",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 6092,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-22T07:44:59.605Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "507275c01ce201ad027a-6a94eef5c3f9c58ac501",
+              "file": "habits.e2e.ts",
+              "line": 151,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "Performance",
+          "file": "habits.e2e.ts",
+          "line": 161,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should load quickly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 4876,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-22T07:45:05.912Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "507275c01ce201ad027a-c6cf8ad64233a08a693e",
+              "file": "habits.e2e.ts",
+              "line": 162,
+              "column": 7
+            },
+            {
+              "title": "should handle large number of habits",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 12976,
+                      "error": {
+                        "message": "TimeoutError: page.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"add-habit-button\"]')\u001b[22m\n",
+                        "stack": "TimeoutError: page.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"add-habit-button\"]')\u001b[22m\n\n    at D:\\NEXT,js\\habit-tracker\\src\\__tests__\\e2e\\habits.e2e.ts:174:18",
+                        "location": {
+                          "file": "D:\\NEXT,js\\habit-tracker\\src\\__tests__\\e2e\\habits.e2e.ts",
+                          "column": 18,
+                          "line": 174
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 172 |\u001b[39m     \u001b[90m// Create a substantial set of habits in dev mode\u001b[39m\n \u001b[90m 173 |\u001b[39m     \u001b[36mfor\u001b[39m (\u001b[36mlet\u001b[39m i \u001b[33m=\u001b[39m \u001b[35m0\u001b[39m\u001b[33m;\u001b[39m i \u001b[33m<\u001b[39m \u001b[35m20\u001b[39m\u001b[33m;\u001b[39m i\u001b[33m++\u001b[39m) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 174 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mclick(\u001b[32m'[data-testid=\"add-habit-button\"]'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 175 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(\u001b[32m'[data-testid=\"habit-name-input\"]'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m`Habit ${i}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 176 |\u001b[39m       \u001b[36mawait\u001b[39m submitHabitForm(page)\u001b[33m;\u001b[39m\n \u001b[90m 177 |\u001b[39m     }\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\NEXT,js\\habit-tracker\\src\\__tests__\\e2e\\habits.e2e.ts",
+                            "column": 18,
+                            "line": 174
+                          },
+                          "message": "TimeoutError: page.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"add-habit-button\"]')\u001b[22m\n\n\n  172 |     // Create a substantial set of habits in dev mode\n  173 |     for (let i = 0; i < 20; i++) {\n> 174 |       await page.click('[data-testid=\"add-habit-button\"]');\n      |                  ^\n  175 |       await page.fill('[data-testid=\"habit-name-input\"]', `Habit ${i}`);\n  176 |       await submitHabitForm(page);\n  177 |     }\n    at D:\\NEXT,js\\habit-tracker\\src\\__tests__\\e2e\\habits.e2e.ts:174:18"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-22T07:45:05.924Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\NEXT,js\\habit-tracker\\test-results\\habits.e2e.ts-Performance--e9559-ndle-large-number-of-habits-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\NEXT,js\\habit-tracker\\test-results\\habits.e2e.ts-Performance--e9559-ndle-large-number-of-habits-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\NEXT,js\\habit-tracker\\test-results\\habits.e2e.ts-Performance--e9559-ndle-large-number-of-habits-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\NEXT,js\\habit-tracker\\src\\__tests__\\e2e\\habits.e2e.ts",
+                        "column": 18,
+                        "line": 174
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "507275c01ce201ad027a-ed46d845f48b31b82b92",
+              "file": "habits.e2e.ts",
+              "line": 171,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "Error Handling",
+          "file": "habits.e2e.ts",
+          "line": 188,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should handle offline state gracefully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 4449,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-22T07:45:07.078Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "507275c01ce201ad027a-5033dcc5d6b702167b81",
+              "file": "habits.e2e.ts",
+              "line": 189,
+              "column": 7
+            },
+            {
+              "title": "should handle invalid input",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 3318,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-22T07:45:10.914Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "507275c01ce201ad027a-f141a3c75bebe8128955",
+              "file": "habits.e2e.ts",
+              "line": 204,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-04-22T07:44:31.571Z",
+    "duration": 47906.265,
+    "expected": 11,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

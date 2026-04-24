@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Production War Test Runner - Habit Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00ff00;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            background: rgba(0, 255, 0, 0.1);
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            color: #ffff00;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: 2px solid #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+            color: #00ff00;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1em;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: rgba(0, 255, 0, 0.3);
+            box-shadow: 0 0 20px #00ff00;
+        }
+        
+        .btn.danger {
+            border-color: #ff0000;
+            color: #ff0000;
+            background: rgba(255, 0, 0, 0.1);
+        }
+        
+        .btn.danger:hover {
+            background: rgba(255, 0, 0, 0.3);
+            box-shadow: 0 0 20px #ff0000;
+        }
+        
+        .status {
+            padding: 20px;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+        
+        .console-output {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 20px;
+            height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            margin-bottom: 20px;
+        }
+        
+        .console-output .error {
+            color: #ff0000;
+        }
+        
+        .console-output .warning {
+            color: #ffff00;
+        }
+        
+        .console-output .success {
+            color: #00ff00;
+        }
+        
+        .console-output .info {
+            color: #00ffff;
+        }
+        
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .metric-card {
+            padding: 15px;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        
+        .metric-card h3 {
+            color: #00ffff;
+            margin-bottom: 10px;
+        }
+        
+        .metric-card .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #00ff00;
+        }
+        
+        .test-status {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 3px;
+        }
+        
+        .test-status.running {
+            background: rgba(255, 255, 0, 0.2);
+            border-left: 4px solid #ffff00;
+        }
+        
+        .test-status.completed {
+            background: rgba(0, 255, 0, 0.2);
+            border-left: 4px solid #00ff00;
+        }
+        
+        .test-status.failed {
+            background: rgba(255, 0, 0, 0.2);
+            border-left: 4px solid #ff0000;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #333;
+            border: 1px solid #00ff00;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #00ffff);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-weight: bold;
+        }
+        
+        .warning-banner {
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid #ff0000;
+            color: #ff0000;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>PRODUCTION WAR TEST RUNNER</h1>
+            <p>Habit Tracker - Extreme Stress Testing Suite</p>
+        </div>
+        
+        <div class="warning-banner">
+            WARNING: This test suite will attempt to crash the application. 
+            It simulates extreme production conditions including memory floods, 
+            race conditions, and data corruption. Use at your own risk!
+        </div>
+        
+        <div class="controls">
+            <button class="btn danger" onclick="runFullWarTest()">RUN FULL WAR TEST</button>
+            <button class="btn" onclick="runIndividualTest('chaos')">User Chaos</button>
+            <button class="btn" onclick="runIndividualTest('memory')">Memory Flood</button>
+            <button class="btn" onclick="runIndividualTest('hydration')">Hydration Chaos</button>
+            <button class="btn" onclick="runIndividualTest('browser')">Browser Degradation</button>
+            <button class="btn" onclick="runIndividualTest('race')">Race Conditions</button>
+            <button class="btn" onclick="runIndividualTest('render')">Render Storm</button>
+            <button class="btn" onclick="runIndividualTest('mobile')">Mobile Failures</button>
+            <button class="btn" onclick="runIndividualTest('corruption')">Data Corruption</button>
+            <button class="btn" onclick="clearConsole()">Clear Console</button>
+        </div>
+        
+        <div class="status">
+            <h3>Test Status</h3>
+            <div id="testStatus">Ready to run tests...</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar" style="width: 0%">0%</div>
+            </div>
+        </div>
+        
+        <div class="metrics">
+            <div class="metric-card">
+                <h3>Survival Score</h3>
+                <div class="value" id="survivalScore">-</div>
+            </div>
+            <div class="metric-card">
+                <h3>Memory Usage</h3>
+                <div class="value" id="memoryUsage">0MB</div>
+            </div>
+            <div class="metric-card">
+                <h3>Errors</h3>
+                <div class="value" id="errorCount">0</div>
+            </div>
+            <div class="metric-card">
+                <h3>Test Duration</h3>
+                <div class="value" id="testDuration">0s</div>
+            </div>
+        </div>
+        
+        <div class="console-output" id="consoleOutput">
+            War Test Runner initialized...
+            Waiting for test execution...
+        </div>
+    </div>
+
+    <!-- Load all test scripts -->
+    <script src="chaos-test.js"></script>
+    <script src="memory-flood-test.js"></script>
+    <script src="hydration-chaos-test.js"></script>
+    <script src="browser-degradation-test.js"></script>
+    <script src="race-condition-test.js"></script>
+    <script src="react-render-storm-test.js"></script>
+    <script src="mobile-device-test.js"></script>
+    <script src="data-corruption-test.js"></script>
+    <script src="war-test-orchestrator.js"></script>
+
+    <script>
+        let testStartTime = null;
+        let consoleOutput = document.getElementById('consoleOutput');
+        let testStatus = document.getElementById('testStatus');
+        let progressBar = document.getElementById('progressBar');
+        
+        // Override console to capture output
+        const originalConsole = {
+            log: console.log,
+            error: console.error,
+            warn: console.warn,
+            info: console.info
+        };
+        
+        function addToConsole(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${timestamp}] ${message}`;
+            consoleOutput.appendChild(div);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+            
+            // Also log to original console
+            originalConsole.log(message);
+        }
+        
+        console.log = function(...args) {
+            addToConsole(args.join(' '), 'success');
+        };
+        
+        console.error = function(...args) {
+            addToConsole(args.join(' '), 'error');
+        };
+        
+        console.warn = function(...args) {
+            addToConsole(args.join(' '), 'warning');
+        };
+        
+        console.info = function(...args) {
+            addToConsole(args.join(' '), 'info');
+        };
+        
+        function updateMetrics() {
+            // Update memory usage
+            if (performance.memory) {
+                const memoryMB = (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(1);
+                document.getElementById('memoryUsage').textContent = memoryMB + 'MB';
+            }
+            
+            // Update test duration
+            if (testStartTime) {
+                const duration = Math.floor((Date.now() - testStartTime) / 1000);
+                document.getElementById('testDuration').textContent = duration + 's';
+            }
+            
+            // Update survival score if available
+            if (window.warTestResults) {
+                document.getElementById('survivalScore').textContent = 
+                    window.warTestResults.survivalScore.toFixed(1) + '%';
+            }
+        }
+        
+        function updateProgress(current, total) {
+            const percentage = Math.round((current / total) * 100);
+            progressBar.style.width = percentage + '%';
+            progressBar.textContent = percentage + '%';
+        }
+        
+        function updateTestStatus(message, type = 'info') {
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `test-status ${type}`;
+            statusDiv.textContent = message;
+            testStatus.appendChild(statusDiv);
+            testStatus.scrollTop = testStatus.scrollHeight;
+        }
+        
+        async function runFullWarTest() {
+            addToConsole('Starting FULL PRODUCTION WAR TEST...', 'warning');
+            updateTestStatus('Initializing full war test suite...', 'running');
+            
+            testStartTime = Date.now();
+            
+            try {
+                // Start metrics monitoring
+                const metricsInterval = setInterval(updateMetrics, 1000);
+                
+                // Run the complete war test
+                const results = await window.warTestOrchestrator.runCompleteWarTest();
+                
+                clearInterval(metricsInterval);
+                
+                // Update final metrics
+                updateMetrics();
+                updateProgress(100, 100);
+                
+                if (results.survivalScore >= 80) {
+                    updateTestStatus('WAR TEST COMPLETED - APPLICATION SURVIVED!', 'completed');
+                    addToConsole(`FINAL RESULT: ${results.grade} - Survival Score: ${results.survivalScore.toFixed(1)}%`, 'success');
+                } else {
+                    updateTestStatus('WAR TEST COMPLETED - APPLICATION FAILED', 'failed');
+                    addToConsole(`FINAL RESULT: ${results.grade} - Survival Score: ${results.survivalScore.toFixed(1)}%`, 'error');
+                }
+                
+            } catch (error) {
+                addToConsole(`War test failed: ${error.message}`, 'error');
+                updateTestStatus('War test crashed', 'failed');
+            }
+        }
+        
+        async function runIndividualTest(testType) {
+            addToConsole(`Running ${testType} test...`, 'info');
+            updateTestStatus(`Running ${testType} test...`, 'running');
+            
+            testStartTime = Date.now();
+            
+            try {
+                const metricsInterval = setInterval(updateMetrics, 1000);
+                
+                switch(testType) {
+                    case 'chaos':
+                        await window.chaosTester.runAllTests();
+                        break;
+                    case 'memory':
+                        await window.memoryFloodTester.runAllTests();
+                        break;
+                    case 'hydration':
+                        await window.hydrationChaosTester.runHydrationChaos();
+                        break;
+                    case 'browser':
+                        await window.browserDegradationTester.runAllTests();
+                        break;
+                    case 'race':
+                        await window.raceConditionTester.runAllTests();
+                        break;
+                    case 'render':
+                        await window.reactRenderStormTester.runAllTests();
+                        break;
+                    case 'mobile':
+                        await window.mobileDeviceFailureTester.runAllTests();
+                        break;
+                    case 'corruption':
+                        await window.dataCorruptionTester.runAllTests();
+                        break;
+                }
+                
+                clearInterval(metricsInterval);
+                updateTestStatus(`${testType} test completed`, 'completed');
+                addToConsole(`${testType} test completed successfully`, 'success');
+                
+            } catch (error) {
+                addToConsole(`${testType} test failed: ${error.message}`, 'error');
+                updateTestStatus(`${testType} test failed`, 'failed');
+            }
+        }
+        
+        function clearConsole() {
+            consoleOutput.innerHTML = 'Console cleared...\n';
+        }
+        
+        // Initialize metrics display
+        setInterval(updateMetrics, 2000);
+        
+        addToConsole('War Test Runner ready. Click a button to start testing.', 'success');
+    </script>
+</body>
+</html>

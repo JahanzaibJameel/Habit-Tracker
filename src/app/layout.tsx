@@ -1,39 +1,58 @@
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import { Providers } from './providers'
-import './globals.css'
+import type { Metadata, Viewport } from 'next';
 
-const inter = Inter({ subsets: ['latin'] })
+import { ErrorBoundary } from '@/components/atoms/ErrorBoundary';
+
+import { Providers } from './providers';
+
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Habit Tracker - 10/10 Blueprint',
-  description: 'Modern habit tracker built with Next.js',
-}
+  title: 'Habit Tracker - Build Better Habits',
+  description:
+    'Track your daily habits, build streaks, and achieve your goals with our modern habit tracking app.',
+  keywords: ['habits', 'tracker', 'productivity', 'goals', 'streaks'],
+  authors: [{ name: 'Habit Tracker Team' }],
+  manifest: '/manifest.json',
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
+};
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: 'white' },
+    { media: '(prefers-color-scheme: dark)', color: 'black' },
+  ],
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100`}>
-        <Providers>
-          <div className="min-h-screen">
-            <header className="sticky top-0 z-50 border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
-              <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">
-                  10/10 Habit Tracker
-                </h1>
-                <div className="flex items-center gap-4">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Day 1: Foundation</span>
-                </div>
-              </div>
-            </header>
-            {children}
-          </div>
-        </Providers>
+      <body>
+        <ErrorBoundary>
+          <Providers>{children}</Providers>
+        </ErrorBoundary>
+        {/* Enterprise-grade error monitoring */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Enterprise error monitoring setup
+              if (typeof window !== 'undefined') {
+                window.addEventListener('error', function(e) {
+                  console.error('Global error:', e.error);
+                });
+                
+                window.addEventListener('unhandledrejection', function(e) {
+                  console.error('Unhandled promise rejection:', e.reason);
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
-  )
+  );
 }
