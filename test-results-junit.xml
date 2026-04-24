@@ -1,0 +1,65 @@
+<testsuites id="" name="" tests="12" failures="0" skipped="0" errors="1" time="47.906265">
+<testsuite name="habits.e2e.ts" timestamp="2026-04-22T07:44:44.273Z" hostname="chromium" tests="12" failures="0" skipped="0" time="101.817" errors="1">
+<testcase name="Habit Management › should create a new habit" classname="habits.e2e.ts" time="10.258">
+</testcase>
+<testcase name="Habit Management › should mark habit as complete" classname="habits.e2e.ts" time="10.974">
+</testcase>
+<testcase name="Habit Management › should edit existing habit" classname="habits.e2e.ts" time="10.752">
+</testcase>
+<testcase name="Habit Management › should delete habit" classname="habits.e2e.ts" time="11.342">
+</testcase>
+<testcase name="Habit Management › should show analytics dashboard" classname="habits.e2e.ts" time="6.839">
+</testcase>
+<testcase name="Habit Management › should handle drag and drop reordering" classname="habits.e2e.ts" time="12.301">
+</testcase>
+<testcase name="Responsive Design › should work on mobile devices" classname="habits.e2e.ts" time="7.64">
+</testcase>
+<testcase name="Responsive Design › should work on tablet devices" classname="habits.e2e.ts" time="6.092">
+</testcase>
+<testcase name="Performance › should load quickly" classname="habits.e2e.ts" time="4.876">
+</testcase>
+<testcase name="Performance › should handle large number of habits" classname="habits.e2e.ts" time="12.976">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\habits.e2e.ts-Performance--e9559-ndle-large-number-of-habits-chromium\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\habits.e2e.ts-Performance--e9559-ndle-large-number-of-habits-chromium\video.webm]]
+
+[[ATTACHMENT|test-results\habits.e2e.ts-Performance--e9559-ndle-large-number-of-habits-chromium\error-context.md]]
+]]>
+</system-out>
+<error message="page.click: Timeout 10000ms exceeded." type="TimeoutError">
+<![CDATA[  [chromium] › habits.e2e.ts:171:7 › Performance › should handle large number of habits ────────────
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="add-habit-button"]')
+
+
+      172 |     // Create a substantial set of habits in dev mode
+      173 |     for (let i = 0; i < 20; i++) {
+    > 174 |       await page.click('[data-testid="add-habit-button"]');
+          |                  ^
+      175 |       await page.fill('[data-testid="habit-name-input"]', `Habit ${i}`);
+      176 |       await submitHabitForm(page);
+      177 |     }
+        at D:\NEXT,js\habit-tracker\src\__tests__\e2e\habits.e2e.ts:174:18
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\..\test-results\habits.e2e.ts-Performance--e9559-ndle-large-number-of-habits-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\..\test-results\habits.e2e.ts-Performance--e9559-ndle-large-number-of-habits-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\test-results\habits.e2e.ts-Performance--e9559-ndle-large-number-of-habits-chromium\error-context.md
+]]>
+</error>
+</testcase>
+<testcase name="Error Handling › should handle offline state gracefully" classname="habits.e2e.ts" time="4.449">
+</testcase>
+<testcase name="Error Handling › should handle invalid input" classname="habits.e2e.ts" time="3.318">
+</testcase>
+</testsuite>
+</testsuites>

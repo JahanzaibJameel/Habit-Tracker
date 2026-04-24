@@ -1,0 +1,15 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "📝 Validating commit message..."
+
+# Check commit message format
+npx commitlint --edit "$1"
+
+if [ $? -ne 0 ]; then
+  echo "❌ Commit message validation failed!"
+  echo "💡 Use 'npm run commit' for conventional commits"
+  exit 1
+fi
+
+echo "✅ Commit message is valid!"

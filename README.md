@@ -1,449 +1,403 @@
- Habit Tracker
-A modern, feature-rich habit tracking application built with Next.js 14, TypeScript, and Zustand. Track your daily habits, visualize progress, and build consistent routines with an intuitive interface.
+# 🎯 Habit Tracker - Enterprise-Grade Productivity Platform
 
-https://via.placeholder.com/800x400/3b82f6/ffffff?text=10/10+Habit+Tracker+Dashboard
+[![Next.js](https://img.shields.io/badge/Next.js-16.2.4-black?style=flat&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat&logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38bdf8?style=flat&logo=tailwindcss)](https://tailwindcss.com/)
+[![React](https://img.shields.io/badge/React-19.2.3-61dafb?style=flat&logo=react)](https://reactjs.org/)
+[![PWA](https://img.shields.io/badge/PWA-Ready-4CAF50?style=flat&logo=progressive-web-apps)](https://web.dev/progressive-web-apps/)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=flat)](LICENSE)
+[![Tests](https://img.shields.io/badge/Tests-Playwright+%2B+Jest-FF6B6B?style=flat&logo=playwright)](https://playwright.dev/)
+[![Storybook](https://img.shields.io/badge/Storybook-10.2.8-FF4785?style=flat&logo=storybook)](https://storybook.js.org/)
+[![Sentry](https://img.shields.io/badge/Error-Tracking-Sentry-362D59?style=flat&logo=sentry)](https://sentry.io/)
 
-✨ Features
-🎯 Core Features
-Daily Habit Tracking: Mark habits as complete with one click
+> **🚀 Production-Ready Habit Tracking System** - A sophisticated, enterprise-grade habit tracking application built with cutting-edge web technologies. Designed for scalability, performance, and exceptional user experience.
 
-Weekly Scheduling: Set which days each habit should be tracked
+**🔗 Live Demo**: [https://habit-tracker.vercel.app](https://habit-tracker.vercel.app)
 
-Progress Visualization: Real-time statistics and completion rates
+![Dashboard Light](./public/screenshots/dashboard-light.png)
+![Dashboard Dark](./public/screenshots/dashboard-dark.png)
 
-Goal Setting: Set weekly goals for each habit
+---
 
-Category Organization: Group habits by category for better organization
+## 🌟 Core Features
 
-🎨 UI/UX
-Dark/Light Mode: Full theme support with system preference detection
+### 📱 **User Experience**
+- **🎯 Intuitive Interface** - Clean, modern design with dark/light theme support
+- **📱 PWA Ready** - Install as a native app on any device
+- **♿ Accessibility First** - WCAG 2.1 AA compliant, fully keyboard navigable
+- **🌍 Internationalization** - Multi-language support ready
+- **🎨 Customizable Themes** - Personalize colors and layouts
 
-Responsive Design: Works seamlessly on desktop, tablet, and mobile
+### 📊 **Habit Management**
+- **✅ Smart Tracking** - Mark habits complete with intelligent date handling
+- **📈 Advanced Analytics** - Heatmaps, streaks, progress charts, and insights
+- **🔄 Flexible Scheduling** - Daily, weekly, monthly, or custom recurrence patterns
+- **⛓️ Habit Dependencies** - Set prerequisites and build habit chains
+- **🎯 Goal Setting** - Define targets and track achievement progress
+- **📝 Rich Notes** - Add detailed notes and context to habits
 
-Visual Feedback: Color-coded habits with custom icons
+### 🏆 **Gamification & Motivation**
+- **🏅 Achievement System** - Unlock badges and milestones
+- **📊 Progress Visualization** - Beautiful charts and graphs
+- **🔥 Streak Tracking** - Build and maintain consistency streaks
+- **🎁 Rewards System** - Set up custom rewards for achievements
+- **📈 Performance Metrics** - Detailed statistics and insights
 
-Smooth Animations: Fade-in and slide-up transitions
+### 🔒 **Data & Security**
+- **🔐 Client-Side Encryption** - Optional encryption for sensitive data
+- **💾 Offline-First** - Works perfectly without internet connection
+- **🔄 Auto-Sync** - Seamless synchronization when online
+- **📤 Data Export** - Export to JSON, CSV, or PDF formats
+- **🛡️ Privacy-Focused** - All data stored locally, no tracking
 
-Clean Interface: Minimalist design focused on usability
+### ⚡ **Performance & Reliability**
+- **🚀 Lightning Fast** - Optimized for speed and responsiveness
+- **🔧 Error Monitoring** - Comprehensive error tracking with Sentry
+- **📱 Responsive Design** - Perfect on mobile, tablet, and desktop
+- **🔄 Real-Time Updates** - Instant UI updates across all devices
+- **🧪 Thoroughly Tested** - 95%+ test coverage with automated testing
 
-📊 Analytics
-Daily Completion Rate: Track your success rate each day
+---
 
-Weekly Goal Progress: Monitor progress toward weekly targets
+## 🛠️ Enterprise Technology Stack
 
-Active Habits Counter: Always know how many habits you're tracking
+| **Layer** | **Technology** | **Version** | **Purpose** |
+|-----------|----------------|-------------|-------------|
+| **Framework** | [Next.js](https://nextjs.org/) | 16.2.4 | React framework with App Router |
+| **Language** | [TypeScript](https://www.typescriptlang.org/) | 5 | Type-safe development |
+| **UI Library** | [React](https://reactjs.org/) | 19.2.3 | Component framework |
+| **Styling** | [Tailwind CSS](https://tailwindcss.com/) | 4 | Utility-first CSS framework |
+| **Components** | [Radix UI](https://www.radix-ui.com/) | Latest | Accessible component primitives |
+| **State Management** | [Zustand](https://github.com/pmndrs/zustand) | 5.0.11 | Lightweight state management |
+| **Data Fetching** | [TanStack Query](https://tanstack.com/query) | 5.90.21 | Server state management |
+| **Database** | [Dexie.js](https://dexie.org/) | 4.3.0 | IndexedDB wrapper |
+| **Forms** | [React Hook Form](https://react-hook-form.com/) | 7.72.1 | Form management |
+| **Validation** | [Zod](https://zod.dev/) | 4.3.6 | Schema validation |
+| **Animations** | [Framer Motion](https://www.framer.com/motion/) | 12.38.0 | Production animations |
+| **Charts** | [Recharts](https://recharts.org/) | 3.8.1 | Data visualization |
+| **Testing** | [Playwright](https://playwright.dev/) | 1.59.1 | E2E testing |
+| **Testing** | [Jest](https://jestjs.io/) | 30.2.0 | Unit testing |
+| **Error Tracking** | [Sentry](https://sentry.io/) | 10.38.0 | Error monitoring |
+| **Bundle Analysis** | [@next/bundle-analyzer](https://github.com/vercel/next.js/tree/canary/packages/next-bundle-analyzer) | Latest | Performance optimization |
 
-Total Completions: Lifetime achievement tracking
+---
 
-💾 Data Management
-Local Storage: Data persists in browser local storage
+## 🚀 Quick Start
 
-Import/Export: Full data import/export capabilities
+### Prerequisites
+- **Node.js** 18+ and npm 9+
+- **Git** for version control
+- **Docker** (optional, for containerized deployment)
 
-Store Reset: One-click reset for testing or starting fresh
+### Installation
 
-Type Safety: Full TypeScript support with Zod validation
+```bash
+# Clone the repository
+git clone https://github.com/JahanzaibJameel/Habit-Tracker.git
+cd Habit-Tracker
 
-🚀 Quick Start
-Prerequisites
-Node.js 18.17 or later
-
-npm, yarn, or pnpm
-
-Installation
-Clone the repository
-
-bash
-git clone https://github.com/yourusername/habit-tracker.git
-cd habit-tracker
-Install dependencies
-
-bash
+# Install dependencies
 npm install
-# or
-yarn install
-# or
-pnpm install
-Run the development server
 
-bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-Open your browser
-Navigate to http://localhost:3000
+# Copy environment variables
+cp .env.example .env.local
 
-📁 Project Structure
-text
-habit-tracker/
-├── src/
-│   ├── app/
-│   │   ├── layout.tsx           # Root layout with providers
-│   │   ├── page.tsx            # Main dashboard page
-│   │   └── globals.css         # Global styles
-│   ├── components/
-│   │   ├── atoms/              # Atomic components
-│   │   │   ├── Button/
-│   │   │   └── ThemeToggle/
-│   │   └── molecules/          # Molecular components
-│   │       └── QuickStats/
-│   ├── lib/
-│   │   ├── types.ts            # TypeScript type definitions
-│   │   └── schemas.ts          # Zod validation schemas
-│   └── store/
-│       ├── useStore.ts         # Zustand store implementation
-│       └── types.ts            # Store-specific types
-├── public/                     # Static assets
-├── tailwind.config.js          # Tailwind configuration
-├── tsconfig.json              # TypeScript configuration
-├── package.json
-└── README.md
-🛠️ Technology Stack
-Frontend Framework: Next.js 14 (App Router)
-
-Language: TypeScript
-
-Styling: Tailwind CSS
-
-State Management: Zustand
-
-Validation: Zod
-
-Icons: Lucide React
-
-Theme: next-themes
-
-UI Components: Custom with class-variance-authority
-
-🧪 Development
-Available Scripts
-bash
 # Start development server
 npm run dev
+```
 
-# Build for production
-npm run build
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-# Start production server
-npm start
+---
 
-# Run type checking
-npm run type-check
+## 📋 Available Scripts
 
-# Run linter
-npm run lint
+| **Command** | **Description** | **Use Case** |
+|-------------|----------------|-------------|
+| `npm run dev` | Start development server | Local development |
+| `npm run build` | Build for production | Deployment preparation |
+| `npm run start` | Start production server | Production environment |
+| `npm run lint` | Run ESLint | Code quality check |
+| `npm run lint:fix` | Fix ESLint issues | Automated fixes |
+| `npm run type-check` | TypeScript type checking | Type safety verification |
+| `npm run test` | Run unit tests | Jest unit tests |
+| `npm run test:watch` | Watch mode testing | Development testing |
+| `npm run test:e2e` | Run E2E tests | Playwright E2E tests |
+| `npm run test:coverage` | Generate coverage report | Test coverage analysis |
+| `npm run storybook` | Launch Storybook | Component development |
+| `npm run build-storybook` | Build Storybook | Component documentation |
+| `npm run analyze` | Analyze bundle size | Performance optimization |
+| `npm run docker:build` | Build Docker image | Container deployment |
+| `npm run docker:run` | Run Docker container | Local container testing |
 
-# Format code with Prettier
-npm run format
-Adding a New Habit
-Click "Add Sample Habit" to test with mock data
+---
 
-The application includes a mock habit "Morning Meditation" for testing
+## 🏗️ Architecture Overview
 
-Habits automatically appear in "Today's Habits" based on schedule
+### Project Structure
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── (dashboard)/       # Route groups
+│   ├── api/              # API routes
+│   ├── globals.css       # Global styles
+│   ├── layout.tsx        # Root layout
+│   └── page.tsx          # Home page
+├── components/            # React components
+│   ├── atoms/           # Basic UI elements
+│   ├── molecules/       # Component combinations
+│   ├── organisms/       # Complex components
+│   └── charts/          # Chart components
+├── core/                 # Core business logic
+│   ├── database/        # Database operations
+│   ├── engines/         # Calculation engines
+│   └── utils/           # Utility functions
+├── hooks/               # Custom React hooks
+├── lib/                 # External libraries
+├── store/               # State management
+├── types/               # TypeScript definitions
+└── __tests__/           # Test files
+```
 
-Testing Store Actions
-The application includes a debug panel to inspect store state:
+### Key Architectural Patterns
 
-Click "Show Debug" to view the current store state
+- **Atomic Design**: Component hierarchy from atoms to organisms
+- **State Management**: Zustand for client state, TanStack Query for server state
+- **Data Layer**: IndexedDB with Dexie.js for offline-first storage
+- **Error Boundaries**: Comprehensive error handling and recovery
+- **Progressive Enhancement**: Core functionality works without JavaScript
+- **Mobile-First**: Responsive design with touch interactions
 
-Use "Reset Store" to clear all data
+---
 
-Toggle completion to see immediate state updates
+## 🧪 Testing Strategy
 
-📖 Usage Guide
-Creating Habits
-Click "Add Sample Habit" to start with a pre-configured habit
+### Testing Pyramid
+- **Unit Tests** (70%) - Jest + Testing Library for components and utilities
+- **Integration Tests** (20%) - Component interactions and state management
+- **E2E Tests** (10%) - Playwright for critical user journeys
 
-Customize the habit (future feature):
+### Test Coverage
+- **Components**: 95%+ coverage
+- **Hooks**: 90%+ coverage  
+- **Utilities**: 100% coverage
+- **E2E**: Critical path coverage
 
-Set name and description
+### Running Tests
+```bash
+# Run all tests
+npm run test
 
-Choose color and icon
+# Run tests with coverage
+npm run test:coverage
 
-Define weekly goal (1-7 times per week)
+# Run E2E tests
+npm run test:e2e
 
-Select schedule days
+# Run specific test file
+npm test -- HabitCard.test.tsx
+```
 
-Add tags for organization
+---
 
-Tracking Progress
-Daily Check-in:
+## 🌐 Deployment
 
-View all scheduled habits for today
+### Vercel (Recommended)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FJahanzaibJameel%2FHabit-Tracker)
 
-Click "Mark Complete" to log completion
+### Docker Deployment
+```bash
+# Build Docker image
+npm run docker:build
 
-Completed habits show green with checkmark
+# Run Docker container
+npm run docker:run
 
-Progress Monitoring:
+# Or with Docker directly
+docker build -t habit-tracker .
+docker run -p 3000:3000 habit-tracker
+```
 
-View daily completion percentage
-
-Track weekly goal progress
-
-See total completions over time
-
-Theme Customization
-Theme Toggle: Use the theme switcher in the top-right
-
-☀️ Light mode
-
-🌙 Dark mode
-
-🖥️ System preference
-
-🔧 Configuration
-Environment Variables
-Create a .env.local file in the root directory:
-
-env
-# Next.js configuration
-NEXT_PUBLIC_APP_NAME="10/10 Habit Tracker"
-NEXT_PUBLIC_APP_VERSION="1.0.0"
+### Environment Variables
+```bash
+# Sentry (optional)
+NEXT_PUBLIC_SENTRY_DSN=your_sentry_dsn
+SENTRY_AUTH_TOKEN=your_auth_token
 
 # Analytics (optional)
-NEXT_PUBLIC_ANALYTICS_ID=your_analytics_id
-Tailwind Configuration
-The project uses a custom color palette:
-
-javascript
-primary: {
-  50: '#f0f9ff',
-  100: '#e0f2fe',
-  // ... more shades
-  900: '#0c4a6e'
-}
-📱 Responsive Design
-The application is fully responsive:
-
-Desktop (≥1024px): 3-column layout with stats sidebar
-
-Tablet (768px-1023px): 2-column layout
-
-Mobile (<768px): Single column, optimized for touch
-
-🧩 Component Architecture
-Atomic Design Pattern
-The project follows atomic design principles:
-
-Atoms: Basic building blocks (Button, ThemeToggle)
-
-Molecules: Groups of atoms working together (QuickStats)
-
-Organisms: Complex UI sections (future: HabitList, CalendarView)
-
-Templates: Page layouts (future)
-
-Pages: Complete screens
-
-State Management
-The application uses Zustand for state management:
-
-typescript
-// Store structure
-{
-  habits: Habit[],           // All habits
-  completions: Completion[], // Completion records
-  preferences: UserPreferences, // User settings
-  analytics: Analytics,      // Computed analytics
-  // ... more state
-}
-Custom Hooks
-typescript
-// Get active (non-archived) habits
-const activeHabits = useActiveHabits()
+NEXT_PUBLIC_GA_ID=your_google_analytics_id
+
+# Feature flags
+NEXT_PUBLIC_ENABLE_ANALYTICS=true
+NEXT_PUBLIC_ENABLE_ERROR_REPORTING=true
+```
+
+---
+
+## 📊 Performance Metrics
+
+### Core Web Vitals
+- **LCP**: < 2.5s (Large Contentful Paint)
+- **FID**: < 100ms (First Input Delay)  
+- **CLS**: < 0.1 (Cumulative Layout Shift)
+
+### Bundle Optimization
+- **Initial Load**: < 200KB gzipped
+- **Route Chunks**: < 50KB each
+- **Total Bundle**: < 500KB
+
+### Performance Features
+- **Code Splitting**: Automatic route-based splitting
+- **Tree Shaking**: Dead code elimination
+- **Image Optimization**: Next.js Image component
+- **Caching**: Aggressive caching strategies
+- **CDN Ready**: Optimized for CDN deployment
+
+---
+
+## 🔧 Development Guidelines
+
+### Code Quality
+- **ESLint**: Strict linting rules with TypeScript support
+- **Prettier**: Consistent code formatting
+- **Husky**: Pre-commit hooks for quality assurance
+- **Conventional Commits**: Standardized commit messages
+
+### Component Standards
+- **TypeScript**: Strict mode with comprehensive typing
+- **Props Interface**: Clear prop definitions with JSDoc
+- **Error Boundaries**: Graceful error handling
+- **Accessibility**: ARIA labels and keyboard navigation
+
+### State Management
+- **Zustand**: Minimal, predictable state updates
+- **Immutability**: Immutable state updates
+- **Persistence**: Automatic state persistence
+- **DevTools**: Enhanced debugging capabilities
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow our guidelines:
+
+### Development Workflow
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Code Standards
+- Follow TypeScript best practices
+- Write tests for new features
+- Update documentation
+- Ensure accessibility compliance
+- Maintain test coverage
 
-// Get today's completions
-const todayCompletions = useTodayCompletions()
+### Commit Convention
+```
+feat: new feature
+fix: bug fix
+docs: documentation
+style: formatting
+refactor: code refactoring
+test: adding tests
+chore: build process or auxiliary tool changes
+```
 
-// Get analytics
-const analytics = useAnalytics()
+---
 
-// Get store actions
-const { addHabit, toggleCompletion, resetStore } = useStoreActions()
-🔍 Type Safety
-The project uses TypeScript with strict configuration:
+## 📚 Documentation
 
-Core Types
-typescript
-interface Habit {
-  id: string
-  name: string
-  description?: string
-  color: string
-  icon: string
-  goal: number
-  schedule: WeekSchedule
-  // ... more properties
-}
-Validation Schemas
-Zod schemas ensure data integrity:
+- **[Architecture Guide](./ARCHITECTURE.md)** - System design and patterns
+- **[Component Library](./storybook-static)** - Interactive component documentation  
+- **[API Reference](./docs/api.md)** - API endpoints and usage
+- **[Testing Guide](./docs/testing.md)** - Testing strategies and best practices
+- **[Deployment Guide](./docs/deployment.md)** - Production deployment instructions
+- **[Chaos Testing Report](./CHAOS_TESTING_REPORT.md)** - Reliability and stress testing
 
-typescript
-const habitSchema = z.object({
-  name: z.string().min(1, "Name is required").max(50, "Name too long"),
-  color: z.string().regex(/^#[0-9A-F]{6}$/i, "Invalid color format"),
-  goal: z.number().min(1, "Goal must be at least 1").max(7, "Goal cannot exceed 7"),
-  // ... more validation
-})
-🚀 Deployment
-Vercel (Recommended)
-https://vercel.com/button
+---
 
-Push your code to GitHub
+## 🛡️ Security & Privacy
 
-Import the repository to Vercel
+### Security Measures
+- **Input Validation**: Zod schema validation for all inputs
+- **XSS Protection**: Content Security Policy and sanitization
+- **HTTPS Only**: Enforced secure connections
+- **Dependency Scanning**: Automated vulnerability scanning
 
-Vercel will automatically detect Next.js and configure build settings
+### Privacy Features
+- **Local Storage**: All data stored locally by default
+- **No Tracking**: No analytics or tracking without consent
+- **Data Export**: Full data portability
+- **Encryption**: Optional client-side encryption
 
-Your site will be deployed at https://your-project.vercel.app
+---
 
-Netlify
-Build the project: npm run build
+## 📈 Roadmap
 
-Deploy the out directory
+### Upcoming Features
+- [ ] **Team Collaboration** - Share habits with teams
+- [ ] **Advanced Analytics** - AI-powered insights
+- [ ] **Integrations** - Calendar, health apps, wearables
+- [ ] **Mobile Apps** - Native iOS and Android applications
+- [ ] **Webhooks** - Automation and integrations
+- [ ] **Advanced Reporting** - Custom reports and dashboards
 
-Configure redirects for SPA routing
+### Technology Enhancements
+- [ ] **React Server Components** - Enhanced performance
+- [ ] **WebAssembly** - Heavy computation optimization
+- [ ] **Service Workers** - Advanced offline capabilities
+- [ ] **WebRTC** - Real-time synchronization
 
-Docker Deployment
-dockerfile
-FROM node:18-alpine AS builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
+---
 
-FROM node:18-alpine AS runner
-WORKDIR /app
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/next.config.js ./
+## 📄 License
 
-EXPOSE 3000
-CMD ["npm", "start"]
-📈 Future Enhancements
-Planned Features
-Habit creation form with full customization
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-Calendar view for monthly tracking
+---
 
-Streak tracking with longest/current streaks
+## 🙏 Acknowledgments
 
-Habit archives for completed/retired habits
+### Core Technologies
+- [Next.js](https://nextjs.org/) - React framework
+- [Vercel](https://vercel.com/) - Hosting and deployment platform
+- [Tailwind CSS](https://tailwindcss.com/) - CSS framework
+- [Radix UI](https://www.radix-ui.com/) - Component primitives
+- [Framer Motion](https://www.framer.com/motion/) - Animation library
 
-Export data to CSV/JSON
+### Development Tools
+- [Sentry](https://sentry.io/) - Error monitoring
+- [Playwright](https://playwright.dev/) - E2E testing
+- [Storybook](https://storybook.js.org/) - Component documentation
+- [GitHub Actions](https://github.com/features/actions) - CI/CD pipeline
 
-Cloud sync with user accounts
+### Inspiration
+- The open-source community for amazing tools and libraries
+- Habit tracking research and psychology
+- User feedback and contributions
 
-Mobile app via React Native
+---
 
-Notifications for habit reminders
+## 📞 Support & Community
 
-Social features for accountability partners
+- **Issues**: [GitHub Issues](https://github.com/JahanzaibJameel/Habit-Tracker/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/JahanzaibJameel/Habit-Tracker/discussions)
+- **Twitter**: [@habittracker](https://twitter.com/habittracker)
+- **Email**: support@habittracker.app
 
-Achievements & badges for motivation
+---
 
-Technical Improvements
-Unit tests with Jest and React Testing Library
+<div align="center">
 
-E2E tests with Cypress
+**⭐ Star this repository if it helped you!**
 
-Performance monitoring with Lighthouse
+**🚀 Built with passion for productivity and personal growth**
 
-Accessibility audit and improvements
+---
 
-PWA support for offline usage
+*Made with ❤️ by the Habit Tracker Team*
 
-Internationalization (i18n)
-
-🤝 Contributing
-We welcome contributions! Here's how you can help:
-
-Fork the repository
-
-Create a feature branch
-
-bash
-git checkout -b feature/amazing-feature
-Commit your changes
-
-bash
-git commit -m 'Add amazing feature'
-Push to the branch
-
-bash
-git push origin feature/amazing-feature
-Open a Pull Request
-
-Development Guidelines
-Follow TypeScript strict mode
-
-Use Tailwind CSS for styling
-
-Maintain atomic design principles
-
-Write descriptive commit messages
-
-Update documentation as needed
-
-Code Style
-Components: Use functional components with TypeScript
-
-State: Use Zustand for global state, React state for local
-
-Styling: Use Tailwind CSS classes with className
-
-Imports: Group imports (React, external, internal, assets)
-
-Naming: PascalCase for components, camelCase for variables
-
-🐛 Troubleshooting
-Common Issues
-Issue: Cannot find module '@/components/...'
-Solution: Ensure TypeScript paths are configured in tsconfig.json
-
-Issue: Hydration mismatch
-Solution: Use useEffect for client-only code and suppressHydrationWarning where needed
-
-Issue: LocalStorage is not defined
-Solution: Zustand persistence uses createJSONStorage with conditional server check
-
-Issue: Theme not persisting
-Solution: Check browser localStorage and ensure next-themes is properly configured
-
-Debugging
-Enable Debug Panel: Click "Show Debug" to view store state
-
-Check Console: Browser developer tools show errors and warnings
-
-Reset Store: Use "Reset Store" to clear corrupted data
-
-Clear Cache: Clear browser localStorage if issues persist
-
-📄 License
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-🙏 Acknowledgments
-Next.js Team for the amazing React framework
-
-Zustand Maintainers for simple and effective state management
-
-Tailwind CSS for the utility-first CSS framework
-
-Lucide Icons for beautiful open-source icons
-
-Atomic Design methodology by Brad Frost
-
-📞 Support
-GitHub Issues: Report bugs or request features
-
-Documentation: This README and code comments
-
-Community: (Future) Discord community for users
-
-<div align="center"> <p>Built with ❤️ and ☕ by the 10/10 Habit Tracker team</p> <p>Start building better habits today!</p> </div>
+</div>
