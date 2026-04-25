@@ -1,13 +1,14 @@
 /**
  * Error Context for centralized error handling and reporting
  * Provides global error state management and recovery coordination
- * 
+ *
  * @fileoverview Error context for global error handling
  * @version 1.0.0
  * @author Enterprise Frontend Team
  */
 
-import React, { createContext, useContext, useReducer, useCallback, useEffect, ReactNode, JSX } from 'react';
+import type { ReactNode, JSX } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
 import { ErrorRecoveryStrategy } from './ErrorBoundary';
 
 /**
@@ -108,13 +109,12 @@ function errorReducer(state: ErrorContextState, action: ErrorContextAction): Err
     case 'ADD_ERROR': {
       const newError = action.payload;
       const updatedErrors = [...state.errors, newError];
-      
+
       // Trim errors if exceeding max limit
       const maxErrors = state.settings.maxErrors;
-      const trimmedErrors = updatedErrors.length > maxErrors 
-        ? updatedErrors.slice(-maxErrors)
-        : updatedErrors;
-      
+      const trimmedErrors =
+        updatedErrors.length > maxErrors ? updatedErrors.slice(-maxErrors) : updatedErrors;
+
       return {
         ...state,
         errors: trimmedErrors,
@@ -123,10 +123,10 @@ function errorReducer(state: ErrorContextState, action: ErrorContextAction): Err
     }
 
     case 'RESOLVE_ERROR': {
-      const updatedErrors = state.errors.map(error =>
+      const updatedErrors = state.errors.map((error) =>
         error.id === action.payload ? { ...error, resolved: true } : error
       );
-      
+
       return {
         ...state,
         errors: updatedErrors,
@@ -136,10 +136,10 @@ function errorReducer(state: ErrorContextState, action: ErrorContextAction): Err
 
     case 'RESOLVE_ERRORS': {
       const errorIds = new Set(action.payload);
-      const updatedErrors = state.errors.map(error =>
+      const updatedErrors = state.errors.map((error) =>
         errorIds.has(error.id) ? { ...error, resolved: true } : error
       );
-      
+
       return {
         ...state,
         errors: updatedErrors,
@@ -160,9 +160,10 @@ function errorReducer(state: ErrorContextState, action: ErrorContextAction): Err
       return {
         ...state,
         settings: newSettings,
-        errors: newSettings.maxErrors < state.errors.length 
-          ? state.errors.slice(-newSettings.maxErrors)
-          : state.errors,
+        errors:
+          newSettings.maxErrors < state.errors.length
+            ? state.errors.slice(-newSettings.maxErrors)
+            : state.errors,
       };
     }
 
@@ -182,12 +183,10 @@ function errorReducer(state: ErrorContextState, action: ErrorContextAction): Err
 
     case 'APPLY_RECOVERY': {
       const { errorId, strategy } = action.payload;
-      const updatedErrors = state.errors.map(error =>
-        error.id === errorId 
-          ? { ...error, resolved: true, recoveryStrategy: strategy }
-          : error
+      const updatedErrors = state.errors.map((error) =>
+        error.id === errorId ? { ...error, resolved: true, recoveryStrategy: strategy } : error
       );
-      
+
       return {
         ...state,
         errors: updatedErrors,
@@ -206,28 +205,37 @@ function errorReducer(state: ErrorContextState, action: ErrorContextAction): Err
 function calculateStats(errors: ErrorEntry[]): ErrorStats {
   const now = Date.now();
   const oneHourAgo = now - 3600000;
-  const recentErrors = errors.filter(e => e.timestamp > oneHourAgo);
-  
-  const errorsByBoundary = errors.reduce((acc, error) => {
-    acc[error.boundaryId] = (acc[error.boundaryId] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-  
-  const errorsBySeverity = errors.reduce((acc, error) => {
-    acc[error.severity] = (acc[error.severity] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-  
+  const recentErrors = errors.filter((e) => e.timestamp > oneHourAgo);
+
+  const errorsByBoundary = errors.reduce(
+    (acc, error) => {
+      acc[error.boundaryId] = (acc[error.boundaryId] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+
+  const errorsBySeverity = errors.reduce(
+    (acc, error) => {
+      acc[error.severity] = (acc[error.severity] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+
   // Calculate top errors by message
-  const errorCounts = errors.reduce((acc, error) => {
-    const key = error.error.message;
-    if (!acc[key]) {
-      acc[key] = { count: 0, lastOccurrence: 0 };
-    }
-    acc[key].count++;
-    acc[key].lastOccurrence = Math.max(acc[key].lastOccurrence, error.timestamp);
-    return acc;
-  }, {} as Record<string, { count: number; lastOccurrence: number }>);
+  const errorCounts = errors.reduce(
+    (acc, error) => {
+      const key = error.error.message;
+      if (!acc[key]) {
+        acc[key] = { count: 0, lastOccurrence: 0 };
+      }
+      acc[key].count++;
+      acc[key].lastOccurrence = Math.max(acc[key].lastOccurrence, error.timestamp);
+      return acc;
+    },
+    {} as Record<string, { count: number; lastOccurrence: number }>
+  );
 
   const topErrors = Object.entries(errorCounts)
     .map(([message, data]) => ({ message, ...data }))
@@ -242,7 +250,7 @@ function calculateStats(errors: ErrorEntry[]): ErrorStats {
     errorsBySeverity,
     recentErrors: recentErrors.length,
     errorRate,
-    lastErrorTime: errors.length > 0 ? Math.max(...errors.map(e => e.timestamp)) : 0,
+    lastErrorTime: errors.length > 0 ? Math.max(...errors.map((e) => e.timestamp)) : 0,
     topErrors,
   };
 }
@@ -255,11 +263,11 @@ export const ErrorContext = createContext<ErrorContextValue | null>(null);
 /**
  * Error context provider
  */
-export function ErrorContextProvider({ 
-  children, 
-  userId 
-}: { 
-  children: ReactNode; 
+export function ErrorContextProvider({
+  children,
+  userId,
+}: {
+  children: ReactNode;
   userId?: string;
 }): JSX.Element {
   const initialState: ErrorContextState = {
@@ -287,36 +295,45 @@ export function ErrorContextProvider({
   }, []);
 
   // Add error to context
-  const addError = useCallback((
-    error: Error, 
-    boundaryId: string, 
-    severity: ErrorEntry['severity'] = 'medium'
-  ) => {
-    if (!state.isMonitoring) return;
+  const addError = useCallback(
+    (error: Error, boundaryId: string, severity: ErrorEntry['severity'] = 'medium') => {
+      if (!state.isMonitoring) {
+        return;
+      }
 
-    // Apply sampling rate
-    if (Math.random() > state.settings.samplingRate) return;
+      // Apply sampling rate
+      if (Math.random() > state.settings.samplingRate) {
+        return;
+      }
 
-    const errorEntry: ErrorEntry = {
-      id: generateErrorId(),
-      timestamp: Date.now(),
-      error,
-      boundaryId,
-      severity,
-      resolved: false,
-      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown',
-      url: typeof window !== 'undefined' ? window.location.href : 'Unknown',
+      const errorEntry: ErrorEntry = {
+        id: generateErrorId(),
+        timestamp: Date.now(),
+        error,
+        boundaryId,
+        severity,
+        resolved: false,
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown',
+        url: typeof window !== 'undefined' ? window.location.href : 'Unknown',
+        userId,
+      };
+
+      dispatch({ type: 'ADD_ERROR', payload: errorEntry });
+
+      // Auto-report if enabled
+      if (state.settings.enableAutoReporting) {
+        // Send to monitoring service
+        console.warn('Auto-reporting error:', errorEntry);
+      }
+    },
+    [
+      state.isMonitoring,
+      state.settings.samplingRate,
+      state.settings.enableAutoReporting,
+      generateErrorId,
       userId,
-    };
-
-    dispatch({ type: 'ADD_ERROR', payload: errorEntry });
-
-    // Auto-report if enabled
-    if (state.settings.enableAutoReporting) {
-      // Send to monitoring service
-      console.warn('Auto-reporting error:', errorEntry);
-    }
-  }, [state.isMonitoring, state.settings.samplingRate, state.settings.enableAutoReporting, generateErrorId, userId]);
+    ]
+  );
 
   // Resolve specific error
   const resolveError = useCallback((errorId: string) => {
@@ -326,9 +343,9 @@ export function ErrorContextProvider({
   // Resolve all errors
   const resolveAllErrors = useCallback(() => {
     const unresolvedErrorIds = state.errors
-      .filter(error => !error.resolved)
-      .map(error => error.id);
-    
+      .filter((error) => !error.resolved)
+      .map((error) => error.id);
+
     dispatch({ type: 'RESOLVE_ERRORS', payload: unresolvedErrorIds });
   }, [state.errors]);
 
@@ -346,18 +363,24 @@ export function ErrorContextProvider({
   const getFilteredErrors = useCallback(() => {
     const { severity, boundaries, timeRange } = state.filters;
     const now = Date.now();
-    const timeThreshold = now - (timeRange * 3600000);
+    const timeThreshold = now - timeRange * 3600000;
 
-    return state.errors.filter(error => {
+    return state.errors.filter((error) => {
       // Time filter
-      if (error.timestamp < timeThreshold) return false;
-      
+      if (error.timestamp < timeThreshold) {
+        return false;
+      }
+
       // Severity filter
-      if (severity.length > 0 && !severity.includes(error.severity)) return false;
-      
+      if (severity.length > 0 && !severity.includes(error.severity)) {
+        return false;
+      }
+
       // Boundary filter
-      if (boundaries.length > 0 && !boundaries.includes(error.boundaryId)) return false;
-      
+      if (boundaries.length > 0 && !boundaries.includes(error.boundaryId)) {
+        return false;
+      }
+
       return true;
     });
   }, [state.errors, state.filters]);
@@ -369,7 +392,7 @@ export function ErrorContextProvider({
       state,
       filteredErrors: getFilteredErrors(),
     };
-    
+
     return JSON.stringify(exportData, null, 2);
   }, [state, getFilteredErrors]);
 
@@ -405,14 +428,14 @@ export function ErrorContextProvider({
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
-      const twentyFourHoursAgo = now - (24 * 3600000);
-      
-      const oldErrors = state.errors.filter(error => error.timestamp < twentyFourHoursAgo);
+      const twentyFourHoursAgo = now - 24 * 3600000;
+
+      const oldErrors = state.errors.filter((error) => error.timestamp < twentyFourHoursAgo);
       if (oldErrors.length > 0) {
         // Keep only recent errors
-        const recentErrors = state.errors.filter(error => error.timestamp >= twentyFourHoursAgo);
+        const recentErrors = state.errors.filter((error) => error.timestamp >= twentyFourHoursAgo);
         dispatch({ type: 'CLEAR_ERRORS' });
-        recentErrors.forEach(error => {
+        recentErrors.forEach((error) => {
           dispatch({ type: 'ADD_ERROR', payload: error });
         });
       }
@@ -438,11 +461,7 @@ export function ErrorContextProvider({
     },
   };
 
-  return (
-    <ErrorContext.Provider value={contextValue}>
-      {children}
-    </ErrorContext.Provider>
-  );
+  return <ErrorContext.Provider value={contextValue}>{children}</ErrorContext.Provider>;
 }
 
 /**
@@ -450,11 +469,11 @@ export function ErrorContextProvider({
  */
 export function useErrorContext(): ErrorContextValue {
   const context = useContext(ErrorContext);
-  
+
   if (!context) {
     throw new Error('useErrorContext must be used within an ErrorContextProvider');
   }
-  
+
   return context;
 }
 
@@ -463,7 +482,7 @@ export function useErrorContext(): ErrorContextValue {
  */
 export function useErrorReporter(boundaryId: string) {
   const { actions } = useErrorContext();
-  
+
   return {
     reportError: (error: Error, severity?: ErrorEntry['severity']) => {
       actions.addError(error, boundaryId, severity);
@@ -484,7 +503,10 @@ export class ErrorRecoverySuggestions {
   /**
    * Get recovery suggestions for an error
    */
-  static getSuggestions(error: Error, boundaryId: string): Array<{
+  static getSuggestions(
+    error: Error,
+    boundaryId: string
+  ): Array<{
     strategy: ErrorRecoveryStrategy;
     reason: string;
     confidence: number;
@@ -550,7 +572,7 @@ export class ErrorRecoverySuggestions {
         reason: 'Unknown error, trying retry first',
         confidence: 0.5,
       });
-      
+
       suggestions.push({
         strategy: ErrorRecoveryStrategy.RESET,
         reason: 'If retry fails, reset component',
@@ -567,9 +589,7 @@ export class ErrorRecoverySuggestions {
   static getAutomaticStrategy(error: Error): ErrorRecoveryStrategy | null {
     const suggestions = this.getSuggestions(error, '');
     const bestSuggestion = suggestions[0];
-    
-    return bestSuggestion && bestSuggestion.confidence > 0.8 
-      ? bestSuggestion.strategy 
-      : null;
+
+    return bestSuggestion && bestSuggestion.confidence > 0.8 ? bestSuggestion.strategy : null;
   }
 }

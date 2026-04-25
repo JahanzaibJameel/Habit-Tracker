@@ -1,7 +1,7 @@
 /**
  * Enterprise-grade storage engine with migration support
  * Handles localStorage, IndexedDB, and sessionStorage with versioning
- * 
+ *
  * @fileoverview Core storage engine with migration capabilities
  * @version 1.0.0
  * @author Enterprise Frontend Team
@@ -54,72 +54,72 @@ export interface StorageConfig<T> {
    * Storage backend to use
    */
   backend: StorageBackend;
-  
+
   /**
    * Key prefix for namespacing
    */
   keyPrefix: string;
-  
+
   /**
    * Schema for data validation
    */
   schema: z.ZodType<T>;
-  
+
   /**
    * Current version of the data schema
    */
   currentVersion: number;
-  
+
   /**
    * Migration functions
    */
   migrations: Migration<T>[];
-  
+
   /**
    * Default value if no data exists
    */
   defaultValue: T;
-  
+
   /**
    * Enable compression for large data
    */
   compression?: boolean;
-  
+
   /**
    * Enable encryption for sensitive data
    */
   encryption?: boolean;
-  
+
   /**
    * TTL in milliseconds (optional)
    */
   ttl?: number;
-  
+
   /**
    * Maximum storage size in bytes
    */
   maxSize?: number;
-  
+
   /**
    * Enable corruption recovery for IndexedDB
    */
   enableCorruptionRecovery?: boolean;
-  
+
   /**
    * Enable stale-while-revalidate pattern
    */
   enableStaleWhileRevalidate?: boolean;
-  
+
   /**
    * Backup storage backend for corruption recovery
    */
   backupBackend?: StorageBackend;
-  
+
   /**
    * Callback for corruption events
    */
   onCorruptionDetected?: (key: string, error: Error) => void;
-  
+
   /**
    * Callback for recovery events
    */
@@ -147,7 +147,9 @@ class LocalStorageAdapter implements IStorageAdapter {
     try {
       return localStorage.getItem(key);
     } catch (error) {
-      throw new Error(`LocalStorage get failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `LocalStorage get failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -158,7 +160,9 @@ class LocalStorageAdapter implements IStorageAdapter {
       if (error instanceof Error && error.name === 'QuotaExceededError') {
         throw new Error('Storage quota exceeded');
       }
-      throw new Error(`LocalStorage set failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `LocalStorage set failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -166,7 +170,9 @@ class LocalStorageAdapter implements IStorageAdapter {
     try {
       localStorage.removeItem(key);
     } catch (error) {
-      throw new Error(`LocalStorage remove failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `LocalStorage remove failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -174,7 +180,9 @@ class LocalStorageAdapter implements IStorageAdapter {
     try {
       localStorage.clear();
     } catch (error) {
-      throw new Error(`LocalStorage clear failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `LocalStorage clear failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -182,7 +190,9 @@ class LocalStorageAdapter implements IStorageAdapter {
     try {
       return Object.keys(localStorage);
     } catch (error) {
-      throw new Error(`LocalStorage keys failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `LocalStorage keys failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -198,7 +208,9 @@ class LocalStorageAdapter implements IStorageAdapter {
       }
       return size;
     } catch (error) {
-      throw new Error(`LocalStorage size calculation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `LocalStorage size calculation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -209,7 +221,9 @@ class LocalStorageAdapter implements IStorageAdapter {
       const estimated = 5 * 1024 * 1024; // 5MB typical limit
       return { used, available: Math.max(0, estimated - used) };
     } catch (error) {
-      throw new Error(`LocalStorage quota check failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `LocalStorage quota check failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 }
@@ -222,7 +236,9 @@ class SessionStorageAdapter implements IStorageAdapter {
     try {
       return sessionStorage.getItem(key);
     } catch (error) {
-      throw new Error(`SessionStorage get failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `SessionStorage get failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -233,7 +249,9 @@ class SessionStorageAdapter implements IStorageAdapter {
       if (error instanceof Error && error.name === 'QuotaExceededError') {
         throw new Error('Storage quota exceeded');
       }
-      throw new Error(`SessionStorage set failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `SessionStorage set failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -241,7 +259,9 @@ class SessionStorageAdapter implements IStorageAdapter {
     try {
       sessionStorage.removeItem(key);
     } catch (error) {
-      throw new Error(`SessionStorage remove failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `SessionStorage remove failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -249,7 +269,9 @@ class SessionStorageAdapter implements IStorageAdapter {
     try {
       sessionStorage.clear();
     } catch (error) {
-      throw new Error(`SessionStorage clear failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `SessionStorage clear failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -257,7 +279,9 @@ class SessionStorageAdapter implements IStorageAdapter {
     try {
       return Object.keys(sessionStorage);
     } catch (error) {
-      throw new Error(`SessionStorage keys failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `SessionStorage keys failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -273,7 +297,9 @@ class SessionStorageAdapter implements IStorageAdapter {
       }
       return size;
     } catch (error) {
-      throw new Error(`SessionStorage size calculation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `SessionStorage size calculation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -284,7 +310,9 @@ class SessionStorageAdapter implements IStorageAdapter {
       const estimated = 5 * 1024 * 1024; // 5MB typical limit
       return { used, available: Math.max(0, estimated - used) };
     } catch (error) {
-      throw new Error(`SessionStorage quota check failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `SessionStorage quota check failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 }
@@ -302,11 +330,15 @@ class IndexedDBAdapter implements IStorageAdapter {
   private config: StorageConfig<any>;
   private staleCache = new Map<string, { data: string; timestamp: number }>();
 
-  constructor(dbName: string = 'StorageEngineDB', storeName: string = 'storage', config?: StorageConfig<any>) {
+  constructor(
+    dbName: string = 'StorageEngineDB',
+    storeName: string = 'storage',
+    config?: StorageConfig<any>
+  ) {
     this.dbName = dbName;
     this.storeName = storeName;
-    this.config = config || {} as StorageConfig<any>;
-    
+    this.config = config || ({} as StorageConfig<any>);
+
     // Initialize backup adapter if corruption recovery is enabled
     if (config?.enableCorruptionRecovery && config.backupBackend) {
       this.backupAdapter = this.createBackupAdapter(config.backupBackend);
@@ -354,12 +386,15 @@ class IndexedDBAdapter implements IStorageAdapter {
     try {
       // Notify about corruption
       if (this.config.onCorruptionDetected) {
-        this.config.onCorruptionDetected(this.storeName, new Error('IndexedDB corruption detected'));
+        this.config.onCorruptionDetected(
+          this.storeName,
+          new Error('IndexedDB corruption detected')
+        );
       }
 
       // Delete corrupted database
       await this.deleteDatabase();
-      
+
       // Reinitialize
       this.db = null;
       this.initPromise = null;
@@ -371,7 +406,7 @@ class IndexedDBAdapter implements IStorageAdapter {
       }
 
       this.isCorrupted = false;
-      
+
       // Notify about recovery completion
       if (this.config.onRecoveryCompleted) {
         this.config.onRecoveryCompleted(this.storeName, true);
@@ -380,11 +415,11 @@ class IndexedDBAdapter implements IStorageAdapter {
       return true;
     } catch (error) {
       console.error('Failed to recover from IndexedDB corruption:', error);
-      
+
       if (this.config.onRecoveryCompleted) {
         this.config.onRecoveryCompleted(this.storeName, false);
       }
-      
+
       return false;
     }
   }
@@ -395,15 +430,15 @@ class IndexedDBAdapter implements IStorageAdapter {
   private async deleteDatabase(): Promise<void> {
     return new Promise((resolve, reject) => {
       const deleteRequest = indexedDB.deleteDatabase(this.dbName);
-      
+
       deleteRequest.onerror = () => {
         reject(new Error(`Failed to delete corrupted database: ${deleteRequest.error?.message}`));
       };
-      
+
       deleteRequest.onsuccess = () => {
         resolve();
       };
-      
+
       deleteRequest.onblocked = () => {
         console.warn('Database deletion blocked - waiting for connections to close');
       };
@@ -414,18 +449,20 @@ class IndexedDBAdapter implements IStorageAdapter {
    * Restore data from backup adapter
    */
   private async restoreFromBackup(): Promise<void> {
-    if (!this.backupAdapter) return;
+    if (!this.backupAdapter) {
+      return;
+    }
 
     try {
       const backupKeys = await this.backupAdapter.keys();
-      
+
       for (const key of backupKeys) {
         const value = await this.backupAdapter.get(key);
         if (value) {
           await this.set(key, value);
         }
       }
-      
+
       console.log(`Restored ${backupKeys.length} items from backup`);
     } catch (error) {
       console.error('Failed to restore from backup:', error);
@@ -436,8 +473,10 @@ class IndexedDBAdapter implements IStorageAdapter {
    * Save to backup adapter
    */
   private async saveToBackup(key: string, value: string): Promise<void> {
-    if (!this.backupAdapter) return;
-    
+    if (!this.backupAdapter) {
+      return;
+    }
+
     try {
       await this.backupAdapter.set(key, value);
     } catch (error) {
@@ -486,14 +525,14 @@ class IndexedDBAdapter implements IStorageAdapter {
         const stale = this.staleCache.get(key)!;
         const now = Date.now();
         const staleAge = now - stale.timestamp;
-        
+
         // Return stale data if it's less than 5 minutes old
         if (staleAge < 5 * 60 * 1000) {
           // Asynchronously revalidate in background
-          this.revalidateStaleData(key).catch(error => {
+          this.revalidateStaleData(key).catch((error) => {
             console.warn('Failed to revalidate stale data:', error);
           });
-          
+
           return stale.data;
         } else {
           // Remove expired stale data
@@ -504,7 +543,8 @@ class IndexedDBAdapter implements IStorageAdapter {
       const store = await this.getStore();
       return new Promise((resolve, reject) => {
         const request = store.get(key);
-        request.onerror = () => reject(new Error(`IndexedDB get failed: ${request.error?.message || 'Unknown error'}`));
+        request.onerror = () =>
+          reject(new Error(`IndexedDB get failed: ${request.error?.message || 'Unknown error'}`));
         request.onsuccess = () => resolve(request.result || null);
       });
     } catch (error) {
@@ -514,14 +554,14 @@ class IndexedDBAdapter implements IStorageAdapter {
         if (isCorrupted) {
           this.isCorrupted = true;
           const recovered = await this.recoverFromCorruption();
-          
+
           if (recovered) {
             // Retry the operation after recovery
             return this.get(key);
           }
         }
       }
-      
+
       // Fallback to backup if available
       if (this.backupAdapter) {
         try {
@@ -534,8 +574,10 @@ class IndexedDBAdapter implements IStorageAdapter {
           console.error('Backup adapter also failed:', backupError);
         }
       }
-      
-      throw new Error(`IndexedDB get failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+
+      throw new Error(
+        `IndexedDB get failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -564,7 +606,8 @@ class IndexedDBAdapter implements IStorageAdapter {
     const store = await this.getStore();
     return new Promise((resolve, reject) => {
       const request = store.get(key);
-      request.onerror = () => reject(new Error(`IndexedDB get failed: ${request.error?.message || 'Unknown error'}`));
+      request.onerror = () =>
+        reject(new Error(`IndexedDB get failed: ${request.error?.message || 'Unknown error'}`));
       request.onsuccess = () => resolve(request.result || null);
     });
   }
@@ -574,7 +617,8 @@ class IndexedDBAdapter implements IStorageAdapter {
       const store = await this.getStore('readwrite');
       return new Promise((resolve, reject) => {
         const request = store.put(value, key);
-        request.onerror = () => reject(new Error(`IndexedDB set failed: ${request.error?.message || 'Unknown error'}`));
+        request.onerror = () =>
+          reject(new Error(`IndexedDB set failed: ${request.error?.message || 'Unknown error'}`));
         request.onsuccess = () => {
           // Update stale cache
           if (this.config.enableStaleWhileRevalidate) {
@@ -583,12 +627,12 @@ class IndexedDBAdapter implements IStorageAdapter {
               timestamp: Date.now(),
             });
           }
-          
+
           // Save to backup
-          this.saveToBackup(key, value).catch(error => {
+          this.saveToBackup(key, value).catch((error) => {
             console.warn('Failed to save to backup:', error);
           });
-          
+
           resolve();
         };
       });
@@ -599,14 +643,14 @@ class IndexedDBAdapter implements IStorageAdapter {
         if (isCorrupted) {
           this.isCorrupted = true;
           const recovered = await this.recoverFromCorruption();
-          
+
           if (recovered) {
             // Retry the operation after recovery
             return this.set(key, value);
           }
         }
       }
-      
+
       // Fallback to backup if available
       if (this.backupAdapter) {
         try {
@@ -617,8 +661,10 @@ class IndexedDBAdapter implements IStorageAdapter {
           console.error('Backup adapter also failed:', backupError);
         }
       }
-      
-      throw new Error(`IndexedDB set failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+
+      throw new Error(
+        `IndexedDB set failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -627,11 +673,16 @@ class IndexedDBAdapter implements IStorageAdapter {
       const store = await this.getStore('readwrite');
       return new Promise((resolve, reject) => {
         const request = store.delete(key);
-        request.onerror = () => reject(new Error(`IndexedDB remove failed: ${request.error?.message || 'Unknown error'}`));
+        request.onerror = () =>
+          reject(
+            new Error(`IndexedDB remove failed: ${request.error?.message || 'Unknown error'}`)
+          );
         request.onsuccess = () => resolve();
       });
     } catch (error) {
-      throw new Error(`IndexedDB remove failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `IndexedDB remove failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -640,11 +691,14 @@ class IndexedDBAdapter implements IStorageAdapter {
       const store = await this.getStore('readwrite');
       return new Promise((resolve, reject) => {
         const request = store.clear();
-        request.onerror = () => reject(new Error(`IndexedDB clear failed: ${request.error?.message || 'Unknown error'}`));
+        request.onerror = () =>
+          reject(new Error(`IndexedDB clear failed: ${request.error?.message || 'Unknown error'}`));
         request.onsuccess = () => resolve();
       });
     } catch (error) {
-      throw new Error(`IndexedDB clear failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `IndexedDB clear failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -653,11 +707,14 @@ class IndexedDBAdapter implements IStorageAdapter {
       const store = await this.getStore();
       return new Promise((resolve, reject) => {
         const request = store.getAllKeys();
-        request.onerror = () => reject(new Error(`IndexedDB keys failed: ${request.error?.message || 'Unknown error'}`));
+        request.onerror = () =>
+          reject(new Error(`IndexedDB keys failed: ${request.error?.message || 'Unknown error'}`));
         request.onsuccess = () => resolve(request.result as string[]);
       });
     } catch (error) {
-      throw new Error(`IndexedDB keys failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `IndexedDB keys failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -667,7 +724,12 @@ class IndexedDBAdapter implements IStorageAdapter {
       return new Promise((resolve, reject) => {
         let size = 0;
         const request = store.openCursor();
-        request.onerror = () => reject(new Error(`IndexedDB size calculation failed: ${request.error?.message || 'Unknown error'}`));
+        request.onerror = () =>
+          reject(
+            new Error(
+              `IndexedDB size calculation failed: ${request.error?.message || 'Unknown error'}`
+            )
+          );
         request.onsuccess = (event) => {
           const cursor = (event.target as IDBRequest).result;
           if (cursor) {
@@ -680,7 +742,9 @@ class IndexedDBAdapter implements IStorageAdapter {
         };
       });
     } catch (error) {
-      throw new Error(`IndexedDB size calculation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `IndexedDB size calculation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -693,13 +757,15 @@ class IndexedDBAdapter implements IStorageAdapter {
           available: (estimate.quota || 0) - (estimate.usage || 0),
         };
       }
-      
+
       // Fallback: calculate used size and estimate available
       const used = await this.size();
       const estimated = 50 * 1024 * 1024; // 50MB typical limit
       return { used, available: Math.max(0, estimated - used) };
     } catch (error) {
-      throw new Error(`IndexedDB quota check failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `IndexedDB quota check failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 }
@@ -715,7 +781,7 @@ export class StorageEngine<T> {
   constructor(config: StorageConfig<T>) {
     this.config = config;
     this.versionKey = `${config.keyPrefix}:version`;
-    
+
     // Initialize adapter based on backend
     switch (config.backend) {
       case 'localStorage':
@@ -760,7 +826,7 @@ export class StorageEngine<T> {
   private deserialize(value: string): { data: T; version: number; timestamp: string } {
     try {
       const payload = JSON.parse(value);
-      
+
       if (!payload.data || typeof payload.version !== 'number') {
         throw new Error('Invalid storage payload structure');
       }
@@ -771,14 +837,19 @@ export class StorageEngine<T> {
         timestamp: payload.timestamp,
       };
     } catch (error) {
-      throw new Error(`Deserialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Deserialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
   /**
    * Runs migrations for data
    */
-  private async migrate(data: unknown, fromVersion: number): Promise<{ data: T; toVersion: number }> {
+  private async migrate(
+    data: unknown,
+    fromVersion: number
+  ): Promise<{ data: T; toVersion: number }> {
     let currentData = data;
     let currentVersion = fromVersion;
 
@@ -791,7 +862,9 @@ export class StorageEngine<T> {
           currentData = migration.migrate(currentData, migration.fromVersion, migration.toVersion);
           currentVersion = migration.toVersion;
         } catch (error) {
-          throw new Error(`Migration from v${migration.fromVersion} to v${migration.toVersion} failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          throw new Error(
+            `Migration from v${migration.fromVersion} to v${migration.toVersion} failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
         }
       }
     }
@@ -804,7 +877,9 @@ export class StorageEngine<T> {
       if (error instanceof z.ZodError) {
         throw ValidationErrorFactory.fromZodError(error, this.config.schema.constructor.name);
       }
-      throw new Error(`Post-migration validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Post-migration validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -834,10 +909,10 @@ export class StorageEngine<T> {
       // Check if migration is needed
       if (version < this.config.currentVersion) {
         const migrated = await this.migrate(data, version);
-        
+
         // Save migrated data back to storage
         await this.set(key, migrated.data);
-        
+
         return {
           success: true,
           data: migrated.data,
@@ -866,9 +941,10 @@ export class StorageEngine<T> {
         if (error instanceof z.ZodError) {
           throw ValidationErrorFactory.fromZodError(error, this.config.schema.constructor.name);
         }
-        throw new Error(`Data validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        throw new Error(
+          `Data validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
       }
-
     } catch (error) {
       return {
         success: false,
@@ -884,12 +960,12 @@ export class StorageEngine<T> {
     try {
       // Validate data against schema
       const validatedData = this.config.schema.parse(data);
-      
+
       const storageKey = this.getStorageKey(key);
       const serialized = this.serialize(validatedData, this.config.currentVersion);
-      
+
       await this.adapter.set(storageKey, serialized);
-      
+
       return {
         success: true,
         data: validatedData,
@@ -920,9 +996,9 @@ export class StorageEngine<T> {
    */
   async clear(): Promise<void> {
     const keys = await this.adapter.keys();
-    const prefixedKeys = keys.filter(key => key.startsWith(this.config.keyPrefix));
-    
-    await Promise.all(prefixedKeys.map(key => this.adapter.remove(key)));
+    const prefixedKeys = keys.filter((key) => key.startsWith(this.config.keyPrefix));
+
+    await Promise.all(prefixedKeys.map((key) => this.adapter.remove(key)));
   }
 
   /**
@@ -930,8 +1006,8 @@ export class StorageEngine<T> {
    */
   async getQuota(): Promise<{ used: number; available: number; percentage: number }> {
     const quota = await this.adapter.quota();
-    const percentage = quota.used / (quota.used + quota.available) * 100;
-    
+    const percentage = (quota.used / (quota.used + quota.available)) * 100;
+
     return {
       ...quota,
       percentage: Math.round(percentage * 100) / 100,
@@ -958,8 +1034,8 @@ export class StorageEngine<T> {
   async getKeys(): Promise<string[]> {
     const keys = await this.adapter.keys();
     return keys
-      .filter(key => key.startsWith(this.config.keyPrefix))
-      .map(key => key.replace(`${this.config.keyPrefix}:`, ''));
+      .filter((key) => key.startsWith(this.config.keyPrefix))
+      .map((key) => key.replace(`${this.config.keyPrefix}:`, ''));
   }
 
   /**
@@ -968,7 +1044,7 @@ export class StorageEngine<T> {
   async getSize(): Promise<{ bytes: number; entries: number }> {
     const keys = await this.getKeys();
     let totalSize = 0;
-    
+
     for (const key of keys) {
       const storageKey = this.getStorageKey(key);
       const value = await this.adapter.get(storageKey);
@@ -976,7 +1052,7 @@ export class StorageEngine<T> {
         totalSize += storageKey.length + value.length;
       }
     }
-    
+
     return {
       bytes: totalSize,
       entries: keys.length,
@@ -989,7 +1065,7 @@ export class StorageEngine<T> {
   async export(): Promise<Record<string, { data: T; version: number; timestamp: string }>> {
     const keys = await this.getKeys();
     const exportData: Record<string, { data: T; version: number; timestamp: string }> = {};
-    
+
     for (const key of keys) {
       const result = await this.get(key);
       if (result.success && result.data) {
@@ -1000,14 +1076,16 @@ export class StorageEngine<T> {
         };
       }
     }
-    
+
     return exportData;
   }
 
   /**
    * Imports data from backup
    */
-  async import(data: Record<string, { data: T; version: number; timestamp: string }>): Promise<void> {
+  async import(
+    data: Record<string, { data: T; version: number; timestamp: string }>
+  ): Promise<void> {
     for (const [key, entry] of Object.entries(data)) {
       try {
         const storageKey = this.getStorageKey(key);
@@ -1036,16 +1114,16 @@ export class StorageEngine<T> {
     try {
       const keys = await this.adapter.keys();
       const snapshot: Record<string, { data: T; version: number; timestamp: string }> = {};
-      
+
       // Filter keys that belong to this storage engine
-      const storageKeys = keys.filter(key => key.startsWith(this.config.keyPrefix + ':'));
-      
+      const storageKeys = keys.filter((key) => key.startsWith(`${this.config.keyPrefix}:`));
+
       for (const key of storageKeys) {
         try {
           const value = await this.adapter.get(key);
           if (value) {
             const parsed = JSON.parse(value);
-            const originalKey = key.replace(this.config.keyPrefix + ':', '');
+            const originalKey = key.replace(`${this.config.keyPrefix}:`, '');
             snapshot[originalKey] = {
               data: parsed.data,
               version: parsed.version,
@@ -1056,7 +1134,7 @@ export class StorageEngine<T> {
           console.warn(`Failed to export key "${key}":`, error);
         }
       }
-      
+
       return {
         data: snapshot,
         metadata: {
@@ -1076,39 +1154,44 @@ export class StorageEngine<T> {
               enableCorruptionRecovery: this.config.enableCorruptionRecovery || false,
               enableStaleWhileRevalidate: this.config.enableStaleWhileRevalidate || false,
             };
-            
+
             if (this.config.ttl !== undefined) {
               config.ttl = this.config.ttl;
             }
-            
+
             if (this.config.maxSize !== undefined) {
               config.maxSize = this.config.maxSize;
             }
-            
+
             if (this.config.backupBackend) {
               config.backupBackend = this.config.backupBackend;
             }
-            
+
             return config;
           })(),
         },
       };
     } catch (error) {
-      throw new Error(`Failed to export snapshot: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to export snapshot: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
   /**
    * Import complete storage snapshot with validation
    */
-  async importSnapshot(snapshot: {
-    data: Record<string, { data: T; version: number; timestamp: string }>;
-    metadata: any;
-  }, options: {
-    overwrite?: boolean;
-    validateSchema?: boolean;
-    preserveExisting?: boolean;
-  } = {}): Promise<{
+  async importSnapshot(
+    snapshot: {
+      data: Record<string, { data: T; version: number; timestamp: string }>;
+      metadata: any;
+    },
+    options: {
+      overwrite?: boolean;
+      validateSchema?: boolean;
+      preserveExisting?: boolean;
+    } = {}
+  ): Promise<{
     success: boolean;
     imported: string[];
     skipped: string[];
@@ -1133,7 +1216,7 @@ export class StorageEngine<T> {
       for (const [key, entry] of Object.entries(snapshot.data)) {
         try {
           const storageKey = this.getStorageKey(key);
-          
+
           // Check if key already exists
           const existing = await this.adapter.get(storageKey);
           if (existing && !overwrite && !preserveExisting) {
@@ -1145,14 +1228,18 @@ export class StorageEngine<T> {
           if (validateSchema) {
             const parseResult = this.config.schema.safeParse(entry.data);
             if (!parseResult.success) {
-              result.errors.push(`Schema validation failed for key "${key}": ${parseResult.error.message}`);
+              result.errors.push(
+                `Schema validation failed for key "${key}": ${parseResult.error.message}`
+              );
               continue;
             }
           }
 
           // Validate version compatibility
           if (entry.version > this.config.currentVersion) {
-            result.errors.push(`Version mismatch for key "${key}": snapshot version ${entry.version} > current version ${this.config.currentVersion}`);
+            result.errors.push(
+              `Version mismatch for key "${key}": snapshot version ${entry.version} > current version ${this.config.currentVersion}`
+            );
             continue;
           }
 
@@ -1160,11 +1247,16 @@ export class StorageEngine<T> {
           let finalData = entry.data;
           if (entry.version < this.config.currentVersion) {
             for (const migration of this.config.migrations) {
-              if (migration.fromVersion <= entry.version && migration.toVersion <= this.config.currentVersion) {
+              if (
+                migration.fromVersion <= entry.version &&
+                migration.toVersion <= this.config.currentVersion
+              ) {
                 try {
                   finalData = migration.migrate(finalData, entry.version, migration.toVersion);
                 } catch (migrationError) {
-                  result.errors.push(`Migration failed for key "${key}": ${migrationError instanceof Error ? migrationError.message : 'Unknown error'}`);
+                  result.errors.push(
+                    `Migration failed for key "${key}": ${migrationError instanceof Error ? migrationError.message : 'Unknown error'}`
+                  );
                   continue;
                 }
               }
@@ -1175,17 +1267,19 @@ export class StorageEngine<T> {
           const serialized = this.serialize(finalData, this.config.currentVersion);
           await this.adapter.set(storageKey, serialized);
           result.imported.push(key);
-
         } catch (error) {
-          result.errors.push(`Failed to import key "${key}": ${error instanceof Error ? error.message : 'Unknown error'}`);
+          result.errors.push(
+            `Failed to import key "${key}": ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
         }
       }
 
       result.success = result.errors.length === 0;
-
     } catch (error) {
       result.success = false;
-      result.errors.push(`Import failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      result.errors.push(
+        `Import failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
 
     return result;
@@ -1200,17 +1294,17 @@ export class StorageEngine<T> {
   }> {
     const lastTime = lastSnapshotTime ? new Date(lastSnapshotTime).getTime() : 0;
     const fullSnapshot = await this.exportSnapshot();
-    
+
     // Filter data to only include items modified since last snapshot
     const incrementalData: Record<string, { data: T; version: number; timestamp: string }> = {};
-    
+
     for (const [key, entry] of Object.entries(fullSnapshot.data)) {
       const entryTime = new Date(entry.timestamp).getTime();
       if (entryTime > lastTime) {
         incrementalData[key] = entry;
       }
     }
-    
+
     return {
       data: incrementalData,
       metadata: {
@@ -1235,14 +1329,14 @@ export class StorageEngine<T> {
   }> {
     try {
       const keys = await this.adapter.keys();
-      const storageKeys = keys.filter(key => key.startsWith(this.config.keyPrefix + ':'));
+      const storageKeys = keys.filter((key) => key.startsWith(`${this.config.keyPrefix}:`));
       const quota = await this.adapter.quota();
-      
+
       let oldestEntry: string | undefined;
       let newestEntry: string | undefined;
       let oldestTime = Date.now();
       let newestTime = 0;
-      
+
       // Analyze timestamps to find oldest/newest entries
       for (const key of storageKeys) {
         try {
@@ -1250,12 +1344,12 @@ export class StorageEngine<T> {
           if (value) {
             const parsed = JSON.parse(value);
             const entryTime = new Date(parsed.timestamp).getTime();
-            
+
             if (entryTime < oldestTime) {
               oldestTime = entryTime;
               oldestEntry = key;
             }
-            
+
             if (entryTime > newestTime) {
               newestTime = entryTime;
               newestEntry = key;
@@ -1265,25 +1359,27 @@ export class StorageEngine<T> {
           // Skip invalid entries
         }
       }
-      
+
       const result: any = {
         totalKeys: storageKeys.length,
         totalSize: await this.adapter.size(),
         backend: this.config.backend,
         quota,
       };
-      
+
       if (oldestEntry) {
         result.oldestEntry = oldestEntry;
       }
-      
+
       if (newestEntry) {
         result.newestEntry = newestEntry;
       }
-      
+
       return result;
     } catch (error) {
-      throw new Error(`Failed to get storage stats: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to get storage stats: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 }

@@ -28,7 +28,9 @@ const Dropdown: React.FC<DropdownProps> = ({
   }, []);
 
   useEffect(() => {
-    if (!isOpen || !isClient) return;
+    if (!isOpen || !isClient) {
+      return;
+    }
 
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -74,7 +76,7 @@ const Dropdown: React.FC<DropdownProps> = ({
         'absolute z-50 w-48 bg-background border border-border rounded-md shadow-lg py-1',
         'animate-in fade-in-0 zoom-in-95 duration-200',
         placementClasses[placement],
-        className
+        className || ''
       )}
     >
       {children}

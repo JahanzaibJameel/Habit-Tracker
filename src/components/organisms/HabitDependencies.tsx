@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 import { AlertCircle, ArrowRight, Link, Plus, X } from 'lucide-react';
 
 import { cn } from '../../lib/utils';
@@ -61,7 +60,9 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
     const sourceHabit = getHabitById(dependency.sourceHabitId);
     const targetHabit = getHabitById(dependency.targetHabitId);
 
-    if (!sourceHabit || !targetHabit) return 'Invalid dependency';
+    if (!sourceHabit || !targetHabit) {
+      return 'Invalid dependency';
+    }
 
     switch (dependency.condition) {
       case 'must_complete':
@@ -82,8 +83,12 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
   };
 
   const handleAddDependency = () => {
-    if (!newDependency.sourceHabitId || !newDependency.targetHabitId) return;
-    if (newDependency.sourceHabitId === newDependency.targetHabitId) return;
+    if (!newDependency.sourceHabitId || !newDependency.targetHabitId) {
+      return;
+    }
+    if (newDependency.sourceHabitId === newDependency.targetHabitId) {
+      return;
+    }
 
     const dependencyData: Omit<DependencyRule, 'id' | 'createdAt' | 'updatedAt'> = {
       type: newDependency.type || 'completion',
@@ -116,20 +121,14 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
   const availableHabits = habits.filter((h) => !h.archivedAt);
 
   return (
-    <AnimatePresence>
+    <>
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
+        <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
           onClick={onClose}
         >
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="bg-background rounded-lg shadow-xl border max-w-4xl w-full max-h-[80vh] overflow-hidden"
+          <div
+            className="bg-background rounded-lg shadow-xl max-w-4xl w-full max-h-[80vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <Card>
@@ -170,212 +169,205 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                     </div>
                   )}
 
-                  <AnimatePresence>
-                    {showAddForm && availableHabits.length >= 2 && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="space-y-4 p-4 bg-muted/50 rounded-lg border"
-                      >
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium mb-2">
-                              Source Habit (Prerequisite)
-                            </label>
-                            <select
-                              value={newDependency.sourceHabitId || ''}
-                              onChange={(e) =>
-                                setNewDependency((prev) => ({
-                                  ...prev,
-                                  sourceHabitId: e.target.value,
-                                }))
-                              }
-                              className="w-full p-2 border rounded-md bg-background"
-                            >
-                              <option value="">Select source habit</option>
-                              {availableHabits.map((habit) => (
+                  {showAddForm && availableHabits.length >= 2 && (
+                    <div className="border-t pt-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-2">
+                            Source Habit (Prerequisite)
+                          </label>
+                          <select
+                            value={newDependency.sourceHabitId || ''}
+                            onChange={(e) =>
+                              setNewDependency((prev) => ({
+                                ...prev,
+                                sourceHabitId: e.target.value,
+                              }))
+                            }
+                            className="w-full p-2 border rounded-md bg-background"
+                          >
+                            <option value="">Select source habit</option>
+                            {availableHabits.map((habit) => (
+                              <option key={habit.id} value={habit.id}>
+                                {habit.name} ({habit.category})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium mb-2">
+                            Target Habit (Dependent)
+                          </label>
+                          <select
+                            value={newDependency.targetHabitId || ''}
+                            onChange={(e) =>
+                              setNewDependency((prev) => ({
+                                ...prev,
+                                targetHabitId: e.target.value,
+                              }))
+                            }
+                            className="w-full p-2 border rounded-md bg-background"
+                            disabled={!newDependency.sourceHabitId}
+                          >
+                            <option value="">Select target habit</option>
+                            {availableHabits
+                              .filter((h) => h.id !== newDependency.sourceHabitId)
+                              .map((habit) => (
                                 <option key={habit.id} value={habit.id}>
                                   {habit.name} ({habit.category})
                                 </option>
                               ))}
-                            </select>
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium mb-2">
-                              Target Habit (Dependent)
-                            </label>
-                            <select
-                              value={newDependency.targetHabitId || ''}
-                              onChange={(e) =>
-                                setNewDependency((prev) => ({
-                                  ...prev,
-                                  targetHabitId: e.target.value,
-                                }))
-                              }
-                              className="w-full p-2 border rounded-md bg-background"
-                              disabled={!newDependency.sourceHabitId}
-                            >
-                              <option value="">Select target habit</option>
-                              {availableHabits
-                                .filter((h) => h.id !== newDependency.sourceHabitId)
-                                .map((habit) => (
-                                  <option key={habit.id} value={habit.id}>
-                                    {habit.name} ({habit.category})
-                                  </option>
-                                ))}
-                            </select>
-                          </div>
+                          </select>
                         </div>
+                      </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium mb-2">Rule Type</label>
-                            <select
-                              value={newDependency.type || 'completion'}
-                              onChange={(e) =>
-                                setNewDependency((prev) => {
-                                  const updated = {
-                                    ...prev,
-                                    type: e.target.value as any,
-                                  };
-                                  // Reset condition when type changes to completion
-                                  if (e.target.value === 'completion') {
-                                    (updated as any).condition = 'must_complete';
-                                  }
-                                  return updated;
-                                })
-                              }
-                              className="w-full p-2 border rounded-md bg-background"
-                            >
-                              <option value="completion">Completion Based</option>
-                              <option value="streak">Streak Based</option>
-                              <option value="time">Time Based</option>
-                              <option value="custom">Custom</option>
-                            </select>
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium mb-2">Condition</label>
-                            <select
-                              value={newDependency.condition || 'must_complete'}
-                              onChange={(e) =>
-                                setNewDependency(
-                                  (prev) =>
-                                    ({
-                                      ...prev,
-                                      condition: e.target.value as DependencyRule['condition'],
-                                    }) as Partial<DependencyRule>
-                                )
-                              }
-                              className="w-full p-2 border rounded-md bg-background"
-                            >
-                              {newDependency.type === 'completion' && (
-                                <>
-                                  <option value="must_complete">Must Complete</option>
-                                  <option value="must_not_complete">Must Not Complete</option>
-                                </>
-                              )}
-                              {newDependency.type === 'streak' && (
-                                <>
-                                  <option value="streak_greater">Streak Greater Than</option>
-                                  <option value="streak_equal">Streak Equal To</option>
-                                </>
-                              )}
-                              {newDependency.type === 'time' && (
-                                <>
-                                  <option value="time_before">Complete Before Time</option>
-                                  <option value="time_after">Complete After Time</option>
-                                </>
-                              )}
-                              {newDependency.type === 'custom' && (
-                                <option value="custom">Custom Condition</option>
-                              )}
-                            </select>
-                          </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Rule Type</label>
+                          <select
+                            value={newDependency.type || 'completion'}
+                            onChange={(e) =>
+                              setNewDependency((prev) => {
+                                const updated = {
+                                  ...prev,
+                                  type: e.target.value as any,
+                                };
+                                // Reset condition when type changes to completion
+                                if (e.target.value === 'completion') {
+                                  (updated as any).condition = 'must_complete';
+                                }
+                                return updated;
+                              })
+                            }
+                            className="w-full p-2 border rounded-md bg-background"
+                          >
+                            <option value="completion">Completion Based</option>
+                            <option value="streak">Streak Based</option>
+                            <option value="time">Time Based</option>
+                            <option value="custom">Custom</option>
+                          </select>
                         </div>
-
-                        {(newDependency.condition === 'streak_greater' ||
-                          newDependency.condition === 'streak_equal') && (
-                          <div>
-                            <label className="block text-sm font-medium mb-2">Streak Value</label>
-                            <Input
-                              type="number"
-                              min="1"
-                              max="365"
-                              value={newDependency.value || ''}
-                              onChange={(e) =>
-                                setNewDependency((prev) => ({
-                                  ...prev,
-                                  value: parseInt(e.target.value) || (undefined as any),
-                                }))
-                              }
-                              placeholder="Number of days"
-                            />
-                          </div>
-                        )}
-
-                        {(newDependency.condition === 'time_before' ||
-                          newDependency.condition === 'time_after') && (
-                          <div>
-                            <label className="block text-sm font-medium mb-2">Time</label>
-                            <Input
-                              type="time"
-                              value={newDependency.timeValue || ''}
-                              onChange={(e) =>
-                                setNewDependency((prev) => ({
-                                  ...prev,
-                                  timeValue: e.target.value,
-                                }))
-                              }
-                            />
-                          </div>
-                        )}
 
                         <div>
-                          <label className="block text-sm font-medium mb-2">
-                            Description (Optional)
-                          </label>
+                          <label className="block text-sm font-medium mb-2">Condition</label>
+                          <select
+                            value={newDependency.condition || 'must_complete'}
+                            onChange={(e) =>
+                              setNewDependency(
+                                (prev) =>
+                                  ({
+                                    ...prev,
+                                    condition: e.target.value as DependencyRule['condition'],
+                                  }) as Partial<DependencyRule>
+                              )
+                            }
+                            className="w-full p-2 border rounded-md bg-background"
+                          >
+                            {newDependency.type === 'completion' && (
+                              <>
+                                <option value="must_complete">Must Complete</option>
+                                <option value="must_not_complete">Must Not Complete</option>
+                              </>
+                            )}
+                            {newDependency.type === 'streak' && (
+                              <>
+                                <option value="streak_greater">Streak Greater Than</option>
+                                <option value="streak_equal">Streak Equal To</option>
+                              </>
+                            )}
+                            {newDependency.type === 'time' && (
+                              <>
+                                <option value="time_before">Complete Before Time</option>
+                                <option value="time_after">Complete After Time</option>
+                              </>
+                            )}
+                            {newDependency.type === 'custom' && (
+                              <option value="custom">Custom Condition</option>
+                            )}
+                          </select>
+                        </div>
+                      </div>
+
+                      {(newDependency.condition === 'streak_greater' ||
+                        newDependency.condition === 'streak_equal') && (
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Streak Value</label>
                           <Input
-                            value={newDependency.description || ''}
+                            type="number"
+                            min="1"
+                            max="365"
+                            value={newDependency.value || ''}
                             onChange={(e) =>
                               setNewDependency((prev) => ({
                                 ...prev,
-                                description: e.target.value,
+                                value: parseInt(e.target.value) || (undefined as any),
                               }))
                             }
-                            placeholder="Describe this dependency rule"
+                            placeholder="Number of days"
                           />
                         </div>
+                      )}
 
-                        <div className="flex items-center space-x-2">
-                          <Switch
-                            checked={newDependency.isActive !== false}
-                            onChange={(checked) =>
+                      {(newDependency.condition === 'time_before' ||
+                        newDependency.condition === 'time_after') && (
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Time</label>
+                          <Input
+                            type="time"
+                            value={newDependency.timeValue || ''}
+                            onChange={(e) =>
                               setNewDependency((prev) => ({
                                 ...prev,
-                                isActive: checked,
+                                timeValue: e.target.value,
                               }))
                             }
-                            label="Active"
                           />
                         </div>
+                      )}
 
-                        <div className="flex space-x-3">
-                          <Button variant="outline" onClick={() => setShowAddForm(false)}>
-                            Cancel
-                          </Button>
-                          <Button
-                            onClick={handleAddDependency}
-                            disabled={!newDependency.sourceHabitId || !newDependency.targetHabitId}
-                          >
-                            Add Dependency
-                          </Button>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">
+                          Description (Optional)
+                        </label>
+                        <Input
+                          value={newDependency.description || ''}
+                          onChange={(e) =>
+                            setNewDependency((prev) => ({
+                              ...prev,
+                              description: e.target.value,
+                            }))
+                          }
+                          placeholder="Describe this dependency rule"
+                        />
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          checked={newDependency.isActive !== false}
+                          onChange={(checked) =>
+                            setNewDependency((prev) => ({
+                              ...prev,
+                              isActive: checked,
+                            }))
+                          }
+                          label="Active"
+                        />
+                      </div>
+
+                      <div className="flex space-x-3">
+                        <Button variant="outline" onClick={() => setShowAddForm(false)}>
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handleAddDependency}
+                          disabled={!newDependency.sourceHabitId || !newDependency.targetHabitId}
+                        >
+                          Add Dependency
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Existing Dependencies */}
@@ -388,11 +380,8 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                         const targetHabit = getHabitById(dependency.targetHabitId);
 
                         return (
-                          <motion.div
+                          <div
                             key={dependency.id}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 20 }}
                             className={cn(
                               'p-4 rounded-lg border transition-colors',
                               dependency.isActive
@@ -449,7 +438,7 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                                 </Button>
                               </div>
                             </div>
-                          </motion.div>
+                          </div>
                         );
                       })}
                     </div>
@@ -468,10 +457,10 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                 )}
               </CardContent>
             </Card>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   );
 };
 

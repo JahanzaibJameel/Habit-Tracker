@@ -1,0 +1,56 @@
+{
+  "entry": [
+    "src/app/**/*.{ts,tsx}",
+    "src/components/**/*.{ts,tsx}",
+    "src/core/**/*.{ts,tsx}",
+    "src/store/**/*.{ts,tsx}",
+    "src/hooks/**/*.{ts,tsx}",
+    "src/lib/**/*.{ts,tsx}",
+    "src/contracts/**/*.{ts,tsx}",
+    "src/types/**/*.{ts,tsx}",
+    "middleware.ts",
+    "instrumentation.ts"
+  ],
+  "project": [
+    "src/**/*.{ts,tsx,js,jsx}",
+    "!**/*.d.ts",
+    "!**/node_modules/**",
+    "!**/.next/**",
+    "!**/dist/**",
+    "!**/build/**"
+  ],
+  "ignoreDependencies": [
+    "@sentry/nextjs",
+    "@next/bundle-analyzer",
+    "instrumentation",
+    "middleware",
+    "next-themes",
+    "zustand",
+    "react",
+    "react-dom",
+    "next"
+  ],
+  "ignore": [
+    "**/*.stories.@(js|jsx|ts|tsx)",
+    "**/*.story.@(js|jsx|ts|tsx)",
+    "**/__tests__/**",
+    "**/*.test.@(js|jsx|ts|tsx)",
+    "**/*.spec.@(js|jsx|ts|tsx)",
+    "**/coverage/**",
+    "**/.nyc_output/**",
+    "**/storybook-static/**",
+    "**/playwright-report/**",
+    "**/test-results/**"
+  ],
+  "rules": {
+    "files": "warn",
+    "dependencies": "warn",
+    "exports": "warn",
+    "types": "warn",
+    "enumMembers": "warn",
+    "duplicates": "warn"
+  },
+  "paths": {
+    "@/*": ["./src/*"]
+  }
+}

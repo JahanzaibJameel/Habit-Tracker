@@ -1,7 +1,7 @@
 /**
  * Unit tests for Storage Engine
  * Tests storage adapters, migrations, and data integrity
- * 
+ *
  * @fileoverview Storage engine tests
  * @version 1.0.0
  * @author Enterprise Frontend Team
@@ -9,7 +9,8 @@
 
 import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import { z } from 'zod';
-import { StorageEngine, createStorageEngine, StorageConfig, StorageBackend } from '../StorageEngine';
+import type { StorageEngine, StorageConfig, StorageBackend } from '../StorageEngine';
+import { createStorageEngine } from '../StorageEngine';
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -191,18 +192,21 @@ describe('StorageEngine', () => {
 
     test('should validate data on retrieval', async () => {
       // Manually store invalid data
-      localStorageMock.setItem('test:test-key', JSON.stringify({
-        data: {
-          _version: 1,
-          _createdAt: new Date().toISOString(),
-          _updatedAt: new Date().toISOString(),
-          id: 'test-1',
-          name: 'Test Item',
-          // Missing 'value' field
-        },
-        version: 1,
-        timestamp: new Date().toISOString(),
-      }));
+      localStorageMock.setItem(
+        'test:test-key',
+        JSON.stringify({
+          data: {
+            _version: 1,
+            _createdAt: new Date().toISOString(),
+            _updatedAt: new Date().toISOString(),
+            id: 'test-1',
+            name: 'Test Item',
+            // Missing 'value' field
+          },
+          version: 1,
+          timestamp: new Date().toISOString(),
+        })
+      );
 
       const result = await storageEngine.get('test-key');
       expect(result.success).toBe(false);
@@ -254,11 +258,14 @@ describe('StorageEngine', () => {
         value: 42,
       };
 
-      localStorageMock.setItem('test:test-key', JSON.stringify({
-        data: v1Data,
-        version: 1,
-        timestamp: new Date().toISOString(),
-      }));
+      localStorageMock.setItem(
+        'test:test-key',
+        JSON.stringify({
+          data: v1Data,
+          version: 1,
+          timestamp: new Date().toISOString(),
+        })
+      );
 
       // Retrieve and migrate
       const result = await migrationEngine.get('test-key');
@@ -297,11 +304,14 @@ describe('StorageEngine', () => {
         value: 42,
       };
 
-      localStorageMock.setItem('test:test-key', JSON.stringify({
-        data: v1Data,
-        version: 1,
-        timestamp: new Date().toISOString(),
-      }));
+      localStorageMock.setItem(
+        'test:test-key',
+        JSON.stringify({
+          data: v1Data,
+          version: 1,
+          timestamp: new Date().toISOString(),
+        })
+      );
 
       const result = await badEngine.get('test-key');
       expect(result.success).toBe(false);
@@ -356,9 +366,12 @@ describe('StorageEngine', () => {
 
     test('should handle missing payload structure', async () => {
       // Store invalid payload
-      localStorageMock.setItem('test:test-key', JSON.stringify({
-        invalid: 'structure',
-      }));
+      localStorageMock.setItem(
+        'test:test-key',
+        JSON.stringify({
+          invalid: 'structure',
+        })
+      );
 
       const result = await storageEngine.get('test-key');
       expect(result.success).toBe(false);
@@ -463,7 +476,7 @@ describe('StorageEngine', () => {
       }
 
       const results = await Promise.all(promises);
-      expect(results.every(r => r.success)).toBe(true);
+      expect(results.every((r) => r.success)).toBe(true);
 
       // Verify all data was stored
       for (let i = 0; i < 10; i++) {
@@ -483,8 +496,8 @@ describe('StorageEngine', () => {
       }
 
       const results = await Promise.all(promises);
-      expect(results.every(r => r.success)).toBe(true);
-      expect(results.every(r => r.data?.id === 'shared')).toBe(true);
+      expect(results.every((r) => r.success)).toBe(true);
+      expect(results.every((r) => r.data?.id === 'shared')).toBe(true);
     });
   });
 });

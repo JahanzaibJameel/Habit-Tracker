@@ -1,13 +1,14 @@
 /**
  * Offline queue for monitoring events
  * Handles event buffering and retry logic when network is unavailable
- * 
+ *
  * @fileoverview Offline event queue with persistence and retry capabilities
  * @version 1.0.0
  * @author Enterprise Frontend Team
  */
 
-import { MonitoringEvent, MonitoringSeverity } from './types';
+import type { MonitoringEvent } from './types';
+import { MonitoringSeverity } from './types';
 
 /**
  * Queue configuration options
@@ -17,12 +18,12 @@ export interface OfflineQueueConfig {
    * Maximum number of events to keep in memory
    */
   maxMemoryEvents: number;
-  
+
   /**
    * Maximum size of persistent storage (in bytes)
    */
   maxStorageSize: number;
-  
+
   /**
    * Retry configuration
    */
@@ -32,12 +33,12 @@ export interface OfflineQueueConfig {
     maxDelay: number; // milliseconds
     backoffFactor: number;
   };
-  
+
   /**
    * Storage key prefix
    */
   storageKey: string;
-  
+
   /**
    * Event retention policy
    */
@@ -45,7 +46,7 @@ export interface OfflineQueueConfig {
     maxAge: number; // milliseconds
     maxCount: number;
   };
-  
+
   /**
    * Compression settings
    */
@@ -87,13 +88,13 @@ export type EventProcessor = (events: MonitoringEvent[]) => Promise<QueueResult>
 
 /**
  * Offline event queue with persistence and retry logic
- * 
+ *
  * @example
  * const queue = new OfflineQueue({
  *   maxMemoryEvents: 1000,
  *   retry: { maxAttempts: 3, baseDelay: 1000, maxDelay: 30000, backoffFactor: 2 }
  * });
- * 
+ *
  * queue.addEvent(event);
  * await queue.flush(processor);
  */
@@ -204,7 +205,7 @@ export class OfflineQueue {
 
     try {
       const allEvents = this.getAllEvents();
-      
+
       if (allEvents.length === 0) {
         return {
           success: true,
@@ -224,7 +225,7 @@ export class OfflineQueue {
           const result = await processor(allEvents);
           totalProcessed += result.processed;
           totalFailed += result.failed;
-          
+
           if (result.error) {
             lastError = result.error;
           }
@@ -288,7 +289,7 @@ export class OfflineQueue {
   getAllEvents(): MonitoringEvent[] {
     const storageEvents = this.getStorageEvents();
     const allEvents = [...storageEvents, ...this.memoryQueue];
-    
+
     // Sort by timestamp
     return allEvents.sort((a, b) => a.timestamp - b.timestamp);
   }
@@ -297,14 +298,14 @@ export class OfflineQueue {
    * Get events by severity
    */
   getEventsBySeverity(severity: MonitoringSeverity): MonitoringEvent[] {
-    return this.getAllEvents().filter(event => event.severity === severity);
+    return this.getAllEvents().filter((event) => event.severity === severity);
   }
 
   /**
    * Get events by category
    */
   getEventsByCategory(category: string): MonitoringEvent[] {
-    return this.getAllEvents().filter(event => event.category === category);
+    return this.getAllEvents().filter((event) => event.category === category);
   }
 
   /**
@@ -322,12 +323,12 @@ export class OfflineQueue {
   clearOldEvents(maxAge: number): number {
     const cutoff = Date.now() - maxAge;
     const allEvents = this.getAllEvents();
-    const oldEvents = allEvents.filter(event => event.timestamp < cutoff);
-    
+    const oldEvents = allEvents.filter((event) => event.timestamp < cutoff);
+
     if (oldEvents.length > 0) {
-      this.removeEventsByIds(oldEvents.map(e => e.id));
+      this.removeEventsByIds(oldEvents.map((e) => e.id));
     }
-    
+
     return oldEvents.length;
   }
 
@@ -336,7 +337,7 @@ export class OfflineQueue {
    */
   async retryFailedEvents(): Promise<QueueResult> {
     const failedEvents = this.getEventsBySeverity(MonitoringSeverity.ERROR);
-    
+
     if (failedEvents.length === 0) {
       return {
         success: true,
@@ -356,7 +357,7 @@ export class OfflineQueue {
     this.stats.retryAttempts++;
 
     // Wait for delay
-    await new Promise(resolve => setTimeout(resolve, delay));
+    await new Promise((resolve) => setTimeout(resolve, delay));
 
     // Attempt to flush
     return this.flush();
@@ -367,12 +368,16 @@ export class OfflineQueue {
    */
   exportEvents(): string {
     const events = this.getAllEvents();
-    return JSON.stringify({
-      exportTime: Date.now(),
-      config: this.config,
-      stats: this.stats,
-      events,
-    }, null, 2);
+    return JSON.stringify(
+      {
+        exportTime: Date.now(),
+        config: this.config,
+        stats: this.stats,
+        events,
+      },
+      null,
+      2
+    );
   }
 
   /**
@@ -421,24 +426,27 @@ export class OfflineQueue {
     try {
       const existingEvents = this.getStorageEvents();
       const allEvents = [...existingEvents, ...events];
-      
+
       // Apply retention policy
       const filteredEvents = this.applyRetentionPolicy(allEvents);
-      
+
       // Compress if enabled and large enough
       let dataToStore = JSON.stringify(filteredEvents);
-      if (this.config.compression.enabled && dataToStore.length > this.config.compression.threshold) {
+      if (
+        this.config.compression.enabled &&
+        dataToStore.length > this.config.compression.threshold
+      ) {
         // Simple compression - in a real implementation, use a proper compression library
         dataToStore = this.compressData(dataToStore);
       }
-      
+
       // Check storage size limit
       if (dataToStore.length > this.config.maxStorageSize) {
         // Remove oldest events to fit
         const eventsToFit = this.fitToStorageSize(filteredEvents, dataToStore.length);
         dataToStore = JSON.stringify(eventsToFit);
       }
-      
+
       localStorage.setItem(this.config.storageKey, dataToStore);
       this.stats.storageEvents = filteredEvents.length;
     } catch (error) {
@@ -452,15 +460,17 @@ export class OfflineQueue {
   private getStorageEvents(): MonitoringEvent[] {
     try {
       const stored = localStorage.getItem(this.config.storageKey);
-      if (!stored) return [];
+      if (!stored) {
+        return [];
+      }
 
       let data = stored;
-      
+
       // Decompress if needed
       if (this.config.compression.enabled && this.isCompressedData(stored)) {
         data = this.decompressData(stored);
       }
-      
+
       const events = JSON.parse(data);
       return Array.isArray(events) ? events : [];
     } catch (error) {
@@ -499,14 +509,14 @@ export class OfflineQueue {
   private applyRetentionPolicy(events: MonitoringEvent[]): MonitoringEvent[] {
     const now = Date.now();
     const cutoff = now - this.config.retention.maxAge;
-    
-    let filtered = events.filter(event => event.timestamp > cutoff);
-    
+
+    let filtered = events.filter((event) => event.timestamp > cutoff);
+
     // Limit by count
     if (filtered.length > this.config.retention.maxCount) {
       filtered = filtered.slice(-this.config.retention.maxCount);
     }
-    
+
     return filtered;
   }
 
@@ -517,16 +527,16 @@ export class OfflineQueue {
     if (currentSize <= this.config.maxStorageSize) {
       return events;
     }
-    
+
     // Remove oldest events until size fits
-    let filtered = [...events];
+    const filtered = [...events];
     let size = currentSize;
-    
+
     while (filtered.length > 0 && size > this.config.maxStorageSize) {
       filtered.shift();
       size = JSON.stringify(filtered).length;
     }
-    
+
     return filtered;
   }
 
@@ -537,7 +547,7 @@ export class OfflineQueue {
     // Remove from memory queue first
     const memoryRemoved = Math.min(count, this.memoryQueue.length);
     this.memoryQueue.splice(0, memoryRemoved);
-    
+
     // Remove from storage if needed
     if (count > memoryRemoved) {
       const storageEvents = this.getStorageEvents();
@@ -545,7 +555,7 @@ export class OfflineQueue {
       const remainingStorage = storageEvents.slice(storageRemoved);
       this.storeEvents(remainingStorage);
     }
-    
+
     this.updateStats();
   }
 
@@ -554,13 +564,13 @@ export class OfflineQueue {
    */
   private removeEventsByIds(ids: string[]): void {
     // Remove from memory
-    this.memoryQueue = this.memoryQueue.filter(event => !ids.includes(event.id));
-    
+    this.memoryQueue = this.memoryQueue.filter((event) => !ids.includes(event.id));
+
     // Remove from storage
     const storageEvents = this.getStorageEvents();
-    const remainingStorage = storageEvents.filter(event => !ids.includes(event.id));
+    const remainingStorage = storageEvents.filter((event) => !ids.includes(event.id));
     this.storeEvents(remainingStorage);
-    
+
     this.updateStats();
   }
 
@@ -577,10 +587,10 @@ export class OfflineQueue {
   private updateStats(): void {
     this.stats.memoryEvents = this.memoryQueue.length;
     this.stats.storageEvents = this.getStorageEvents().length;
-    
+
     const allEvents = this.getAllEvents();
     this.stats.queueSize = JSON.stringify(allEvents).length;
-    
+
     if (allEvents.length > 0) {
       const oldestEvent = allEvents[0];
       if (oldestEvent) {
@@ -612,9 +622,12 @@ export class OfflineQueue {
    */
   private startRetentionCleanup(): void {
     // Run cleanup every hour
-    setInterval(() => {
-      this.clearOldEvents(this.config.retention.maxAge);
-    }, 60 * 60 * 1000);
+    setInterval(
+      () => {
+        this.clearOldEvents(this.config.retention.maxAge);
+      },
+      60 * 60 * 1000
+    );
   }
 
   /**
@@ -662,8 +675,8 @@ export class OfflineQueue {
 
     // Purge from memory queue
     const initialMemoryCount = this.memoryQueue.length;
-    this.memoryQueue = this.memoryQueue.filter(event => 
-      !event.context?.userId || event.context.userId !== userId
+    this.memoryQueue = this.memoryQueue.filter(
+      (event) => !event.context?.userId || event.context.userId !== userId
     );
     purgedCount += initialMemoryCount - this.memoryQueue.length;
 
@@ -671,19 +684,19 @@ export class OfflineQueue {
     try {
       const storedData = localStorage.getItem(this.config.storageKey);
       if (storedData) {
-        const decompressed = this.isCompressedData(storedData) 
-          ? this.decompressData(storedData) 
+        const decompressed = this.isCompressedData(storedData)
+          ? this.decompressData(storedData)
           : storedData;
-        
+
         const allEvents: MonitoringEvent[] = JSON.parse(decompressed);
         const initialStoredCount = allEvents.length;
-        
-        const filteredEvents = allEvents.filter(event => 
-          !event.context?.userId || event.context.userId !== userId
+
+        const filteredEvents = allEvents.filter(
+          (event) => !event.context?.userId || event.context.userId !== userId
         );
-        
+
         purgedCount += initialStoredCount - filteredEvents.length;
-        
+
         // Save filtered events back to storage
         const serialized = JSON.stringify(filteredEvents);
         const compressed = this.compressData(serialized);

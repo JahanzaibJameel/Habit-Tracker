@@ -1,13 +1,14 @@
 /**
  * Error fallback components for different environments
  * Provides production and development specific error displays
- * 
+ *
  * @fileoverview Error fallback components with recovery options
  * @version 1.0.0
  * @author Enterprise Frontend Team
  */
 
-import React, { ComponentType, ReactNode } from 'react';
+import type { ComponentType } from 'react';
+import React, { ReactNode } from 'react';
 
 /**
  * Error fallback props
@@ -17,42 +18,42 @@ export interface ErrorFallbackProps {
    * The error that occurred
    */
   error: Error;
-  
+
   /**
    * Additional error information from React
    */
   errorInfo?: React.ErrorInfo;
-  
+
   /**
    * Unique identifier for the boundary
    */
   boundaryId: string;
-  
+
   /**
    * Function to attempt recovery
    */
   onRetry?: () => void;
-  
+
   /**
    * Function to reset the boundary
    */
   onReset?: () => void;
-  
+
   /**
    * Recovery strategy to use
    */
   strategy?: ErrorRecoveryStrategy;
-  
+
   /**
    * Component name that failed
    */
   componentName?: string;
-  
+
   /**
    * Error severity level
    */
   severity?: 'low' | 'medium' | 'high' | 'critical';
-  
+
   /**
    * Whether this is in development mode
    */
@@ -66,10 +67,10 @@ export type ErrorRecoveryStrategy = 'retry' | 'reset' | 'fallback' | 'ignore';
 
 /**
  * Production fallback component - minimal and user-friendly
- * 
+ *
  * @example
- * <ProductionFallback 
- *   error={error} 
+ * <ProductionFallback
+ *   error={error}
  *   boundaryId="user-profile"
  *   onRetry={() => console.log('retry')}
  * />
@@ -125,7 +126,7 @@ export const ProductionFallback: ComponentType<ErrorFallbackProps> = ({
   };
 
   return (
-    <div 
+    <div
       className="error-fallback error-fallback-production"
       role="alert"
       aria-live="polite"
@@ -150,23 +151,15 @@ export const ProductionFallback: ComponentType<ErrorFallbackProps> = ({
             />
           </svg>
         </div>
-        
+
         <div className="error-fallback-message">
-          <h3 className="error-fallback-title">
-            Something went wrong
-          </h3>
-          <p className="error-fallback-description">
-            {getErrorMessage()}
-          </p>
+          <h3 className="error-fallback-title">Something went wrong</h3>
+          <p className="error-fallback-description">{getErrorMessage()}</p>
         </div>
-        
-        {getActionButton() && (
-          <div className="error-fallback-actions">
-            {getActionButton()}
-          </div>
-        )}
+
+        {getActionButton() && <div className="error-fallback-actions">{getActionButton()}</div>}
       </div>
-      
+
       <style jsx>{`
         .error-fallback {
           padding: 16px;
@@ -177,38 +170,38 @@ export const ProductionFallback: ComponentType<ErrorFallbackProps> = ({
           max-width: 400px;
           margin: 16px 0;
         }
-        
+
         .error-fallback-content {
           display: flex;
           align-items: flex-start;
           gap: 12px;
         }
-        
+
         .error-fallback-icon {
           flex-shrink: 0;
           margin-top: 2px;
         }
-        
+
         .error-fallback-message {
           flex: 1;
         }
-        
+
         .error-fallback-title {
           margin: 0 0 8px 0;
           font-size: 16px;
           font-weight: 600;
         }
-        
+
         .error-fallback-description {
           margin: 0;
           font-size: 14px;
           line-height: 1.5;
         }
-        
+
         .error-fallback-actions {
           margin-top: 12px;
         }
-        
+
         .error-fallback-button {
           padding: 8px 16px;
           border: 1px solid #991b1b;
@@ -219,11 +212,11 @@ export const ProductionFallback: ComponentType<ErrorFallbackProps> = ({
           cursor: pointer;
           transition: background-color 0.2s;
         }
-        
+
         .error-fallback-button:hover {
           background-color: #7f1d1d;
         }
-        
+
         .error-fallback-button:focus {
           outline: 2px solid #991b1b;
           outline-offset: 2px;
@@ -235,10 +228,10 @@ export const ProductionFallback: ComponentType<ErrorFallbackProps> = ({
 
 /**
  * Development fallback component - detailed debugging information
- * 
+ *
  * @example
- * <DevFallback 
- *   error={error} 
+ * <DevFallback
+ *   error={error}
  *   errorInfo={errorInfo}
  *   boundaryId="user-profile"
  *   componentName="UserProfile"
@@ -265,9 +258,11 @@ export const DevFallback: ComponentType<ErrorFallbackProps> = ({
         message: error.message,
         stack: error.stack,
       },
-      errorInfo: errorInfo ? {
-        componentStack: errorInfo.componentStack,
-      } : undefined,
+      errorInfo: errorInfo
+        ? {
+            componentStack: errorInfo.componentStack,
+          }
+        : undefined,
       boundaryId,
       componentName,
       severity,
@@ -286,7 +281,7 @@ export const DevFallback: ComponentType<ErrorFallbackProps> = ({
   };
 
   return (
-    <div 
+    <div
       className="error-fallback error-fallback-development"
       role="alert"
       aria-live="polite"
@@ -299,11 +294,9 @@ export const DevFallback: ComponentType<ErrorFallbackProps> = ({
           <h3 className="error-fallback-title">
             {componentName ? `${componentName} Error` : 'Component Error'}
           </h3>
-          <span className="error-fallback-severity">
-            {severity.toUpperCase()}
-          </span>
+          <span className="error-fallback-severity">{severity.toUpperCase()}</span>
         </div>
-        
+
         <div className="error-fallback-actions">
           {strategy === 'retry' && onRetry && (
             <button
@@ -353,24 +346,16 @@ export const DevFallback: ComponentType<ErrorFallbackProps> = ({
       </div>
 
       {showDetails && (
-        <div 
-          id="error-details"
-          className="error-fallback-details"
-          aria-hidden={!showDetails}
-        >
+        <div id="error-details" className="error-fallback-details" aria-hidden={!showDetails}>
           <div className="error-fallback-section">
             <h4>Error Stack</h4>
-            <pre className="error-fallback-stack">
-              {error.stack || 'No stack trace available'}
-            </pre>
+            <pre className="error-fallback-stack">{error.stack || 'No stack trace available'}</pre>
           </div>
 
           {errorInfo?.componentStack && (
             <div className="error-fallback-section">
               <h4>Component Stack</h4>
-              <pre className="error-fallback-stack">
-                {errorInfo.componentStack}
-              </pre>
+              <pre className="error-fallback-stack">{errorInfo.componentStack}</pre>
             </div>
           )}
 
@@ -388,9 +373,7 @@ export const DevFallback: ComponentType<ErrorFallbackProps> = ({
               <dt>URL:</dt>
               <dd>{window.location.href}</dd>
               <dt>User Agent:</dt>
-              <dd className="error-fallback-user-agent">
-                {navigator.userAgent}
-              </dd>
+              <dd className="error-fallback-user-agent">{navigator.userAgent}</dd>
             </dl>
           </div>
         </div>
@@ -537,9 +520,9 @@ export const DevFallback: ComponentType<ErrorFallbackProps> = ({
  */
 export const AdaptiveFallback: ComponentType<ErrorFallbackProps> = (props) => {
   const isDevelopment = process.env.NODE_ENV === 'development';
-  
+
   const FallbackComponent = isDevelopment ? DevFallback : ProductionFallback;
-  
+
   return <FallbackComponent {...props} isDevelopment={isDevelopment} />;
 };
 
@@ -555,15 +538,11 @@ export const MinimalFallback: ComponentType<ErrorFallbackProps> = ({
       <span className="error-fallback-icon">!</span>
       <span className="error-fallback-text">Failed to load</span>
       {strategy === 'retry' && onRetry && (
-        <button
-          onClick={onRetry}
-          className="error-fallback-minimal-button"
-          aria-label="Retry"
-        >
+        <button onClick={onRetry} className="error-fallback-minimal-button" aria-label="Retry">
           Retry
         </button>
       )}
-      
+
       <style jsx>{`
         .error-fallback-minimal {
           display: inline-flex;
@@ -607,10 +586,7 @@ export const MinimalFallback: ComponentType<ErrorFallbackProps> = ({
 /**
  * Fallback for async operations (loading states, promises, etc.)
  */
-export const AsyncFallback: ComponentType<ErrorFallbackProps> = ({
-  error,
-  onRetry,
-}) => {
+export const AsyncFallback: ComponentType<ErrorFallbackProps> = ({ error, onRetry }) => {
   return (
     <div className="error-fallback-async" role="alert" aria-live="polite">
       <div className="error-fallback-async-content">
@@ -631,16 +607,14 @@ export const AsyncFallback: ComponentType<ErrorFallbackProps> = ({
             />
           </svg>
         </div>
-        
+
         <div className="error-fallback-async-message">
-          <p className="error-fallback-async-title">
-            Operation failed
-          </p>
+          <p className="error-fallback-async-title">Operation failed</p>
           <p className="error-fallback-async-description">
             {error.message || 'An async operation failed to complete.'}
           </p>
         </div>
-        
+
         {onRetry && (
           <button
             onClick={onRetry}
@@ -651,7 +625,7 @@ export const AsyncFallback: ComponentType<ErrorFallbackProps> = ({
           </button>
         )}
       </div>
-      
+
       <style jsx>{`
         .error-fallback-async {
           padding: 12px;

@@ -39,7 +39,9 @@ export const getTodayCompletions = (completions: HabitCompletion[]): HabitComple
 
 // Calculate streak (timezone-safe and robust)
 export const calculateStreak = (completions: HabitCompletion[]): number => {
-  if (completions.length === 0) return 0;
+  if (completions.length === 0) {
+    return 0;
+  }
 
   // Sort completions by date (newest first)
   const sortedCompletions = completions
@@ -93,7 +95,9 @@ export const calculateCompletionRate = (
     expectedCompletions = Math.ceil(daysSinceCreation / 30);
   }
 
-  if (expectedCompletions <= 0) return 0;
+  if (expectedCompletions <= 0) {
+    return 0;
+  }
 
   // Count unique days with completions
   const uniqueDays = new Set(

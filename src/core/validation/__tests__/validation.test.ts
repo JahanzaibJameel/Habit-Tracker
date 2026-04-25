@@ -1,7 +1,7 @@
 /**
  * Comprehensive unit tests for validation system
  * Tests schema validation, fetcher, and form hook functionality
- * 
+ *
  * @fileoverview Complete validation system tests
  * @version 1.0.0
  * @author Enterprise Frontend Team
@@ -89,7 +89,9 @@ describe('ValidationError', () => {
       schema: 'UserSchema',
     });
 
-    expect(errorWithPath.toUserMessage()).toBe('Invalid value for "user.email": Invalid email format');
+    expect(errorWithPath.toUserMessage()).toBe(
+      'Invalid value for "user.email": Invalid email format'
+    );
 
     const errorWithoutPath = new ValidationError({
       message: 'General validation error',
@@ -133,8 +135,11 @@ describe('ValidationErrorFactory', () => {
     try {
       schema.parse('invalid-email');
     } catch (zodError) {
-      const validationError = ValidationErrorFactory.fromZodError(zodError as z.ZodError, 'EmailSchema');
-      
+      const validationError = ValidationErrorFactory.fromZodError(
+        zodError as z.ZodError,
+        'EmailSchema'
+      );
+
       expect(validationError).toBeInstanceOf(ValidationError);
       expect(validationError.code).toBe('ZOD_VALIDATION_ERROR');
       expect(validationError.schema).toBe('EmailSchema');
@@ -225,7 +230,9 @@ describe('RecoverableValidationError', () => {
     expect(nextRetry.recovery.currentRetry).toBe(2);
     expect(nextRetry.canRetry()).toBe(false);
 
-    expect(() => nextRetry.createRetry()).toThrow('Cannot retry: max retries exceeded or retry not allowed');
+    expect(() => nextRetry.createRetry()).toThrow(
+      'Cannot retry: max retries exceeded or retry not allowed'
+    );
   });
 });
 
@@ -250,7 +257,7 @@ describe('safeFetchJson', () => {
       expect.objectContaining({
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          Accept: 'application/json',
         },
       })
     );
@@ -282,9 +289,9 @@ describe('safeFetchJson', () => {
       json: async () => ({ id: '123', email: 'invalid-email' }),
     });
 
-    await expect(
-      safeFetchJson('https://api.example.com/user/123', UserSchema)
-    ).rejects.toThrow(ValidationError);
+    await expect(safeFetchJson('https://api.example.com/user/123', UserSchema)).rejects.toThrow(
+      ValidationError
+    );
   });
 
   test('should handle HTTP error status', async () => {
@@ -295,9 +302,9 @@ describe('safeFetchJson', () => {
       json: async () => ({}),
     });
 
-    await expect(
-      safeFetchJson('https://api.example.com/user/123', UserSchema)
-    ).rejects.toThrow(NetworkValidationError);
+    await expect(safeFetchJson('https://api.example.com/user/123', UserSchema)).rejects.toThrow(
+      NetworkValidationError
+    );
   });
 
   test('should handle timeout', async () => {
@@ -317,9 +324,9 @@ describe('safeFetchJson', () => {
       },
     });
 
-    await expect(
-      safeFetchJson('https://api.example.com/user/123', UserSchema)
-    ).rejects.toThrow(NetworkValidationError);
+    await expect(safeFetchJson('https://api.example.com/user/123', UserSchema)).rejects.toThrow(
+      NetworkValidationError
+    );
   });
 });
 
@@ -330,17 +337,14 @@ describe('safeFetchApiResponse', () => {
       data: { id: '123', email: 'test@example.com' },
       meta: { timestamp: '2023-01-01T00:00:00.000Z' },
     };
-    
+
     mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
       json: async () => mockResponse,
     });
 
-    const result = await safeFetchApiResponse(
-      'https://api.example.com/user/123',
-      UserSchema
-    );
+    const result = await safeFetchApiResponse('https://api.example.com/user/123', UserSchema);
 
     expect(result.success).toBe(true);
     expect(result.data).toEqual({ id: '123', email: 'test@example.com' });
@@ -352,17 +356,14 @@ describe('safeFetchApiResponse', () => {
       error: { code: 'NOT_FOUND', message: 'User not found' },
       meta: { timestamp: '2023-01-01T00:00:00.000Z' },
     };
-    
+
     mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 404,
       json: async () => mockResponse,
     });
 
-    const result = await safeFetchApiResponse(
-      'https://api.example.com/user/123',
-      UserSchema
-    );
+    const result = await safeFetchApiResponse('https://api.example.com/user/123', UserSchema);
 
     expect(result.success).toBe(false);
     expect(result.error).toEqual({ code: 'NOT_FOUND', message: 'User not found' });
@@ -373,7 +374,7 @@ describe('safeFetchBatch', () => {
   test('should fetch multiple requests in parallel', async () => {
     const mockUser = { id: '123', email: 'test@example.com' };
     const mockSettings = { _version: 1, featureFlags: { darkMode: true } };
-    
+
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
@@ -400,9 +401,7 @@ describe('safeFetchBatch', () => {
   test('should fail fast on first error', async () => {
     mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
-    const requests = [
-      { input: 'https://api.example.com/user/123', schema: UserSchema },
-    ];
+    const requests = [{ input: 'https://api.example.com/user/123', schema: UserSchema }];
 
     await expect(safeFetchBatch(requests)).rejects.toThrow('Network error');
   });
@@ -411,7 +410,7 @@ describe('safeFetchBatch', () => {
 describe('safeFetchCached', () => {
   test('should return cached data on second call', async () => {
     const mockData = { id: '123', email: 'test@example.com' };
-    
+
     mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
@@ -432,7 +431,7 @@ describe('safeFetchCached', () => {
   test('should invalidate cache on validation error', async () => {
     const invalidData = { id: '123', email: 'invalid-email' };
     const validData = { id: '123', email: 'test@example.com' };
-    
+
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
@@ -446,9 +445,9 @@ describe('safeFetchCached', () => {
       });
 
     // First call fails validation
-    await expect(
-      safeFetchCached('https://api.example.com/user/123', UserSchema)
-    ).rejects.toThrow(ValidationError);
+    await expect(safeFetchCached('https://api.example.com/user/123', UserSchema)).rejects.toThrow(
+      ValidationError
+    );
 
     // Second call should fetch fresh data
     const result = await safeFetchCached('https://api.example.com/user/123', UserSchema);
@@ -493,7 +492,7 @@ describe('FormValidationRules', () => {
     } catch (error) {
       if (error instanceof z.ZodError) {
         const formatted = FormValidationRules.formatError(error, {
-          'email': 'Please enter a valid email address',
+          email: 'Please enter a valid email address',
         });
 
         expect(formatted.email).toBe('Please enter a valid email address');
@@ -510,7 +509,7 @@ describe('React Hook Testing (Mock)', () => {
   test('useSafeField should have correct interface', () => {
     // This test verifies the hook interface exists and has expected properties
     expect(typeof useSafeField).toBe('function');
-    
+
     // The hook should return an object with these properties
     const expectedReturn = {
       value: expect.anything(),
@@ -528,7 +527,7 @@ describe('React Hook Testing (Mock)', () => {
 
   test('useSafeForm should have correct interface', () => {
     expect(typeof useSafeForm).toBe('function');
-    
+
     // The hook should return an object with these properties
     const expectedReturn = {
       form: expect.anything(),
@@ -548,9 +547,9 @@ describe('Edge Cases and Error Handling', () => {
       json: async () => 'not json',
     });
 
-    await expect(
-      safeFetchJson('https://api.example.com/user/123', UserSchema)
-    ).rejects.toThrow(NetworkValidationError);
+    await expect(safeFetchJson('https://api.example.com/user/123', UserSchema)).rejects.toThrow(
+      NetworkValidationError
+    );
   });
 
   test('should handle null response body', async () => {
@@ -580,7 +579,7 @@ describe('Edge Cases and Error Handling', () => {
 
     await safeFetchJson('https://api.example.com/user/123', UserSchema, {
       headers: {
-        'Authorization': 'Bearer token123',
+        Authorization: 'Bearer token123',
         'X-Custom-Header': 'custom-value',
       },
     });
@@ -590,8 +589,8 @@ describe('Edge Cases and Error Handling', () => {
       expect.objectContaining({
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer token123',
+          Accept: 'application/json',
+          Authorization: 'Bearer token123',
           'X-Custom-Header': 'custom-value',
         },
       })

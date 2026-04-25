@@ -83,7 +83,9 @@ export function useLocalStorage() {
   const { isClient, localStorage } = useSafeClientAPI();
 
   const getItem = (key: string): string | null => {
-    if (!isClient || !localStorage) return null;
+    if (!isClient || !localStorage) {
+      return null;
+    }
     try {
       return localStorage.getItem(key);
     } catch (error) {
@@ -93,7 +95,9 @@ export function useLocalStorage() {
   };
 
   const setItem = (key: string, value: string): boolean => {
-    if (!isClient || !localStorage) return false;
+    if (!isClient || !localStorage) {
+      return false;
+    }
     try {
       localStorage.setItem(key, value);
       return true;
@@ -104,7 +108,9 @@ export function useLocalStorage() {
   };
 
   const removeItem = (key: string): boolean => {
-    if (!isClient || !localStorage) return false;
+    if (!isClient || !localStorage) {
+      return false;
+    }
     try {
       localStorage.removeItem(key);
       return true;

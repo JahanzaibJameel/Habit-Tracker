@@ -1,7 +1,7 @@
 /**
  * Storage system type definitions
  * Provides comprehensive interfaces for storage backends and migrations
- * 
+ *
  * @fileoverview Storage system types and interfaces
  * @version 1.0.0
  * @author Enterprise Frontend Team
@@ -35,7 +35,12 @@ export interface StorageResult<T> {
 /**
  * Migration function type for transforming data
  */
-export type MigrationFunction<T> = (oldData: unknown, fromVersion: number, toVersion: number, context?: MigrationContext) => T;
+export type MigrationFunction<T> = (
+  oldData: unknown,
+  fromVersion: number,
+  toVersion: number,
+  context?: MigrationContext
+) => T;
 
 /**
  * Migration context provides additional information during migration
@@ -68,67 +73,67 @@ export interface StorageConfig {
    * Default backend to use
    */
   backend: StorageBackend;
-  
+
   /**
    * Namespace prefix for all keys
    */
   namespace: string;
-  
+
   /**
    * Default TTL for items in milliseconds (0 = no expiration)
    */
   defaultTtl?: number;
-  
+
   /**
    * Maximum storage size in bytes (0 = unlimited)
    */
   maxSize?: number;
-  
+
   /**
    * Enable compression for large items
    */
   compression?: boolean;
-  
+
   /**
    * Compression threshold in bytes
    */
   compressionThreshold?: number;
-  
+
   /**
    * Enable encryption for sensitive data
    */
   encryption?: boolean;
-  
+
   /**
    * Encryption key (required if encryption enabled)
    */
   encryptionKey?: string;
-  
+
   /**
    * Enable automatic cleanup of expired items
    */
   autoCleanup?: boolean;
-  
+
   /**
    * Cleanup interval in milliseconds
    */
   cleanupInterval?: number;
-  
+
   /**
    * Error handling strategy
    */
   errorHandling?: 'throw' | 'log' | 'silent';
-  
+
   /**
    * Migration strategy
    */
   migrationStrategy?: 'auto' | 'manual' | 'prompt';
-  
+
   /**
    * Enable cross-tab synchronization
    */
   crossTabSync?: boolean;
-  
+
   /**
    * IndexedDB configuration
    */
@@ -186,7 +191,13 @@ export interface StorageQuota {
 /**
  * Storage event types
  */
-export type StorageEventType = 'set' | 'remove' | 'clear' | 'migrate' | 'cleanup' | 'quota_exceeded';
+export type StorageEventType =
+  | 'set'
+  | 'remove'
+  | 'clear'
+  | 'migrate'
+  | 'cleanup'
+  | 'quota_exceeded';
 
 /**
  * Storage event payload
@@ -315,30 +326,42 @@ export const StorageConfigSchema = z.object({
   errorHandling: z.enum(['throw', 'log', 'silent']).optional(),
   migrationStrategy: z.enum(['auto', 'manual', 'prompt']).optional(),
   crossTabSync: z.boolean().optional(),
-  indexedDB: z.object({
-    databaseName: z.string(),
-    version: z.number().positive(),
-    storeName: z.string(),
-  }).optional(),
+  indexedDB: z
+    .object({
+      databaseName: z.string(),
+      version: z.number().positive(),
+      storeName: z.string(),
+    })
+    .optional(),
 });
 
 /**
  * Type guards and utilities
  */
 export function isStorageBackend(value: unknown): value is StorageBackend {
-  return typeof value === 'string' && 
-         ['localStorage', 'sessionStorage', 'indexedDB'].includes(value);
+  return (
+    typeof value === 'string' && ['localStorage', 'sessionStorage', 'indexedDB'].includes(value)
+  );
 }
 
 export function isValidStorageResult<T>(result: unknown): result is StorageResult<T> {
-  return typeof result === 'object' && result !== null &&
-         'success' in result && typeof (result as any).success === 'boolean';
+  return (
+    typeof result === 'object' &&
+    result !== null &&
+    'success' in result &&
+    typeof (result as any).success === 'boolean'
+  );
 }
 
 export function isStorageEvent<T>(event: unknown): event is StorageEvent<T> {
-  return typeof event === 'object' && event !== null &&
-         'type' in event && 'key' in event && 'backend' in event &&
-         'timestamp' in event;
+  return (
+    typeof event === 'object' &&
+    event !== null &&
+    'type' in event &&
+    'key' in event &&
+    'backend' in event &&
+    'timestamp' in event
+  );
 }
 
 /**

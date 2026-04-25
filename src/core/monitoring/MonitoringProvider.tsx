@@ -1,19 +1,18 @@
 /**
  * Monitoring provider component for React applications
  * Provides monitoring context and automatic error tracking
- * 
+ *
  * @fileoverview React monitoring provider with context and error boundaries
  * @version 1.0.0
  * @author Enterprise Frontend Team
  */
 
-import React, { Component, ReactNode, ErrorInfo, createContext, useContext } from 'react';
-import type { ComponentType } from 'react';
-import { MonitoringService } from './MonitoringService';
-import { OfflineQueue } from './OfflineQueue';
-import { MonitoringEvent, MonitoringSeverity } from './types';
-import type { MonitoringContext } from './types';
-
+import React, { Component, createContext, useContext } from 'react';
+import type { ComponentType, ReactNode, ErrorInfo } from 'react';
+import type { MonitoringService } from './MonitoringService';
+import type { OfflineQueue } from './OfflineQueue';
+import { MonitoringSeverity } from './types';
+import type { MonitoringContext, MonitoringEvent } from './types';
 
 /**
  * Monitoring provider configuration
@@ -23,37 +22,37 @@ export interface MonitoringProviderConfig {
    * Monitoring service instance
    */
   service: MonitoringService;
-  
+
   /**
    * Offline queue instance
    */
   offlineQueue?: OfflineQueue;
-  
+
   /**
    * Enable automatic error tracking
    */
   trackErrors?: boolean;
-  
+
   /**
    * Enable performance monitoring
    */
   trackPerformance?: boolean;
-  
+
   /**
    * Enable user interaction tracking
    */
   trackUserActions?: boolean;
-  
+
   /**
    * Custom error boundary fallback component
    */
   errorFallback?: ComponentType<ErrorBoundaryFallbackProps>;
-  
+
   /**
    * Sampling rate for events (0-1)
    */
   samplingRate?: number;
-  
+
   /**
    * Enable debug mode
    */
@@ -80,47 +79,47 @@ export interface MonitoringContextValue {
    * Monitoring service instance
    */
   service: MonitoringService;
-  
+
   /**
    * Offline queue instance
    */
   offlineQueue?: OfflineQueue;
-  
+
   /**
    * Track an event manually
    */
   trackEvent: (event: Partial<MonitoringEvent>) => void;
-  
+
   /**
    * Track an error
    */
   trackError: (error: Error, context?: Record<string, unknown>) => void;
-  
+
   /**
    * Track performance metrics
    */
   trackPerformance: (name: string, value: number, context?: Record<string, unknown>) => void;
-  
+
   /**
    * Track user action
    */
   trackUserAction: (action: string, context?: Record<string, unknown>) => void;
-  
+
   /**
    * Get monitoring statistics
    */
   getStats: () => any;
-  
+
   /**
    * Enable/disable monitoring
    */
   setEnabled: (enabled: boolean) => void;
-  
+
   /**
    * Purge all user data (DSR compliance)
    */
   purgeUserData: (userId?: string) => Promise<DSRRResult>;
-  
+
   /**
    * Get user data summary (for DSR requests)
    */
@@ -130,7 +129,7 @@ export interface MonitoringContextValue {
     offlineQueueCount: number;
     dataTypes: string[];
   }>;
-  
+
   /**
    * Export user data (for DSR portability requests)
    */
@@ -139,12 +138,12 @@ export interface MonitoringContextValue {
     storage: Record<string, unknown>;
     metadata: Record<string, unknown>;
   }>;
-  
+
   /**
    * Check if user consent is given for monitoring
    */
   hasUserConsent: () => boolean;
-  
+
   /**
    * Set user consent for monitoring
    */
@@ -183,9 +182,7 @@ const DefaultErrorFallback: ComponentType<ErrorBoundaryFallbackProps> = ({
     <p>An error occurred and has been reported to our monitoring system.</p>
     <details style={{ marginTop: '10px' }}>
       <summary>Error details</summary>
-      <pre style={{ fontSize: '12px', marginTop: '10px' }}>
-        {error.stack || error.message}
-      </pre>
+      <pre style={{ fontSize: '12px', marginTop: '10px' }}>{error.stack || error.message}</pre>
     </details>
     <div style={{ marginTop: '15px' }}>
       {onRetry && (
@@ -241,7 +238,7 @@ export function useMonitoring(): MonitoringContextValue {
 
 /**
  * Monitoring provider component
- * 
+ *
  * @example
  * <MonitoringProvider service={monitoringService}>
  *   <App />
@@ -251,7 +248,7 @@ export class MonitoringProvider extends Component<
   MonitoringProviderConfig & { children: ReactNode }
 > {
   public static contextType = MonitoringContext;
-  
+
   private isEnabled = true;
   private performanceObserver?: PerformanceObserver;
   private clickHandler?: (event: MouseEvent) => void;
@@ -261,10 +258,10 @@ export class MonitoringProvider extends Component<
 
   constructor(props: MonitoringProviderConfig & { children: ReactNode }) {
     super(props);
-    
+
     // Initialize monitoring
     this.initializeMonitoring();
-    
+
     // Set up global error handlers
     this.setupGlobalHandlers();
   }
@@ -274,7 +271,7 @@ export class MonitoringProvider extends Component<
     if (this.props.trackPerformance) {
       this.startPerformanceMonitoring();
     }
-    
+
     // Start user action tracking if enabled
     if (this.props.trackUserActions) {
       this.startUserActionTracking();
@@ -297,17 +294,15 @@ export class MonitoringProvider extends Component<
 
   private initializeMonitoring(): void {
     const { service, offlineQueue, samplingRate = 1.0 } = this.props;
-    
+
     // Set up offline queue if provided
     if (offlineQueue) {
       offlineQueue.addProcessor(async (events) => {
-        const results = await Promise.all(
-          events.map(event => service.trackEvent(event))
-        );
-        
-        const processed = results.filter(r => r.success).length;
+        const results = await Promise.all(events.map((event) => service.trackEvent(event)));
+
+        const processed = results.filter((r) => r.success).length;
         const failed = results.length - processed;
-        
+
         return {
           success: failed === 0,
           processed,
@@ -327,9 +322,9 @@ export class MonitoringProvider extends Component<
           promise: true,
         });
       };
-      
+
       window.addEventListener('unhandledrejection', this.unhandledRejectionHandler);
-      
+
       // Handle uncaught errors
       this.errorHandler = (event: ErrorEvent) => {
         this.trackError(event.error || new Error(event.message), {
@@ -339,7 +334,7 @@ export class MonitoringProvider extends Component<
           colno: event.colno,
         });
       };
-      
+
       window.addEventListener('error', this.errorHandler);
     }
   }
@@ -356,7 +351,9 @@ export class MonitoringProvider extends Component<
     });
 
     try {
-      this.performanceObserver.observe({ entryTypes: ['navigation', 'resource', 'paint', 'measure'] });
+      this.performanceObserver.observe({
+        entryTypes: ['navigation', 'resource', 'paint', 'measure'],
+      });
     } catch (error) {
       console.warn('Performance observer not fully supported:', error);
     }
@@ -375,9 +372,9 @@ export class MonitoringProvider extends Component<
         });
       }
     };
-    
+
     document.addEventListener('click', this.clickHandler, true);
-    
+
     // Track page visibility changes
     this.visibilityHandler = () => {
       this.trackUserAction('visibility_change', {
@@ -385,7 +382,7 @@ export class MonitoringProvider extends Component<
         visibilityState: document.visibilityState,
       });
     };
-    
+
     document.addEventListener('visibilitychange', this.visibilityHandler);
   }
 
@@ -394,20 +391,20 @@ export class MonitoringProvider extends Component<
     if (this.performanceObserver) {
       this.performanceObserver.disconnect();
     }
-    
+
     // Clean up event listeners
     if (this.clickHandler) {
       document.removeEventListener('click', this.clickHandler, true);
     }
-    
+
     if (this.visibilityHandler) {
       document.removeEventListener('visibilitychange', this.visibilityHandler);
     }
-    
+
     if (this.unhandledRejectionHandler) {
       window.removeEventListener('unhandledrejection', this.unhandledRejectionHandler);
     }
-    
+
     if (this.errorHandler) {
       window.removeEventListener('error', this.errorHandler);
     }
@@ -415,7 +412,7 @@ export class MonitoringProvider extends Component<
 
   private trackPerformanceEntry(entry: PerformanceEntry): void {
     const { name, entryType, startTime, duration } = entry;
-    
+
     switch (entryType) {
       case 'navigation':
         this.trackPerformance('navigation', duration, {
@@ -423,7 +420,7 @@ export class MonitoringProvider extends Component<
           name,
         });
         break;
-        
+
       case 'resource':
         this.trackPerformance('resource', duration, {
           type: 'resource',
@@ -431,14 +428,14 @@ export class MonitoringProvider extends Component<
           size: (entry as PerformanceResourceTiming).transferSize,
         });
         break;
-        
+
       case 'paint':
         this.trackPerformance(name, startTime, {
           type: 'paint',
           name,
         });
         break;
-        
+
       case 'measure':
         this.trackPerformance(name, duration, {
           type: 'measure',
@@ -495,7 +492,11 @@ export class MonitoringProvider extends Component<
     this.props.service.trackEvent(event);
   };
 
-  private trackPerformance = (name: string, value: number, context?: Record<string, unknown>): void => {
+  private trackPerformance = (
+    name: string,
+    value: number,
+    context?: Record<string, unknown>
+  ): void => {
     if (!this.isEnabled || !this.shouldSample()) {
       return;
     }
@@ -561,7 +562,7 @@ export class MonitoringProvider extends Component<
   private setUserConsent = (consent: boolean): void => {
     try {
       localStorage.setItem('monitoring_consent', consent.toString());
-      
+
       // Log consent change for audit purposes
       this.trackEvent({
         message: `User consent ${consent ? 'granted' : 'revoked'}`,
@@ -591,7 +592,9 @@ export class MonitoringProvider extends Component<
         const purgeResult = await this.props.service.purgeUserData(userId);
         result.purgedEvents = purgeResult.purgedEvents || 0;
       } catch (error) {
-        result.errors.push(`Failed to purge monitoring events: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        result.errors.push(
+          `Failed to purge monitoring events: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
       }
 
       // 2. Purge local storage data related to user
@@ -602,7 +605,9 @@ export class MonitoringProvider extends Component<
           result.purgedStorage++;
         }
       } catch (error) {
-        result.errors.push(`Failed to purge storage data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        result.errors.push(
+          `Failed to purge storage data: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
       }
 
       // 3. Purge offline queue events
@@ -611,7 +616,9 @@ export class MonitoringProvider extends Component<
           const queueResult = await this.props.offlineQueue.purgeUserData(userId);
           result.purgedOfflineQueue = queueResult.purgedEvents || 0;
         } catch (error) {
-          result.errors.push(`Failed to purge offline queue: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          result.errors.push(
+            `Failed to purge offline queue: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
         }
       }
 
@@ -624,7 +631,9 @@ export class MonitoringProvider extends Component<
           }
         }
       } catch (error) {
-        result.errors.push(`Failed to purge session storage: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        result.errors.push(
+          `Failed to purge session storage: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
       }
 
       // Log the DSR completion for audit
@@ -640,10 +649,11 @@ export class MonitoringProvider extends Component<
           errors: result.errors.length,
         },
       });
-
     } catch (error) {
       result.success = false;
-      result.errors.push(`Unexpected error during data purge: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      result.errors.push(
+        `Unexpected error during data purge: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
 
     result.duration = Date.now() - startTime;
@@ -653,7 +663,7 @@ export class MonitoringProvider extends Component<
   private getUserStorageKeys = (userId?: string): string[] => {
     const keys: string[] = [];
     const prefix = userId ? `user_${userId}_` : 'user_';
-    
+
     try {
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
@@ -664,14 +674,14 @@ export class MonitoringProvider extends Component<
     } catch (error) {
       console.warn('Failed to enumerate localStorage keys:', error);
     }
-    
+
     return keys;
   };
 
   private getSessionStorageKeys = (userId?: string): string[] => {
     const keys: string[] = [];
     const prefix = userId ? `user_${userId}_` : 'user_';
-    
+
     try {
       for (let i = 0; i < sessionStorage.length; i++) {
         const key = sessionStorage.key(i);
@@ -682,14 +692,14 @@ export class MonitoringProvider extends Component<
     } catch (error) {
       console.warn('Failed to enumerate sessionStorage keys:', error);
     }
-    
+
     return keys;
   };
 
   private getUserDataSummary = async (userId?: string) => {
     const storageKeys = this.getUserStorageKeys(userId);
     const sessionKeys = this.getSessionStorageKeys(userId);
-    
+
     let offlineQueueCount = 0;
     if (this.props.offlineQueue) {
       try {
@@ -701,9 +711,9 @@ export class MonitoringProvider extends Component<
     }
 
     const dataTypes = new Set<string>();
-    
+
     // Analyze storage data types
-    storageKeys.forEach(key => {
+    storageKeys.forEach((key) => {
       const dataType = key.split('_')[2] || 'unknown';
       dataTypes.add(dataType);
     });
@@ -719,9 +729,9 @@ export class MonitoringProvider extends Component<
   private exportUserData = async (userId?: string) => {
     const storageKeys = this.getUserStorageKeys(userId);
     const storage: Record<string, unknown> = {};
-    
+
     // Collect storage data
-    storageKeys.forEach(key => {
+    storageKeys.forEach((key) => {
       try {
         const value = localStorage.getItem(key);
         if (value) {
@@ -795,7 +805,10 @@ class ErrorBoundary extends Component<
   { children: ReactNode; errorFallback: ComponentType<ErrorBoundaryFallbackProps> },
   { hasError: boolean; error?: Error; errorInfo?: ErrorInfo }
 > {
-  constructor(props: { children: ReactNode; errorFallback: ComponentType<ErrorBoundaryFallbackProps> }) {
+  constructor(props: {
+    children: ReactNode;
+    errorFallback: ComponentType<ErrorBoundaryFallbackProps>;
+  }) {
     super(props);
     this.state = { hasError: false };
   }
@@ -862,7 +875,9 @@ export function withMonitoring<P extends object>(
         trackEvent({
           message: `Component ${Component.name} mounted`,
           category: 'system' as any,
-          data: { props: trackProps.length > 0 ? pick(props, trackProps as (keyof P)[]) : undefined },
+          data: {
+            props: trackProps.length > 0 ? pick(props, trackProps as (keyof P)[]) : undefined,
+          },
         });
       }
 
@@ -893,7 +908,7 @@ export function withMonitoring<P extends object>(
  */
 function pick<T extends Record<string, any>, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
   const result = {} as Pick<T, K>;
-  keys.forEach(key => {
+  keys.forEach((key) => {
     if (key in obj) {
       result[key] = obj[key];
     }
@@ -910,7 +925,7 @@ export function usePerformanceTracking(name: string) {
 
   React.useEffect(() => {
     startTimeRef.current = performance.now();
-    
+
     return () => {
       if (startTimeRef.current) {
         const duration = performance.now() - startTimeRef.current;
@@ -925,8 +940,11 @@ export function usePerformanceTracking(name: string) {
  */
 export function useErrorTracking() {
   const { trackError } = useMonitoring();
-  
-  return React.useCallback((error: Error, context?: Record<string, unknown>) => {
-    trackError(error, context);
-  }, [trackError]);
+
+  return React.useCallback(
+    (error: Error, context?: Record<string, unknown>) => {
+      trackError(error, context);
+    },
+    [trackError]
+  );
 }

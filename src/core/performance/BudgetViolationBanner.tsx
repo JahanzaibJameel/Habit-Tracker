@@ -1,7 +1,7 @@
 /**
  * Performance budget violation banner component
  * Shows developer-only warnings when performance budgets are breached
- * 
+ *
  * @fileoverview Budget violation banner for performance monitoring
  * @version 1.0.0
  * @author Enterprise Frontend Team
@@ -17,37 +17,37 @@ export interface BudgetViolation {
    * The metric that was violated
    */
   metric: string;
-  
+
   /**
    * The budget threshold
    */
   threshold: number;
-  
+
   /**
    * The actual measured value
    */
   actual: number;
-  
+
   /**
    * Severity of the violation
    */
   severity: 'low' | 'medium' | 'high' | 'critical';
-  
+
   /**
    * Timestamp when violation occurred
    */
   timestamp: number;
-  
+
   /**
    * Number of times this metric has been violated
    */
   count: number;
-  
+
   /**
    * URL where violation occurred
    */
   url?: string;
-  
+
   /**
    * Additional context about the violation
    */
@@ -62,37 +62,37 @@ export interface BudgetViolationBannerProps {
    * Array of current violations
    */
   violations: BudgetViolation[];
-  
+
   /**
    * Callback when banner is dismissed
    */
   onDismiss?: (violationIds: string[]) => void;
-  
+
   /**
    * Callback when violation is acknowledged
    */
   onAcknowledge?: (violationIds: string[]) => void;
-  
+
   /**
    * Whether to show the banner automatically
    */
   autoShow?: boolean;
-  
+
   /**
    * Maximum number of violations to show
    */
   maxViolations?: number;
-  
+
   /**
    * Whether to show detailed information
    */
   showDetails?: boolean;
-  
+
   /**
    * Custom class name
    */
   className?: string;
-  
+
   /**
    * Custom styles
    */
@@ -161,7 +161,7 @@ function getSeverityIcon(severity: BudgetViolation['severity']): string {
 
 /**
  * Budget Violation Banner Component
- * 
+ *
  * @example
  * <BudgetViolationBanner
  *   violations={violations}
@@ -191,7 +191,9 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
 
   // Auto-hide after 30 seconds if no interaction
   useEffect(() => {
-    if (!isVisible) return;
+    if (!isVisible) {
+      return;
+    }
 
     const timer = setTimeout(() => {
       if (selectedViolations.size === 0) {
@@ -203,9 +205,10 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
   }, [isVisible, selectedViolations]);
 
   const handleDismiss = useCallback(() => {
-    const dismissedIds = selectedViolations.size > 0 
-      ? Array.from(selectedViolations)
-      : violations.map(v => `${v.metric}-${v.timestamp}`);
+    const dismissedIds =
+      selectedViolations.size > 0
+        ? Array.from(selectedViolations)
+        : violations.map((v) => `${v.metric}-${v.timestamp}`);
 
     onDismiss?.(dismissedIds);
     setIsVisible(false);
@@ -213,16 +216,17 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
   }, [selectedViolations, violations, onDismiss]);
 
   const handleAcknowledge = useCallback(() => {
-    const acknowledgedIds = selectedViolations.size > 0 
-      ? Array.from(selectedViolations)
-      : violations.map(v => `${v.metric}-${v.timestamp}`);
+    const acknowledgedIds =
+      selectedViolations.size > 0
+        ? Array.from(selectedViolations)
+        : violations.map((v) => `${v.metric}-${v.timestamp}`);
 
     onAcknowledge?.(acknowledgedIds);
     setSelectedViolations(new Set());
   }, [selectedViolations, violations, onAcknowledge]);
 
   const handleToggleSelection = useCallback((violationId: string) => {
-    setSelectedViolations(prev => {
+    setSelectedViolations((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(violationId)) {
         newSet.delete(violationId);
@@ -234,7 +238,7 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
   }, []);
 
   const handleToggleExpand = useCallback((violationId: string) => {
-    setExpandedViolation(prev => prev === violationId ? null : violationId);
+    setExpandedViolation((prev) => (prev === violationId ? null : violationId));
   }, []);
 
   const getViolationId = useCallback((violation: BudgetViolation) => {
@@ -248,10 +252,11 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
   const displayViolations = violations.slice(0, maxViolations);
   const hasMoreViolations = violations.length > maxViolations;
   const allSelected = selectedViolations.size === displayViolations.length;
-  const someSelected = selectedViolations.size > 0 && selectedViolations.size < displayViolations.length;
+  const someSelected =
+    selectedViolations.size > 0 && selectedViolations.size < displayViolations.length;
 
   return (
-    <div 
+    <div
       className={`budget-violation-banner ${className || ''}`}
       style={{
         position: 'fixed',
@@ -268,7 +273,7 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
       }}
     >
       {/* Header */}
-      <div 
+      <div
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -278,7 +283,7 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div 
+          <div
             style={{
               width: '24px',
               height: '24px',
@@ -303,7 +308,7 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
             </p>
           </div>
         </div>
-        
+
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
             onClick={() => setShowAllDetails(!showAllDetails)}
@@ -362,10 +367,10 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
                   onClick={(e) => e.stopPropagation()}
                   style={{ cursor: 'pointer' }}
                 />
-                
+
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span 
+                    <span
                       style={{
                         padding: '2px 6px',
                         borderRadius: '4px',
@@ -377,14 +382,13 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
                     >
                       {violation.severity.toUpperCase()}
                     </span>
-                    <span style={{ fontWeight: '600', fontSize: '14px' }}>
-                      {violation.metric}
-                    </span>
+                    <span style={{ fontWeight: '600', fontSize: '14px' }}>{violation.metric}</span>
                     <span style={{ color: '#7f1d1d', fontSize: '14px' }}>
-                      {formatMetricValue(violation.metric, violation.actual)} / {formatMetricValue(violation.metric, violation.threshold)}
+                      {formatMetricValue(violation.metric, violation.actual)} /{' '}
+                      {formatMetricValue(violation.metric, violation.threshold)}
                     </span>
                   </div>
-                  
+
                   <div style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>
                     Violated {violation.count} time{violation.count !== 1 ? 's' : ''}
                     {violation.url && (
@@ -393,7 +397,7 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
                       </span>
                     )}
                   </div>
-                  
+
                   {(showAllDetails || isExpanded) && violation.context && (
                     <div style={{ marginTop: '8px' }}>
                       <button
@@ -412,16 +416,18 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
                       >
                         {isExpanded ? 'Hide' : 'Show'} Context
                       </button>
-                      
+
                       {isExpanded && (
-                        <div style={{ 
-                          marginTop: '8px', 
-                          padding: '8px',
-                          backgroundColor: '#f9fafb',
-                          borderRadius: '4px',
-                          fontSize: '11px',
-                          fontFamily: 'monospace',
-                        }}>
+                        <div
+                          style={{
+                            marginTop: '8px',
+                            padding: '8px',
+                            backgroundColor: '#f9fafb',
+                            borderRadius: '4px',
+                            fontSize: '11px',
+                            fontFamily: 'monospace',
+                          }}
+                        >
                           {Object.entries(violation.context).map(([key, value]) => (
                             <div key={key} style={{ marginBottom: '4px' }}>
                               <strong>{key}:</strong> {JSON.stringify(value)}
@@ -432,8 +438,8 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
                     </div>
                   )}
                 </div>
-                
-                <div 
+
+                <div
                   style={{
                     width: '16px',
                     height: '16px',
@@ -453,16 +459,23 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
             </div>
           );
         })}
-        
+
         {hasMoreViolations && (
-          <div style={{ padding: '12px 16px', textAlign: 'center', fontSize: '12px', color: '#6b7280' }}>
+          <div
+            style={{
+              padding: '12px 16px',
+              textAlign: 'center',
+              fontSize: '12px',
+              color: '#6b7280',
+            }}
+          >
             ... and {violations.length - maxViolations} more violations
           </div>
         )}
       </div>
 
       {/* Footer Actions */}
-      <div 
+      <div
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -477,7 +490,9 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
             type="checkbox"
             checked={allSelected}
             ref={(el) => {
-              if (el) el.indeterminate = someSelected;
+              if (el) {
+                el.indeterminate = someSelected;
+              }
             }}
             onChange={() => {
               if (allSelected || someSelected) {
@@ -489,10 +504,14 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
             style={{ cursor: 'pointer' }}
           />
           <span style={{ fontSize: '14px' }}>
-            {allSelected ? 'All selected' : someSelected ? `${selectedViolations.size} selected` : 'Select all'}
+            {allSelected
+              ? 'All selected'
+              : someSelected
+                ? `${selectedViolations.size} selected`
+                : 'Select all'}
           </span>
         </div>
-        
+
         <div style={{ display: 'flex', gap: '8px' }}>
           {someSelected && (
             <button
@@ -538,11 +557,11 @@ export function useBudgetViolationBanner() {
   const [dismissedViolations, setDismissedViolations] = useState<Set<string>>(new Set());
 
   const addViolation = useCallback((violation: Omit<BudgetViolation, 'timestamp' | 'count'>) => {
-    setViolations(prev => {
-      const existing = prev.find(v => v.metric === violation.metric);
+    setViolations((prev) => {
+      const existing = prev.find((v) => v.metric === violation.metric);
       if (existing) {
-        return prev.map(v => 
-          v.metric === violation.metric 
+        return prev.map((v) =>
+          v.metric === violation.metric
             ? { ...v, ...violation, count: v.count + 1, timestamp: Date.now() }
             : v
         );
@@ -552,7 +571,7 @@ export function useBudgetViolationBanner() {
   }, []);
 
   const removeViolation = useCallback((metric: string) => {
-    setViolations(prev => prev.filter(v => v.metric !== metric));
+    setViolations((prev) => prev.filter((v) => v.metric !== metric));
   }, []);
 
   const clearViolations = useCallback(() => {
@@ -560,16 +579,18 @@ export function useBudgetViolationBanner() {
   }, []);
 
   const dismissViolation = useCallback((violationId: string) => {
-    setDismissedViolations(prev => new Set([...prev, violationId]));
+    setDismissedViolations((prev) => new Set([...prev, violationId]));
   }, []);
 
   const acknowledgeViolation = useCallback((violationId: string) => {
-    setDismissedViolations(prev => new Set([...prev, violationId]));
+    setDismissedViolations((prev) => new Set([...prev, violationId]));
     // Optionally remove acknowledged violations from active list
-    setViolations(prev => prev.filter(v => `${v.metric}-${v.timestamp}` !== violationId));
+    setViolations((prev) => prev.filter((v) => `${v.metric}-${v.timestamp}` !== violationId));
   }, []);
 
-  const activeViolations = violations.filter(v => !dismissedViolations.has(`${v.metric}-${v.timestamp}`));
+  const activeViolations = violations.filter(
+    (v) => !dismissedViolations.has(`${v.metric}-${v.timestamp}`)
+  );
 
   return {
     violations: activeViolations,
@@ -595,7 +616,7 @@ export const PerformanceAlert: React.FC<{
 
   if (compact) {
     return (
-      <div 
+      <div
         style={{
           display: 'inline-flex',
           alignItems: 'center',
@@ -611,7 +632,9 @@ export const PerformanceAlert: React.FC<{
         <span style={{ color: severityColor, fontWeight: 'bold' }}>
           {violation.severity.toUpperCase()}
         </span>
-        <span>{violation.metric}: {formatMetricValue(violation.metric, violation.actual)}</span>
+        <span>
+          {violation.metric}: {formatMetricValue(violation.metric, violation.actual)}
+        </span>
         {onDismiss && (
           <button
             onClick={onDismiss}
@@ -632,7 +655,7 @@ export const PerformanceAlert: React.FC<{
   }
 
   return (
-    <div 
+    <div
       style={{
         padding: '12px',
         backgroundColor: '#fef2f2',
@@ -642,7 +665,7 @@ export const PerformanceAlert: React.FC<{
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div 
+        <div
           style={{
             width: '20px',
             height: '20px',
@@ -658,19 +681,20 @@ export const PerformanceAlert: React.FC<{
         >
           !
         </div>
-        
+
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: '600', fontSize: '14px', color: '#991b1b' }}>
             {violation.metric} Budget Violation
           </div>
           <div style={{ fontSize: '13px', color: '#7f1d1d', marginTop: '2px' }}>
-            {formatMetricValue(violation.metric, violation.actual)} exceeds budget of {formatMetricValue(violation.metric, violation.threshold)}
+            {formatMetricValue(violation.metric, violation.actual)} exceeds budget of{' '}
+            {formatMetricValue(violation.metric, violation.threshold)}
           </div>
           <div style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>
             Severity: {violation.severity} | Violated {violation.count} times
           </div>
         </div>
-        
+
         {onDismiss && (
           <button
             onClick={onDismiss}

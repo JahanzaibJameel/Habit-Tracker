@@ -1,13 +1,13 @@
 /**
  * Custom error classes for validation system
  * Provides detailed error context and recovery strategies
- * 
+ *
  * @fileoverview Validation error handling with detailed context
  * @version 1.0.0
  * @author Enterprise Frontend Team
  */
 
-import { ZodError } from 'zod';
+import type { ZodError } from 'zod';
 
 /**
  * Base validation error with enhanced context
@@ -193,7 +193,7 @@ export class ValidationErrorFactory {
    */
   static fromZodError(zodError: ZodError, schema: string): ValidationError {
     const firstIssue = zodError.issues[0];
-    
+
     if (!firstIssue) {
       return new ValidationError({
         message: 'Unknown validation error',
@@ -208,7 +208,7 @@ export class ValidationErrorFactory {
         },
       });
     }
-    
+
     return new ValidationError({
       message: firstIssue.message,
       code: 'ZOD_VALIDATION_ERROR',
@@ -292,10 +292,7 @@ export interface ErrorRecoveryContext {
 export class RecoverableValidationError extends ValidationError {
   public readonly recovery: ErrorRecoveryContext;
 
-  constructor(
-    baseError: ValidationError,
-    recovery: ErrorRecoveryContext
-  ) {
+  constructor(baseError: ValidationError, recovery: ErrorRecoveryContext) {
     super({
       message: baseError.message,
       code: baseError.code,
@@ -317,8 +314,10 @@ export class RecoverableValidationError extends ValidationError {
    * Determines if the error can be retried
    */
   canRetry(): boolean {
-    return this.recovery.strategy === ErrorRecoveryStrategy.RETRY &&
-           (!this.recovery.maxRetries || (this.recovery.currentRetry || 0) < this.recovery.maxRetries);
+    return (
+      this.recovery.strategy === ErrorRecoveryStrategy.RETRY &&
+      (!this.recovery.maxRetries || (this.recovery.currentRetry || 0) < this.recovery.maxRetries)
+    );
   }
 
   /**

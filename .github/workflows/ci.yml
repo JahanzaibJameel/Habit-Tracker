@@ -39,6 +39,9 @@ jobs:
       - name: Run TypeScript check
         run: npm run type-check
 
+      - name: Check for unused code (knip)
+        run: npx knip --production
+
   # Unit and Integration Tests
   test:
     runs-on: ubuntu-latest

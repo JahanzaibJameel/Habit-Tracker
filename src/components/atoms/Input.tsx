@@ -30,7 +30,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     const inputId = id || `input-${label?.replace(/\s+/g, '-').toLowerCase() || 'field'}`;
 
     return (
-      <div className={cn('space-y-2', fullWidth && 'w-full')}>
+      <div className={cn('space-y-2', fullWidth ? 'w-full' : '')}>
         {label && (
           <label
             htmlFor={inputId}
@@ -52,10 +52,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             className={cn(
               'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
-              leftIcon && 'pl-10',
-              rightIcon && 'pr-10',
-              error && 'border-destructive focus-visible:ring-destructive',
-              className
+              leftIcon ? 'pl-10' : '',
+              rightIcon ? 'pr-10' : '',
+              error ? 'border-destructive focus-visible:ring-destructive' : '',
+              (className as string) || ''
             )}
             ref={ref}
             {...props}

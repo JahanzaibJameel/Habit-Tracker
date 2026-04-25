@@ -1,7 +1,7 @@
 /**
  * Performance budget configuration
  * Defines quantitative limits for application performance metrics
- * 
+ *
  * @fileoverview Performance budget thresholds and limits
  * @version 1.0.0
  * @author Enterprise Frontend Team
@@ -17,7 +17,7 @@ export interface PerformanceBudget {
       chunks: Record<string, number>;
     };
   };
-  
+
   // Runtime performance limits
   runtime: {
     // Core Web Vitals
@@ -26,14 +26,14 @@ export interface PerformanceBudget {
     cls: number; // Cumulative Layout Shift
     inp: number; // Interaction to Next Paint (ms)
     tbt: number; // Total Blocking Time (ms)
-    
+
     // Custom metrics
     timeToHydration: number; // Time to React hydration (ms)
     timeToFirstMeaningfulPaint: number; // Time to first meaningful paint (ms)
     timeToInteractive: number; // Time to interactive (ms)
     firstContentfulPaint: number; // First Contentful Paint (ms)
   };
-  
+
   // Resource limits
   resources: {
     maxRequests: number;
@@ -43,7 +43,7 @@ export interface PerformanceBudget {
     maxCssSize: number; // bytes
     maxFontSize: number; // bytes
   };
-  
+
   // Memory limits
   memory: {
     maxHeapSize: number; // MB
@@ -51,7 +51,7 @@ export interface PerformanceBudget {
     maxDomNodes: number;
     maxEventListeners: number;
   };
-  
+
   // Network limits
   network: {
     maxLatency: number; // ms
@@ -59,7 +59,7 @@ export interface PerformanceBudget {
     maxTtfb: number; // Time to First Byte (ms)
     maxDownloadTime: number; // ms
   };
-  
+
   // Animation performance
   animation: {
     minFps: number;
@@ -92,7 +92,7 @@ export const DefaultBudgets: Record<string, PerformanceBudget> = {
         },
       },
     },
-    
+
     runtime: {
       lcp: 2500, // 2.5s
       fid: 100, // 100ms
@@ -104,7 +104,7 @@ export const DefaultBudgets: Record<string, PerformanceBudget> = {
       timeToInteractive: 3800, // 3.8s
       firstContentfulPaint: 1800, // 1.8s
     },
-    
+
     resources: {
       maxRequests: 50,
       maxTotalSize: 1024 * 1024, // 1MB
@@ -113,28 +113,28 @@ export const DefaultBudgets: Record<string, PerformanceBudget> = {
       maxCssSize: 100 * 1024, // 100KB
       maxFontSize: 50 * 1024, // 50KB
     },
-    
+
     memory: {
       maxHeapSize: 50, // 50MB
       maxJsHeapSize: 30, // 30MB
       maxDomNodes: 1500,
       maxEventListeners: 1000,
     },
-    
+
     network: {
       maxLatency: 500, // 500ms
       maxDnsLookup: 100, // 100ms
       maxTtfb: 600, // 600ms
       maxDownloadTime: 1000, // 1s
     },
-    
+
     animation: {
       minFps: 60,
       maxFrameTime: 16.67, // 60fps = 16.67ms per frame
       maxDroppedFrames: 2,
     },
   },
-  
+
   // Development budget - more lenient for debugging
   development: {
     bundleSize: {
@@ -155,7 +155,7 @@ export const DefaultBudgets: Record<string, PerformanceBudget> = {
         },
       },
     },
-    
+
     runtime: {
       lcp: 4000, // 4s
       fid: 200, // 200ms
@@ -167,7 +167,7 @@ export const DefaultBudgets: Record<string, PerformanceBudget> = {
       timeToInteractive: 7000, // 7s
       firstContentfulPaint: 3000, // 3s
     },
-    
+
     resources: {
       maxRequests: 100,
       maxTotalSize: 2 * 1024 * 1024, // 2MB
@@ -176,28 +176,28 @@ export const DefaultBudgets: Record<string, PerformanceBudget> = {
       maxCssSize: 200 * 1024, // 200KB
       maxFontSize: 100 * 1024, // 100KB
     },
-    
+
     memory: {
       maxHeapSize: 100, // 100MB
       maxJsHeapSize: 60, // 60MB
       maxDomNodes: 3000,
       maxEventListeners: 2000,
     },
-    
+
     network: {
       maxLatency: 1000, // 1s
       maxDnsLookup: 200, // 200ms
       maxTtfb: 1200, // 1.2s
       maxDownloadTime: 2000, // 2s
     },
-    
+
     animation: {
       minFps: 30,
       maxFrameTime: 33.33, // 30fps = 33.33ms per frame
       maxDroppedFrames: 5,
     },
   },
-  
+
   // Testing budget - very lenient
   testing: {
     bundleSize: {
@@ -218,7 +218,7 @@ export const DefaultBudgets: Record<string, PerformanceBudget> = {
         },
       },
     },
-    
+
     runtime: {
       lcp: 10000, // 10s
       fid: 500, // 500ms
@@ -230,7 +230,7 @@ export const DefaultBudgets: Record<string, PerformanceBudget> = {
       timeToInteractive: 15000, // 15s
       firstContentfulPaint: 8000, // 8s
     },
-    
+
     resources: {
       maxRequests: 200,
       maxTotalSize: 5 * 1024 * 1024, // 5MB
@@ -239,21 +239,21 @@ export const DefaultBudgets: Record<string, PerformanceBudget> = {
       maxCssSize: 500 * 1024, // 500KB
       maxFontSize: 200 * 1024, // 200KB
     },
-    
+
     memory: {
       maxHeapSize: 200, // 200MB
       maxJsHeapSize: 120, // 120MB
       maxDomNodes: 6000,
       maxEventListeners: 4000,
     },
-    
+
     network: {
       maxLatency: 2000, // 2s
       maxDnsLookup: 500, // 500ms
       maxTtfb: 2500, // 2.5s
       maxDownloadTime: 5000, // 5s
     },
-    
+
     animation: {
       minFps: 15,
       maxFrameTime: 66.67, // 15fps = 66.67ms per frame
@@ -279,8 +279,12 @@ export interface BudgetConfig {
  * Default budget configuration
  */
 export const DefaultBudgetConfig: BudgetConfig = {
-  environment: process.env.NODE_ENV === 'production' ? 'production' : 
-              process.env.NODE_ENV === 'test' ? 'testing' : 'development',
+  environment:
+    process.env.NODE_ENV === 'production'
+      ? 'production'
+      : process.env.NODE_ENV === 'test'
+        ? 'testing'
+        : 'development',
   enableWarnings: true,
   enableStrictMode: process.env.NODE_ENV === 'production',
   enableReporting: process.env.NODE_ENV === 'production',
@@ -293,20 +297,23 @@ export const DefaultBudgetConfig: BudgetConfig = {
  */
 export function getEffectiveBudget(config: BudgetConfig): PerformanceBudget {
   const baseBudget = DefaultBudgets[config.environment];
-  
+
   if (config.customBudget) {
     return mergeBudgets(baseBudget, config.customBudget);
   }
-  
+
   return baseBudget;
 }
 
 /**
  * Deep merge two budget objects
  */
-function mergeBudgets(base: PerformanceBudget, override: Partial<PerformanceBudget>): PerformanceBudget {
+function mergeBudgets(
+  base: PerformanceBudget,
+  override: Partial<PerformanceBudget>
+): PerformanceBudget {
   const merged = { ...base };
-  
+
   for (const [key, value] of Object.entries(override)) {
     if (value && typeof value === 'object' && !Array.isArray(value)) {
       // @ts-ignore - Dynamic deep merge
@@ -316,7 +323,7 @@ function mergeBudgets(base: PerformanceBudget, override: Partial<PerformanceBudg
       merged[key] = value;
     }
   }
-  
+
   return merged;
 }
 
@@ -328,7 +335,7 @@ export const BudgetValidationRules = {
   validateBundleSize: (actual: number, budget: number): boolean => {
     return actual <= budget;
   },
-  
+
   // Runtime performance validation
   validateRuntimeMetric: (actual: number, budget: number, metric: string): boolean => {
     // For CLS, lower is better
@@ -338,17 +345,17 @@ export const BudgetValidationRules = {
     // For time-based metrics, lower is better
     return actual <= budget;
   },
-  
+
   // Memory validation
   validateMemoryUsage: (actual: number, budget: number): boolean => {
     return actual <= budget;
   },
-  
+
   // Network validation
   validateNetworkMetric: (actual: number, budget: number): boolean => {
     return actual <= budget;
   },
-  
+
   // Animation validation
   validateAnimationPerformance: (actual: number, budget: number, metric: string): boolean => {
     if (metric === 'minFps') {
@@ -373,10 +380,16 @@ export enum BudgetBreachSeverity {
  */
 export function getBreachSeverity(actual: number, budget: number): BudgetBreachSeverity {
   const ratio = actual / budget;
-  
-  if (ratio <= 1) return BudgetBreachSeverity.LOW;
-  if (ratio <= 1.25) return BudgetBreachSeverity.MEDIUM;
-  if (ratio <= 1.5) return BudgetBreachSeverity.HIGH;
+
+  if (ratio <= 1) {
+    return BudgetBreachSeverity.LOW;
+  }
+  if (ratio <= 1.25) {
+    return BudgetBreachSeverity.MEDIUM;
+  }
+  if (ratio <= 1.5) {
+    return BudgetBreachSeverity.HIGH;
+  }
   return BudgetBreachSeverity.CRITICAL;
 }
 
@@ -392,4 +405,4 @@ export const BudgetCategories = {
   ANIMATION: 'animation',
 } as const;
 
-export type BudgetCategory = typeof BudgetCategories[keyof typeof BudgetCategories];
+export type BudgetCategory = (typeof BudgetCategories)[keyof typeof BudgetCategories];

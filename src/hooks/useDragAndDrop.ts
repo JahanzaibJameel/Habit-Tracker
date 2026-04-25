@@ -1,14 +1,5 @@
-import React, { useCallback, useRef, useState } from 'react';
-import type { DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core';
-import {
-  closestCenter,
-  DndContext,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import type React from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 interface DragAndDropProps<T> {
   items: T[];
@@ -21,115 +12,71 @@ export function useDragAndDrop<T extends { id: string }>({
   items = [],
   onReorder,
   getItemId,
-  children,
+  children: _children,
 }: DragAndDropProps<T>) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const isDraggingRef = useRef(false);
-  const lastItemsRef = useRef(items);
+  const _lastItemsRef = useRef(items);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
-  const handleDragStart = (event: DragStartEvent) => {
-    if (!event?.active?.id) return;
-
-    setActiveId(event.active.id as string);
+  const handleDragStart = useCallback((itemId: string) => {
+    setActiveId(itemId);
     isDraggingRef.current = true;
-    lastItemsRef.current = [...items];
-  };
+  }, []);
 
-  const debouncedReorder = useCallback(
-    (newItems: T[]) => {
-      // Clear existing timer
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
+  const handleDragEnd = useCallback(
+    (itemId: string, newIndex: number) => {
+      if (!isDraggingRef.current) {
+        return;
       }
 
-      // Set new timer
-      debounceTimerRef.current = setTimeout(() => {
-        // Validate that items haven't changed since drag started
-        const currentIds = items?.map((item) => item?.id).filter(Boolean) || [];
-        const lastIds = lastItemsRef.current?.map((item) => item?.id).filter(Boolean) || [];
+      const oldIndex = items.findIndex((item) =>
+        getItemId ? getItemId(item) === itemId : item.id === itemId
+      );
 
-        if (JSON.stringify(currentIds) === JSON.stringify(lastIds) && onReorder) {
-          onReorder(newItems);
+      if (oldIndex !== -1 && oldIndex !== newIndex) {
+        const newItems = [...items];
+        const movedItem = newItems.splice(oldIndex, 1)[0];
+        if (movedItem) {
+          newItems.splice(newIndex, 0, movedItem);
         }
-        debounceTimerRef.current = null;
-      }, 100);
-    },
-    [items, onReorder]
-  );
 
-  const handleDragOver = (event: DragOverEvent) => {
-    const { active, over } = event;
-
-    if (!isDraggingRef.current || !active?.id || !over?.id || active.id === over.id) {
-      return;
-    }
-
-    const activeIndex = items?.findIndex((item) => item?.id === active.id) ?? -1;
-    const overIndex = items?.findIndex((item) => item?.id === over.id) ?? -1;
-
-    if (activeIndex !== -1 && overIndex !== -1 && activeIndex !== overIndex) {
-      const newItems = arrayMove(items || [], activeIndex, overIndex);
-      debouncedReorder(newItems);
-    }
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    isDraggingRef.current = false;
-    setActiveId(null);
-
-    if (!over?.id) {
-      return;
-    }
-
-    if (active?.id && over.id && active.id !== over.id) {
-      const activeIndex = items?.findIndex((item) => item?.id === active.id) ?? -1;
-      const overIndex = items?.findIndex((item) => item?.id === over.id) ?? -1;
-
-      if (activeIndex !== -1 && overIndex !== -1 && activeIndex !== overIndex) {
-        const newItems = arrayMove(items || [], activeIndex, overIndex);
-
-        // Clear any pending debounced calls and execute immediately
+        // Debounce the reorder call
         if (debounceTimerRef.current) {
           clearTimeout(debounceTimerRef.current);
-          debounceTimerRef.current = null;
         }
 
-        onReorder?.(newItems);
+        debounceTimerRef.current = setTimeout(() => {
+          onReorder(newItems);
+        }, 100);
       }
-    }
-  };
 
-  // Cleanup timer on unmount
-  React.useEffect(() => {
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-        debounceTimerRef.current = null;
-      }
-    };
+      setActiveId(null);
+      isDraggingRef.current = false;
+    },
+    [items, onReorder, getItemId]
+  );
+
+  const handleDragOver = useCallback((_itemId: string, _targetIndex: number) => {
+    // Handle drag over logic if needed
+  }, []);
+
+  const reset = useCallback(() => {
+    setActiveId(null);
+    isDraggingRef.current = false;
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
   }, []);
 
   return {
     activeId,
-    sensors,
+    isDragging: isDraggingRef.current,
     handleDragStart,
-    handleDragOver,
     handleDragEnd,
+    handleDragOver,
+    reset,
+    items,
   };
 }
-
-export { closestCenter, DndContext, SortableContext };

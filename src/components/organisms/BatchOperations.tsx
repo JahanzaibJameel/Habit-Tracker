@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 import { Archive, Calendar, Check, Tag, Trash2, X } from 'lucide-react';
 
 import type { Habit } from '../../types';
@@ -53,7 +52,9 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
   const allSelected = selectedHabitIds.length === habits.length && habits.length > 0;
 
   const handleBatchAction = () => {
-    if (!batchAction || selectedHabitIds.length === 0) return;
+    if (!batchAction || selectedHabitIds.length === 0) {
+      return;
+    }
 
     switch (batchAction) {
       case 'complete':
@@ -70,20 +71,14 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
   };
 
   return (
-    <AnimatePresence>
+    <>
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
+        <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
           onClick={onClose}
         >
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="bg-background rounded-lg shadow-xl border max-w-2xl w-full max-h-[80vh] overflow-hidden"
+          <div
+            className="bg-background rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <Card>
@@ -330,10 +325,10 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                 )}
               </CardContent>
             </Card>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   );
 };
 

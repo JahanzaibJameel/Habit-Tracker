@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import {
   Archive,
   Calendar,
@@ -61,14 +60,8 @@ const HabitCard: React.FC<HabitCardProps> = ({
   useEffect(() => cleanup, [cleanup]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      whileHover={{ y: -2 }}
-      className={cn('relative', className)}
-    >
-      <Card hover className="h-full">
+    <div className={cn('relative', className || '')}>
+      <Card className="h-full">
         <CardContent className="space-y-4 p-4">
           <div className="flex items-start justify-between gap-3">
             <div className="flex min-w-0 items-center space-x-3">
@@ -189,13 +182,9 @@ const HabitCard: React.FC<HabitCardProps> = ({
               </span>
             </div>
             <div className="h-2 w-full rounded-full bg-secondary">
-              <motion.div
+              <div
                 className="h-2 rounded-full bg-primary"
-                initial={{ width: 0 }}
-                animate={{
-                  width: `${Math.min((todayCompletions.reduce((sum, completion) => sum + (completion.value || 0), 0) / (habit.target || 1)) * 100, 100)}%`,
-                }}
-                transition={{ duration: 0.5 }}
+                style={{ width: `${completionRate}%` }}
               />
             </div>
           </div>
@@ -203,8 +192,8 @@ const HabitCard: React.FC<HabitCardProps> = ({
           <div
             className={cn(
               'flex flex-col gap-3 rounded-xl border p-3 sm:flex-row sm:items-center sm:justify-between',
-              isCompleted && 'border-green-300 bg-green-50',
-              isAnimating && 'scale-[0.99]'
+              isCompleted ? 'border-green-300 bg-green-50' : '',
+              isAnimating ? 'scale-[0.99]' : ''
             )}
           >
             <label className="flex items-center gap-3 text-sm font-medium text-foreground">
@@ -250,7 +239,7 @@ const HabitCard: React.FC<HabitCardProps> = ({
           )}
         </CardContent>
       </Card>
-    </motion.div>
+    </div>
   );
 };
 

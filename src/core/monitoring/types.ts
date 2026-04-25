@@ -1,7 +1,7 @@
 /**
  * Core monitoring types and interfaces
  * Defines the unified telemetry system architecture
- * 
+ *
  * @fileoverview Monitoring system type definitions
  * @version 1.0.0
  * @author Enterprise Frontend Team
@@ -52,42 +52,42 @@ export interface MonitoringContext {
    * Application version
    */
   appVersion: string;
-  
+
   /**
    * Environment (development, staging, production)
    */
   environment: string;
-  
+
   /**
    * Release identifier
    */
   release?: string;
-  
+
   /**
    * Current route/URL
    */
   url: string;
-  
+
   /**
    * User identifier (hashed/anonymized)
    */
   userId?: string;
-  
+
   /**
    * Device/browser fingerprint
    */
   fingerprint: string;
-  
+
   /**
    * Error boundary context
    */
   errorBoundaryId?: string;
-  
+
   /**
    * Session identifier
    */
   sessionId: string;
-  
+
   /**
    * Custom context fields
    */
@@ -196,47 +196,47 @@ export interface MonitoringAdapter {
    * Adapter name
    */
   readonly name: string;
-  
+
   /**
    * Initialize the adapter
    */
   initialize(config: MonitoringConfig): Promise<void>;
-  
+
   /**
    * Capture an error event
    */
   captureError(event: ErrorEvent): Promise<void>;
-  
+
   /**
    * Capture a message event
    */
   captureMessage(event: MonitoringEvent): Promise<void>;
-  
+
   /**
    * Capture a custom event
    */
   captureEvent(event: MonitoringEvent): Promise<void>;
-  
+
   /**
    * Set user context
    */
   setUser(userId: string, attributes?: Record<string, unknown>): Promise<void>;
-  
+
   /**
    * Add breadcrumb
    */
   addBreadcrumb(breadcrumb: MonitoringBreadcrumb): Promise<void>;
-  
+
   /**
    * Set tag
    */
   setTag(key: string, value: string): Promise<void>;
-  
+
   /**
    * Set context
    */
   setContext(key: string, value: Record<string, unknown>): Promise<void>;
-  
+
   /**
    * Cleanup resources
    */
@@ -263,22 +263,22 @@ export interface MonitoringConfig {
    * Adapter to use
    */
   adapter: MonitoringAdapter;
-  
+
   /**
    * Enable/disable monitoring
    */
   enabled: boolean;
-  
+
   /**
    * Sampling rate (0-1)
    */
   samplingRate: number;
-  
+
   /**
    * Enable debug mode
    */
   debug: boolean;
-  
+
   /**
    * Context information for monitoring
    */
@@ -286,27 +286,27 @@ export interface MonitoringConfig {
     environment?: string;
     release?: string;
   };
-  
+
   /**
    * Enable automatic error reporting
    */
   autoErrorReporting: boolean;
-  
+
   /**
    * Enable performance monitoring
    */
   performanceMonitoring: boolean;
-  
+
   /**
    * Enable user action tracking
    */
   userActionTracking: boolean;
-  
+
   /**
    * Data redaction rules
    */
   redactionRules: RedactionRule[];
-  
+
   /**
    * Offline queue configuration
    */
@@ -315,7 +315,7 @@ export interface MonitoringConfig {
     maxSize: number;
     flushInterval: number;
   };
-  
+
   /**
    * Custom context enrichers
    */
@@ -330,17 +330,17 @@ export interface RedactionRule {
    * Rule name
    */
   name: string;
-  
+
   /**
    * Pattern to match (regex)
    */
   pattern: RegExp;
-  
+
   /**
    * Replacement value
    */
   replacement: string;
-  
+
   /**
    * Fields to apply to (wildcards supported)
    */
@@ -355,7 +355,7 @@ export interface ContextEnricher {
    * Enricher name
    */
   name: string;
-  
+
   /**
    * Enrichment function
    */
@@ -370,27 +370,27 @@ export interface MonitoringStats {
    * Total events captured
    */
   totalEvents: number;
-  
+
   /**
    * Events by category
    */
   eventsByCategory: Record<MonitoringCategory, number>;
-  
+
   /**
    * Events by severity
    */
   eventsBySeverity: Record<MonitoringSeverity, number>;
-  
+
   /**
    * Queue size
    */
   queueSize: number;
-  
+
   /**
    * Last event timestamp
    */
   lastEventTimestamp: number;
-  
+
   /**
    * Adapter status
    */
@@ -424,7 +424,7 @@ export interface MonitoringExportOptions {
 /**
  * Union type for all monitoring events
  */
-export type AnyMonitoringEvent = 
+export type AnyMonitoringEvent =
   | ErrorEvent
   | PerformanceEvent
   | UserActionEvent
@@ -582,8 +582,12 @@ export class MonitoringEventFactory {
     return {
       id: this.generateId(),
       timestamp: Date.now(),
-      severity: severity === 'critical' ? MonitoringSeverity.CRITICAL : 
-                severity === 'high' ? MonitoringSeverity.ERROR : MonitoringSeverity.WARNING,
+      severity:
+        severity === 'critical'
+          ? MonitoringSeverity.CRITICAL
+          : severity === 'high'
+            ? MonitoringSeverity.ERROR
+            : MonitoringSeverity.WARNING,
       category: MonitoringCategory.SECURITY,
       message,
       security: {

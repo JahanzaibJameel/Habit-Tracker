@@ -1,14 +1,14 @@
 /**
  * Unit tests for validation schemas
  * Tests schema validation, type inference, and edge cases
- * 
+ *
  * @fileoverview Schema validation tests
  * @version 1.0.0
  * @author Enterprise Frontend Team
  */
 
 import { describe, test, expect } from '@jest/globals';
-import { z } from 'zod';
+import type { z } from 'zod';
 import {
   BaseSchema,
   UserSchema,
@@ -501,7 +501,7 @@ describe('UrlParamsSchema', () => {
   test('should accept parameters with defaults', () => {
     const minimalParams = {};
     const result = UrlParamsSchema.parse(minimalParams);
-    
+
     expect(result.page).toBe(1);
     expect(result.limit).toBe(10);
     expect(result.sort).toBe('createdAt');

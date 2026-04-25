@@ -1,16 +1,18 @@
 /**
  * Unit tests for Error Boundary components
  * Tests error isolation, recovery strategies, and circuit breaker functionality
- * 
+ *
  * @fileoverview Error boundary tests
  * @version 1.0.0
  * @author Enterprise Frontend Team
  */
 
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import type { ReactNode } from 'react';
+import React, { Component, ErrorInfo } from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, test, expect, jest, beforeEach } from '@jest/globals';
-import { ErrorBoundary, ErrorBoundaryConfig, ErrorRecoveryStrategy } from '../ErrorBoundary';
+import type { ErrorBoundaryConfig } from '../ErrorBoundary';
+import { ErrorBoundary, ErrorRecoveryStrategy } from '../ErrorBoundary';
 
 // Mock console methods to avoid noise in tests
 const originalConsoleError = console.error;
@@ -68,7 +70,7 @@ describe('ErrorBoundary', () => {
 
   test('should render children when no error occurs', () => {
     const config: ErrorBoundaryConfig = { ...defaultConfig };
-    
+
     render(
       <ErrorBoundary {...config}>
         <div>Test content</div>
@@ -80,7 +82,7 @@ describe('ErrorBoundary', () => {
 
   test('should catch and display error fallback', () => {
     const config: ErrorBoundaryConfig = { ...defaultConfig };
-    
+
     render(
       <ErrorBoundary {...config}>
         <ThrowingComponent />
@@ -93,23 +95,19 @@ describe('ErrorBoundary', () => {
   test('should call onError callback when error occurs', () => {
     const onError = jest.fn();
     const config: ErrorBoundaryConfig = { ...defaultConfig, onError };
-    
+
     render(
       <ErrorBoundary {...config}>
         <ThrowingComponent />
       </ErrorBoundary>
     );
 
-    expect(onError).toHaveBeenCalledWith(
-      expect.any(Error),
-      expect.any(Object),
-      'test-boundary'
-    );
+    expect(onError).toHaveBeenCalledWith(expect.any(Error), expect.any(Object), 'test-boundary');
   });
 
   test('should allow retry when retry is enabled', async () => {
     const config: ErrorBoundaryConfig = { ...defaultConfig, retry: true };
-    
+
     render(
       <ErrorBoundary {...config}>
         <ConditionalErrorComponent shouldThrow={false} />
@@ -137,12 +135,12 @@ describe('ErrorBoundary', () => {
   });
 
   test('should limit retry attempts', async () => {
-    const config: ErrorBoundaryConfig = { 
-      ...defaultConfig, 
+    const config: ErrorBoundaryConfig = {
+      ...defaultConfig,
       retryAttempts: 2,
-      retryDelay: 10 // Short delay for testing
+      retryDelay: 10, // Short delay for testing
     };
-    
+
     render(
       <ErrorBoundary {...config}>
         <ConditionalErrorComponent shouldThrow={true} />
@@ -171,12 +169,12 @@ describe('ErrorBoundary', () => {
   });
 
   test('should open circuit breaker after error threshold', () => {
-    const config: ErrorBoundaryConfig = { 
-      ...defaultConfig, 
+    const config: ErrorBoundaryConfig = {
+      ...defaultConfig,
       maxErrorRate: 2, // Lower threshold for testing
-      errorRateWindow: 1000 // Short window for testing
+      errorRateWindow: 1000, // Short window for testing
     };
-    
+
     const { rerender } = render(
       <ErrorBoundary {...config}>
         <ConditionalErrorComponent shouldThrow={true} />
@@ -196,11 +194,11 @@ describe('ErrorBoundary', () => {
   });
 
   test('should reset when resetKeys change', () => {
-    const config: ErrorBoundaryConfig = { 
-      ...defaultConfig, 
-      resetKeys: ['key1']
+    const config: ErrorBoundaryConfig = {
+      ...defaultConfig,
+      resetKeys: ['key1'],
     };
-    
+
     const { rerender } = render(
       <ErrorBoundary {...config}>
         <ConditionalErrorComponent shouldThrow={true} resetKeys={['key1']} />
@@ -228,11 +226,11 @@ describe('ErrorBoundary', () => {
       </div>
     );
 
-    const config: ErrorBoundaryConfig = { 
-      ...defaultConfig, 
-      fallback: CustomFallback
+    const config: ErrorBoundaryConfig = {
+      ...defaultConfig,
+      fallback: CustomFallback,
     };
-    
+
     render(
       <ErrorBoundary {...config}>
         <ThrowingComponent />
@@ -254,7 +252,7 @@ describe('ErrorBoundary', () => {
     }
 
     const config: ErrorBoundaryConfig = { ...defaultConfig };
-    
+
     render(
       <ErrorBoundary {...config}>
         <NetworkErrorComponent />
@@ -266,7 +264,7 @@ describe('ErrorBoundary', () => {
 
   test('should track error history', () => {
     const config: ErrorBoundaryConfig = { ...defaultConfig };
-    
+
     const { rerender } = render(
       <ErrorBoundary {...config}>
         <ConditionalErrorComponent shouldThrow={true} />
@@ -290,7 +288,7 @@ describe('ErrorBoundary', () => {
 
   test('should handle async errors', async () => {
     const config: ErrorBoundaryConfig = { ...defaultConfig };
-    
+
     render(
       <ErrorBoundary {...config}>
         <DelayedErrorComponent delay={50} />
@@ -301,14 +299,17 @@ describe('ErrorBoundary', () => {
     expect(screen.getByText('Loading...')).toBeInTheDocument();
 
     // Wait for async error
-    await waitFor(() => {
-      expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
-    }, { timeout: 200 });
+    await waitFor(
+      () => {
+        expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
+      },
+      { timeout: 200 }
+    );
   });
 
   test('should preserve component stack trace', () => {
     const config: ErrorBoundaryConfig = { ...defaultConfig };
-    
+
     render(
       <ErrorBoundary {...config}>
         <ThrowingComponent />
@@ -323,11 +324,11 @@ describe('ErrorBoundary', () => {
 
   test('should handle recovery strategies', () => {
     const onRecovery = jest.fn();
-    const config: ErrorBoundaryConfig = { 
-      ...defaultConfig, 
-      onRecovery
+    const config: ErrorBoundaryConfig = {
+      ...defaultConfig,
+      onRecovery,
     };
-    
+
     render(
       <ErrorBoundary {...config}>
         <ThrowingComponent />
@@ -342,7 +343,7 @@ describe('ErrorBoundary', () => {
 
   test('should handle ignore strategy', () => {
     const config: ErrorBoundaryConfig = { ...defaultConfig };
-    
+
     render(
       <ErrorBoundary {...config}>
         <ThrowingComponent />
@@ -360,11 +361,11 @@ describe('ErrorBoundary', () => {
 
   test('should handle reset strategy', () => {
     const onRecovery = jest.fn();
-    const config: ErrorBoundaryConfig = { 
-      ...defaultConfig, 
-      onRecovery
+    const config: ErrorBoundaryConfig = {
+      ...defaultConfig,
+      onRecovery,
     };
-    
+
     render(
       <ErrorBoundary {...config}>
         <ThrowingComponent />
@@ -380,11 +381,11 @@ describe('ErrorBoundary', () => {
   });
 
   test('should work with nested error boundaries', () => {
-    const innerConfig: ErrorBoundaryConfig = { 
-      ...defaultConfig, 
-      id: 'inner-boundary'
+    const innerConfig: ErrorBoundaryConfig = {
+      ...defaultConfig,
+      id: 'inner-boundary',
     };
-    
+
     render(
       <ErrorBoundary {...defaultConfig}>
         <div>Outer content</div>
@@ -404,11 +405,11 @@ describe('ErrorBoundary', () => {
       throw new Error('Fallback error');
     };
 
-    const config: ErrorBoundaryConfig = { 
-      ...defaultConfig, 
-      fallback: BadFallback
+    const config: ErrorBoundaryConfig = {
+      ...defaultConfig,
+      fallback: BadFallback,
     };
-    
+
     // Should not crash completely
     expect(() => {
       render(
@@ -424,7 +425,7 @@ describe('ErrorBoundary', () => {
     process.env.NODE_ENV = 'development';
 
     const config: ErrorBoundaryConfig = { ...defaultConfig };
-    
+
     render(
       <ErrorBoundary {...config}>
         <ThrowingComponent />
@@ -443,7 +444,7 @@ describe('ErrorBoundary', () => {
     process.env.NODE_ENV = 'production';
 
     const config: ErrorBoundaryConfig = { ...defaultConfig };
-    
+
     render(
       <ErrorBoundary {...config}>
         <ThrowingComponent />
@@ -461,31 +462,23 @@ describe('ErrorBoundary', () => {
 describe('ErrorBoundary Edge Cases', () => {
   test('should handle null children', () => {
     const config: ErrorBoundaryConfig = { id: 'test-boundary' };
-    
+
     expect(() => {
-      render(
-        <ErrorBoundary {...config}>
-          {null}
-        </ErrorBoundary>
-      );
+      render(<ErrorBoundary {...config}>{null}</ErrorBoundary>);
     }).not.toThrow();
   });
 
   test('should handle undefined children', () => {
     const config: ErrorBoundaryConfig = { id: 'test-boundary' };
-    
+
     expect(() => {
-      render(
-        <ErrorBoundary {...config}>
-          {undefined}
-        </ErrorBoundary>
-      );
+      render(<ErrorBoundary {...config}>{undefined}</ErrorBoundary>);
     }).not.toThrow();
   });
 
   test('should handle multiple children', () => {
     const config: ErrorBoundaryConfig = { id: 'test-boundary' };
-    
+
     render(
       <ErrorBoundary {...config}>
         <div>Child 1</div>
@@ -501,7 +494,7 @@ describe('ErrorBoundary Edge Cases', () => {
 
   test('should handle fragments as children', () => {
     const config: ErrorBoundaryConfig = { id: 'test-boundary' };
-    
+
     render(
       <ErrorBoundary {...config}>
         <>

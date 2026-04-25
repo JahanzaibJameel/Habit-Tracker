@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 import { AlertTriangle, X } from 'lucide-react';
 
 import { Button } from './Button';
@@ -69,16 +68,10 @@ export function ConfirmDialog({
   };
 
   return (
-    <AnimatePresence>
+    <>
       {isOpen && (
         <Modal isOpen={isOpen} onClose={onClose}>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.2 }}
-            className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4"
-          >
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div className="p-6">
               <div className="flex items-start space-x-4">
                 <div className={`flex-shrink-0 ${getIconColor()}`}>
@@ -109,9 +102,9 @@ export function ConfirmDialog({
                 </button>
               </div>
             </div>
-          </motion.div>
+          </div>
         </Modal>
       )}
-    </AnimatePresence>
+    </>
   );
 }

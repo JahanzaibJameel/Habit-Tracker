@@ -108,7 +108,9 @@ interface HabitStore {
 
 // Helper function to calculate simple streak
 const calculateSimpleStreak = (completions: HabitCompletion[]): number => {
-  if (completions.length === 0) return 0;
+  if (completions.length === 0) {
+    return 0;
+  }
 
   const sortedDates = completions
     .map((c) => new Date(c.completedAt))
@@ -650,7 +652,9 @@ export const useHabitStore = create<HabitStore>()(
         checkBadgeProgress: (badgeId) => {
           const state = get();
           const badge = state.badges.find((b) => b.id === badgeId);
-          if (!badge) return { progress: 0, isUnlocked: false };
+          if (!badge) {
+            return { progress: 0, isUnlocked: false };
+          }
 
           const isUnlocked = state.unlockedBadges.includes(badgeId);
           let progress = 0;
@@ -752,12 +756,13 @@ export const useHabitStore = create<HabitStore>()(
       {
         name: 'habit-store',
         storage: createJSONStorage(() => {
-          if (typeof window === 'undefined')
+          if (typeof window === 'undefined') {
             return {
               getItem: () => null,
               setItem: () => {},
               removeItem: () => {},
             };
+          }
           return localStorage;
         }),
         partialize: (state) => ({

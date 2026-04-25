@@ -1,14 +1,16 @@
 /**
  * Higher-order component for error boundary wrapping
  * Provides declarative error isolation for any component
- * 
+ *
  * @fileoverview HOC for automatic error boundary wrapping
  * @version 1.0.0
  * @author Enterprise Frontend Team
  */
 
-import React, { ComponentType, ReactNode, ErrorInfo } from 'react';
-import { ErrorBoundary, ErrorBoundaryConfig, ErrorRecoveryStrategy } from './ErrorBoundary';
+import type { ComponentType, ErrorInfo } from 'react';
+import React, { ReactNode } from 'react';
+import type { ErrorBoundaryConfig, ErrorRecoveryStrategy } from './ErrorBoundary';
+import { ErrorBoundary } from './ErrorBoundary';
 
 /**
  * HOC configuration options
@@ -18,17 +20,17 @@ export interface WithErrorBoundaryOptions extends Partial<ErrorBoundaryConfig> {
    * Component to wrap
    */
   component?: ComponentType<any>;
-  
+
   /**
    * Props to pass to the wrapped component
    */
   props?: Record<string, any>;
-  
+
   /**
    * Custom error message for this component
    */
   errorMessage?: string;
-  
+
   /**
    * Whether to show error in development only
    */
@@ -43,12 +45,12 @@ export interface ErrorBoundaryContext {
    * Current boundary ID
    */
   boundaryId: string;
-  
+
   /**
    * Parent boundary ID
    */
   parentBoundaryId?: string;
-  
+
   /**
    * Error history for this boundary
    */
@@ -57,12 +59,12 @@ export interface ErrorBoundaryContext {
     error: Error;
     component: string;
   }>;
-  
+
   /**
    * Report error to parent boundary
    */
   reportError: (error: Error, component: string) => void;
-  
+
   /**
    * Get error statistics
    */
@@ -83,14 +85,14 @@ function createBoundaryId(componentName: string, path: string[] = []): string {
 
 /**
  * Higher-order component that wraps a component with error boundary
- * 
+ *
  * @example
  * const SafeComponent = withErrorBoundary(MyComponent, {
  *   id: 'my-component',
  *   fallback: MyFallback,
  *   retryAttempts: 2
  * });
- * 
+ *
  * @param Component - Component to wrap
  * @param options - Error boundary configuration
  * @returns Wrapped component with error boundary
@@ -167,14 +169,14 @@ export function withErrorBoundary<P extends object>(
 
 /**
  * Creates multiple error boundaries for different component sections
- * 
+ *
  * @example
  * const { SafeHeader, SafeMain, SafeFooter } = createErrorBoundaries({
  *   header: HeaderComponent,
  *   main: MainComponent,
  *   footer: FooterComponent
  * });
- * 
+ *
  * @param components - Object mapping names to components
  * @param defaultOptions - Default options for all boundaries
  * @returns Object with wrapped components
@@ -184,14 +186,14 @@ export function createErrorBoundaries<T extends Record<string, ComponentType<any
   defaultOptions: WithErrorBoundaryOptions = {}
 ): { [K in keyof T]: ComponentType<T[K] extends ComponentType<infer P> ? P : never> } {
   const wrapped = {} as any;
-  
+
   for (const [name, component] of Object.entries(components)) {
     wrapped[name] = withErrorBoundary(component, {
       ...defaultOptions,
       id: defaultOptions.id ? `${defaultOptions.id}-${name}` : name,
     });
   }
-  
+
   return wrapped;
 }
 
@@ -272,14 +274,16 @@ export class ErrorBoundaryFactory {
       id: `critical-${componentName}`,
       retry: false,
       fallback: () => (
-        <div style={{ 
-          padding: '2rem', 
-          textAlign: 'center',
-          backgroundColor: '#fee',
-          border: '2px solid #f00',
-          borderRadius: '8px',
-          color: '#900'
-        }}>
+        <div
+          style={{
+            padding: '2rem',
+            textAlign: 'center',
+            backgroundColor: '#fee',
+            border: '2px solid #f00',
+            borderRadius: '8px',
+            color: '#900',
+          }}
+        >
           <h2>Critical Component Error</h2>
           <p>The essential component "{componentName}" has failed.</p>
           <p>Please refresh the page to continue.</p>
@@ -292,7 +296,7 @@ export class ErrorBoundaryFactory {
 
 /**
  * Error boundary decorator for class components
- * 
+ *
  * @example
  * @withErrorBoundaryDecorator({
  *   id: 'my-class-component',
@@ -394,12 +398,15 @@ export class ErrorBoundaryMonitor {
   private static instance: ErrorBoundaryMonitor;
   private errorCounts = new Map<string, number>();
   private errorTimes = new Map<string, number[]>();
-  private recoveryStats = new Map<string, {
-    retry: number;
-    reset: number;
-    ignore: number;
-    escalate: number;
-  }>();
+  private recoveryStats = new Map<
+    string,
+    {
+      retry: number;
+      reset: number;
+      ignore: number;
+      escalate: number;
+    }
+  >();
 
   static getInstance(): ErrorBoundaryMonitor {
     if (!this.instance) {
@@ -418,18 +425,27 @@ export class ErrorBoundaryMonitor {
   }
 
   recordRecovery(boundaryId: string, strategy: ErrorRecoveryStrategy): void {
-    const stats: Record<ErrorRecoveryStrategy, number> = Object.assign({
-      retry: 0,
-      reset: 0,
-      ignore: 0,
-      escalate: 0,
-      fallback: 0,
-    }, this.recoveryStats.get(boundaryId) || {});
-    if (strategy === 'retry') stats.retry++;
-    else if (strategy === 'reset') stats.reset++;
-    else if (strategy === 'ignore') stats.ignore++;
-    else if (strategy === 'escalate') stats.escalate++;
-    else if (strategy === 'fallback') stats.fallback++;
+    const stats: Record<ErrorRecoveryStrategy, number> = Object.assign(
+      {
+        retry: 0,
+        reset: 0,
+        ignore: 0,
+        escalate: 0,
+        fallback: 0,
+      },
+      this.recoveryStats.get(boundaryId) || {}
+    );
+    if (strategy === 'retry') {
+      stats.retry++;
+    } else if (strategy === 'reset') {
+      stats.reset++;
+    } else if (strategy === 'ignore') {
+      stats.ignore++;
+    } else if (strategy === 'escalate') {
+      stats.escalate++;
+    } else if (strategy === 'fallback') {
+      stats.fallback++;
+    }
     this.recoveryStats.set(boundaryId, stats);
   }
 
@@ -441,8 +457,10 @@ export class ErrorBoundaryMonitor {
   } {
     const errorCount = this.errorCounts.get(boundaryId) || 0;
     const errorTimes = this.errorTimes.get(boundaryId) || [];
-    const recentErrors = errorTimes.filter(time => Date.now() - time < 60000).length; // Last minute
-    const recoveryStats: Record<ErrorRecoveryStrategy, number> = (this.recoveryStats.get(boundaryId) || {
+    const recentErrors = errorTimes.filter((time) => Date.now() - time < 60000).length; // Last minute
+    const recoveryStats: Record<ErrorRecoveryStrategy, number> = (this.recoveryStats.get(
+      boundaryId
+    ) || {
       retry: 0,
       reset: 0,
       ignore: 0,
@@ -460,11 +478,11 @@ export class ErrorBoundaryMonitor {
 
   getAllStats(): Record<string, ReturnType<typeof this.getStats>> {
     const allStats: Record<string, ReturnType<typeof this.getStats>> = {};
-    
+
     for (const boundaryId of this.errorCounts.keys()) {
       allStats[boundaryId] = this.getStats(boundaryId);
     }
-    
+
     return allStats;
   }
 

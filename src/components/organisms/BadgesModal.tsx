@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 import { Award, Calendar, Lock, Star, Target, Trophy, Zap } from 'lucide-react';
 
 import { cn } from '../../lib/utils';
@@ -52,7 +51,9 @@ const BadgesModal: React.FC<BadgesModalProps> = ({
   };
 
   const getProgressPercentage = (badge: Badge) => {
-    if (!badge.requirement) return 0;
+    if (!badge.requirement) {
+      return 0;
+    }
 
     switch (badge.requirement.type) {
       case 'streak_days':
@@ -70,20 +71,14 @@ const BadgesModal: React.FC<BadgesModalProps> = ({
   };
 
   return (
-    <AnimatePresence>
+    <>
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
+        <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
           onClick={onClose}
         >
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="bg-background rounded-lg shadow-xl border max-w-4xl w-full max-h-[80vh] overflow-hidden"
+          <div
+            className="bg-background rounded-lg shadow-xl max-w-4xl w-full max-h-[80vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <Card>
@@ -150,124 +145,116 @@ const BadgesModal: React.FC<BadgesModalProps> = ({
 
                 {/* Badges Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-h-96 overflow-y-auto">
-                  <AnimatePresence>
-                    {filteredBadges.map((badge) => {
-                      const isUnlocked = unlockedBadges.includes(badge.id);
-                      const progress = getProgressPercentage(badge);
+                  {filteredBadges.map((badge) => {
+                    const isUnlocked = unlockedBadges.includes(badge.id);
+                    const progress = getProgressPercentage(badge);
 
-                      return (
-                        <motion.div
-                          key={badge.id}
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.8 }}
-                          whileHover={{ scale: 1.05 }}
+                    return (
+                      <div
+                        key={badge.id}
+                        className="relative bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                        onClick={() => !isUnlocked && onUnlockBadge(badge.id)}
+                      >
+                        {/* Badge Icon */}
+                        <div className="flex justify-center mb-3">
+                          <div
+                            className={cn(
+                              'p-3 rounded-full',
+                              isUnlocked
+                                ? 'bg-gradient-to-br from-yellow-400 to-amber-400 text-white'
+                                : 'bg-muted text-muted-foreground'
+                            )}
+                          >
+                            {getBadgeIcon(badge)}
+                          </div>
+                        </div>
+
+                        {/* Badge Name */}
+                        <h3
                           className={cn(
-                            'relative p-4 rounded-lg border transition-all cursor-pointer',
-                            isUnlocked
-                              ? 'bg-gradient-to-br from-yellow-50 to-amber-50 border-amber-200 dark:from-yellow-950 dark:to-amber-900 dark:border-amber-800'
-                              : 'bg-muted/50 border-muted opacity-60'
+                            'font-semibold text-center mb-2',
+                            isUnlocked ? 'text-foreground' : 'text-muted-foreground'
                           )}
-                          onClick={() => !isUnlocked && onUnlockBadge(badge.id)}
                         >
-                          {/* Badge Icon */}
-                          <div className="flex justify-center mb-3">
-                            <div
-                              className={cn(
-                                'p-3 rounded-full',
-                                isUnlocked
-                                  ? 'bg-gradient-to-br from-yellow-400 to-amber-400 text-white'
-                                  : 'bg-muted text-muted-foreground'
-                              )}
-                            >
-                              {getBadgeIcon(badge)}
+                          {badge.name}
+                        </h3>
+
+                        {/* Badge Description */}
+                        <p
+                          className={cn(
+                            'text-sm text-center mb-3',
+                            isUnlocked ? 'text-muted-foreground' : 'text-muted-foreground/70'
+                          )}
+                        >
+                          {badge.description}
+                        </p>
+
+                        {/* Requirement */}
+                        {!isUnlocked && badge.requirement && (
+                          <div className="space-y-2">
+                            <div className="flex items-center space-x-2 text-sm text-amber-600 dark:text-amber-400">
+                              <Lock className="h-4 w-4" />
+                              <span className="font-medium">
+                                {badge.requirement.type === 'streak_days' &&
+                                  `Maintain ${badge.requirement.value} day streak`}
+                                {badge.requirement.type === 'total_completions' &&
+                                  `Complete ${badge.requirement.value} total habits`}
+                                {badge.requirement.type === 'habit_streak' &&
+                                  `${badge.requirement.value} day streak for specific habit`}
+                                {badge.requirement.type === 'special' && 'Special achievement'}
+                              </span>
                             </div>
-                          </div>
 
-                          {/* Badge Name */}
-                          <h3
-                            className={cn(
-                              'font-semibold text-center mb-2',
-                              isUnlocked ? 'text-foreground' : 'text-muted-foreground'
-                            )}
-                          >
-                            {badge.name}
-                          </h3>
-
-                          {/* Badge Description */}
-                          <p
-                            className={cn(
-                              'text-sm text-center mb-3',
-                              isUnlocked ? 'text-muted-foreground' : 'text-muted-foreground/70'
-                            )}
-                          >
-                            {badge.description}
-                          </p>
-
-                          {/* Requirement */}
-                          {!isUnlocked && badge.requirement && (
-                            <div className="space-y-2">
-                              <div className="flex items-center space-x-2 text-sm text-amber-600 dark:text-amber-400">
-                                <Lock className="h-4 w-4" />
-                                <span className="font-medium">
-                                  {badge.requirement.type === 'streak_days' &&
-                                    `Maintain ${badge.requirement.value} day streak`}
-                                  {badge.requirement.type === 'total_completions' &&
-                                    `Complete ${badge.requirement.value} total habits`}
-                                  {badge.requirement.type === 'habit_streak' &&
-                                    `${badge.requirement.value} day streak for specific habit`}
-                                  {badge.requirement.type === 'special' && 'Special achievement'}
-                                </span>
+                            {/* Progress Bar */}
+                            {badge.requirement.type !== 'special' && (
+                              <div className="w-full bg-muted rounded-full h-2">
+                                <div
+                                  className="bg-gradient-to-r from-amber-400 to-amber-500 h-2 rounded-full transition-all duration-300"
+                                  style={{ width: `${Math.min(progress, 100)}%` }}
+                                />
                               </div>
-
-                              {/* Progress Bar */}
-                              {badge.requirement.type !== 'special' && (
-                                <div className="w-full bg-muted rounded-full h-2">
-                                  <div
-                                    className="bg-gradient-to-r from-amber-400 to-amber-500 h-2 rounded-full transition-all duration-300"
-                                    style={{ width: `${Math.min(progress, 100)}%` }}
-                                  />
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Unlocked Date */}
-                          {isUnlocked && badge.unlockedAt && (
-                            <div className="flex items-center justify-center text-xs text-muted-foreground mt-2">
-                              <Calendar className="h-3 w-3 mr-1" />
-                              Unlocked {new Date(badge.unlockedAt).toLocaleDateString()}
-                            </div>
-                          )}
-
-                          {/* Rarity Indicator */}
-                          <div className="absolute top-2 right-2">
-                            <div
-                              className={cn(
-                                'px-2 py-1 text-xs font-medium rounded',
-                                badge.rarity === 'legendary' &&
-                                  'bg-gradient-to-r from-yellow-400 to-amber-400 text-white',
-                                badge.rarity === 'epic' &&
-                                  'bg-gradient-to-r from-purple-400 to-pink-400 text-white',
-                                badge.rarity === 'rare' &&
-                                  'bg-gradient-to-r from-blue-400 to-cyan-400 text-white',
-                                badge.rarity === 'common' && 'bg-gray-400 text-white'
-                              )}
-                            >
-                              {badge.rarity}
-                            </div>
+                            )}
                           </div>
+                        )}
 
-                          {/* Special Effects for Legendary Badges */}
-                          {isUnlocked && badge.rarity === 'legendary' && (
-                            <div className="absolute inset-0 pointer-events-none">
-                              <div className="animate-pulse bg-gradient-to-r from-yellow-200/20 to-amber-200/20 rounded-lg" />
-                            </div>
-                          )}
-                        </motion.div>
-                      );
-                    })}
-                  </AnimatePresence>
+                        {/* Unlocked Date */}
+                        {isUnlocked && badge.unlockedAt && (
+                          <div className="flex items-center justify-center text-xs text-muted-foreground mt-2">
+                            <Calendar className="h-3 w-3 mr-1" />
+                            Unlocked {new Date(badge.unlockedAt).toLocaleDateString()}
+                          </div>
+                        )}
+
+                        {/* Rarity Indicator */}
+                        <div className="absolute top-2 right-2">
+                          <div
+                            className={cn(
+                              'px-2 py-1 text-xs font-medium rounded',
+                              badge.rarity === 'legendary'
+                                ? 'bg-gradient-to-r from-yellow-400 to-amber-400 text-white'
+                                : '',
+                              badge.rarity === 'epic'
+                                ? 'bg-gradient-to-r from-purple-400 to-pink-400 text-white'
+                                : '',
+                              badge.rarity === 'rare'
+                                ? 'bg-gradient-to-r from-blue-400 to-cyan-400 text-white'
+                                : '',
+                              badge.rarity === 'common' ? 'bg-gray-400 text-white' : ''
+                            )}
+                          >
+                            {badge.rarity}
+                          </div>
+                        </div>
+
+                        {/* Special Effects for Legendary Badges */}
+                        {isUnlocked && badge.rarity === 'legendary' && (
+                          <div className="absolute inset-0 pointer-events-none">
+                            <div className="animate-pulse bg-gradient-to-r from-yellow-200/20 to-amber-200/20 rounded-lg" />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {/* Empty State */}
@@ -280,10 +267,10 @@ const BadgesModal: React.FC<BadgesModalProps> = ({
                 )}
               </CardContent>
             </Card>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   );
 };
 

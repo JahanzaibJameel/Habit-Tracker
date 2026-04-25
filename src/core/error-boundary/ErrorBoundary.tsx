@@ -1,13 +1,14 @@
 /**
  * Advanced Error Boundary with hierarchical isolation
  * Prevents cascading failures and provides recovery strategies
- * 
+ *
  * @fileoverview Error boundary component with isolation capabilities
  * @version 1.0.0
  * @author Enterprise Frontend Team
  */
 
-import React, { Component, ReactNode, ErrorInfo, ComponentType } from 'react';
+import type { ReactNode, ErrorInfo, ComponentType } from 'react';
+import React, { Component } from 'react';
 
 /**
  * Error boundary configuration
@@ -17,52 +18,52 @@ export interface ErrorBoundaryConfig {
    * Unique identifier for this boundary
    */
   id: string;
-  
+
   /**
    * Fallback component to render on error
    */
   fallback?: ComponentType<ErrorFallbackProps>;
-  
+
   /**
    * Development fallback component
    */
   devFallback?: ComponentType<ErrorFallbackProps>;
-  
+
   /**
    * Error callback for logging/monitoring
    */
   onError?: (error: Error, errorInfo: ErrorInfo, boundaryId: string) => void;
-  
+
   /**
    * Recovery callback
    */
   onRecovery?: (boundaryId: string, strategy: ErrorRecoveryStrategy) => void;
-  
+
   /**
    * Reset keys that trigger boundary reset when changed
    */
   resetKeys?: readonly unknown[];
-  
+
   /**
    * Whether to retry automatically
    */
   retry?: boolean;
-  
+
   /**
    * Number of retry attempts
    */
   retryAttempts?: number;
-  
+
   /**
    * Delay between retries in milliseconds
    */
   retryDelay?: number;
-  
+
   /**
    * Maximum error rate before circuit breaker
    */
   maxErrorRate?: number;
-  
+
   /**
    * Time window for error rate calculation (ms)
    */
@@ -126,7 +127,7 @@ const DefaultProductionFallback: ComponentType<ErrorFallbackProps> = ({
 }) => {
   const canRetry = recoveryStrategies.includes(ErrorRecoveryStrategy.RETRY) && !circuitBreakerOpen;
   const maxRetries = 3;
-  
+
   return (
     <div
       role="alert"
@@ -146,7 +147,7 @@ const DefaultProductionFallback: ComponentType<ErrorFallbackProps> = ({
       <p style={{ margin: '0 0 1rem 0', fontSize: '0.875rem' }}>
         This section encountered an error and couldn't display properly.
       </p>
-      
+
       {canRetry && retryCount < maxRetries && (
         <button
           onClick={onRetry}
@@ -163,7 +164,7 @@ const DefaultProductionFallback: ComponentType<ErrorFallbackProps> = ({
           Try Again {retryCount > 0 && `(${retryCount}/${maxRetries})`}
         </button>
       )}
-      
+
       {circuitBreakerOpen && (
         <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.75rem', fontStyle: 'italic' }}>
           Temporarily disabled due to repeated errors. Please refresh the page.
@@ -188,7 +189,7 @@ const DefaultDevelopmentFallback: ComponentType<ErrorFallbackProps> = ({
   circuitBreakerOpen,
 }) => {
   const [showDetails, setShowDetails] = React.useState(false);
-  
+
   return (
     <div
       role="alert"
@@ -203,19 +204,22 @@ const DefaultDevelopmentFallback: ComponentType<ErrorFallbackProps> = ({
         fontFamily: 'monospace',
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '1rem',
+        }}
+      >
         <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 'bold' }}>
           Error Boundary: {boundaryId}
         </h3>
-        <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>
-          Retry: {retryCount}
-        </span>
+        <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>Retry: {retryCount}</span>
       </div>
-      
-      <p style={{ margin: '0 0 1rem 0', fontSize: '0.875rem' }}>
-        {error.message}
-      </p>
-      
+
+      <p style={{ margin: '0 0 1rem 0', fontSize: '0.875rem' }}>{error.message}</p>
+
       <div style={{ marginBottom: '1rem' }}>
         <button
           onClick={() => setShowDetails(!showDetails)}
@@ -232,7 +236,7 @@ const DefaultDevelopmentFallback: ComponentType<ErrorFallbackProps> = ({
         >
           {showDetails ? 'Hide' : 'Show'} Details
         </button>
-        
+
         {recoveryStrategies.includes(ErrorRecoveryStrategy.RETRY) && !circuitBreakerOpen && (
           <button
             onClick={onRetry}
@@ -250,7 +254,7 @@ const DefaultDevelopmentFallback: ComponentType<ErrorFallbackProps> = ({
             Retry
           </button>
         )}
-        
+
         {recoveryStrategies.includes(ErrorRecoveryStrategy.RESET) && (
           <button
             onClick={onReset}
@@ -268,7 +272,7 @@ const DefaultDevelopmentFallback: ComponentType<ErrorFallbackProps> = ({
             Reset
           </button>
         )}
-        
+
         {recoveryStrategies.includes(ErrorRecoveryStrategy.IGNORE) && (
           <button
             onClick={onIgnore}
@@ -286,7 +290,7 @@ const DefaultDevelopmentFallback: ComponentType<ErrorFallbackProps> = ({
           </button>
         )}
       </div>
-      
+
       {showDetails && (
         <div style={{ fontSize: '0.75rem', lineHeight: '1.4' }}>
           <div style={{ marginBottom: '0.5rem' }}>
@@ -294,13 +298,29 @@ const DefaultDevelopmentFallback: ComponentType<ErrorFallbackProps> = ({
           </div>
           <div style={{ marginBottom: '0.5rem' }}>
             <strong>Stack:</strong>
-            <pre style={{ margin: '0.25rem 0', padding: '0.5rem', backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: '4px', overflow: 'auto' }}>
+            <pre
+              style={{
+                margin: '0.25rem 0',
+                padding: '0.5rem',
+                backgroundColor: 'rgba(0,0,0,0.1)',
+                borderRadius: '4px',
+                overflow: 'auto',
+              }}
+            >
               {error.stack}
             </pre>
           </div>
           <div style={{ marginBottom: '0.5rem' }}>
             <strong>Component Stack:</strong>
-            <pre style={{ margin: '0.25rem 0', padding: '0.5rem', backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: '4px', overflow: 'auto' }}>
+            <pre
+              style={{
+                margin: '0.25rem 0',
+                padding: '0.5rem',
+                backgroundColor: 'rgba(0,0,0,0.1)',
+                borderRadius: '4px',
+                overflow: 'auto',
+              }}
+            >
               {errorInfo.componentStack}
             </pre>
           </div>
@@ -334,7 +354,7 @@ export class ErrorBoundary extends Component<
 
   constructor(props: ErrorBoundaryConfig & { children: ReactNode }) {
     super(props);
-    
+
     this.state = {
       hasError: false,
       error: null,
@@ -349,27 +369,27 @@ export class ErrorBoundary extends Component<
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const { onError, id } = this.props;
-    
+
     // Add to error history
     const errorEntry = {
       timestamp: Date.now(),
       error,
       errorInfo,
     };
-    
-    this.setState(prevState => ({
+
+    this.setState((prevState) => ({
       errorInfo,
       errorHistory: [...prevState.errorHistory.slice(-9), errorEntry], // Keep last 10 errors
     }));
-    
+
     // Check circuit breaker
     this.checkCircuitBreaker();
-    
+
     // Call error callback
     if (onError) {
       onError(error, errorInfo, id);
     }
-    
+
     // Log to console in development
     if (process.env.NODE_ENV === 'development') {
       console.error(`Error Boundary [${id}]:`, error, errorInfo);
@@ -379,11 +399,13 @@ export class ErrorBoundary extends Component<
   componentDidUpdate(prevProps: ErrorBoundaryConfig & { children: ReactNode }) {
     const { resetKeys } = this.props;
     const { hasError } = this.state;
-    
+
     // Reset boundary if reset keys changed
     if (hasError && resetKeys && prevProps.resetKeys) {
-      const hasResetKeyChanged = resetKeys.some((key, index) => key !== prevProps.resetKeys?.[index]);
-      
+      const hasResetKeyChanged = resetKeys.some(
+        (key, index) => key !== prevProps.resetKeys?.[index]
+      );
+
       if (hasResetKeyChanged) {
         this.reset();
       }
@@ -402,13 +424,13 @@ export class ErrorBoundary extends Component<
   private checkCircuitBreaker = () => {
     const { maxErrorRate = 5, errorRateWindow = 60000 } = this.props; // 5 errors per minute default
     const { errorHistory } = this.state;
-    
+
     const now = Date.now();
-    const recentErrors = errorHistory.filter(entry => now - entry.timestamp < errorRateWindow);
-    
+    const recentErrors = errorHistory.filter((entry) => now - entry.timestamp < errorRateWindow);
+
     if (recentErrors.length >= maxErrorRate) {
       this.setState({ circuitBreakerOpen: true });
-      
+
       // Auto-close circuit breaker after 5 minutes
       setTimeout(() => {
         this.setState({ circuitBreakerOpen: false });
@@ -422,27 +444,30 @@ export class ErrorBoundary extends Component<
   private handleRetry = () => {
     const { retryAttempts = 3, retryDelay = 1000, onRecovery, id } = this.props;
     const { retryCount, circuitBreakerOpen } = this.state;
-    
+
     if (circuitBreakerOpen || retryCount >= retryAttempts) {
       return;
     }
-    
+
     this.setState({ isRetrying: true });
-    
+
     if (onRecovery) {
       onRecovery(id, ErrorRecoveryStrategy.RETRY);
     }
-    
+
     // Delay retry
-    this.retryTimer = setTimeout(() => {
-      this.setState(prevState => ({
-        hasError: false,
-        error: null,
-        errorInfo: null,
-        isRetrying: false,
-        retryCount: prevState.retryCount + 1,
-      }));
-    }, retryDelay * Math.pow(2, retryCount)); // Exponential backoff
+    this.retryTimer = setTimeout(
+      () => {
+        this.setState((prevState) => ({
+          hasError: false,
+          error: null,
+          errorInfo: null,
+          isRetrying: false,
+          retryCount: prevState.retryCount + 1,
+        }));
+      },
+      retryDelay * Math.pow(2, retryCount)
+    ); // Exponential backoff
   };
 
   /**
@@ -450,11 +475,11 @@ export class ErrorBoundary extends Component<
    */
   private handleReset = () => {
     const { onRecovery, id } = this.props;
-    
+
     if (onRecovery) {
       onRecovery(id, ErrorRecoveryStrategy.RESET);
     }
-    
+
     this.reset();
   };
 
@@ -463,11 +488,11 @@ export class ErrorBoundary extends Component<
    */
   private handleIgnore = () => {
     const { onRecovery, id } = this.props;
-    
+
     if (onRecovery) {
       onRecovery(id, ErrorRecoveryStrategy.IGNORE);
     }
-    
+
     this.setState({
       hasError: false,
       error: null,
@@ -498,28 +523,30 @@ export class ErrorBoundary extends Component<
     const { retry = true } = this.props;
     const { circuitBreakerOpen, retryCount } = this.state;
     const strategies: ErrorRecoveryStrategy[] = [ErrorRecoveryStrategy.FALLBACK];
-    
+
     if (retry && !circuitBreakerOpen && retryCount < 3) {
       strategies.push(ErrorRecoveryStrategy.RETRY);
     }
-    
+
     strategies.push(ErrorRecoveryStrategy.RESET);
     strategies.push(ErrorRecoveryStrategy.IGNORE);
-    
+
     return strategies;
   };
 
   render() {
     const { hasError, error, errorInfo, retryCount, circuitBreakerOpen } = this.state;
     const { children, fallback, devFallback, id } = this.props;
-    
+
     if (!hasError || !error || !errorInfo) {
       return children;
     }
-    
+
     const isDevelopment = process.env.NODE_ENV === 'development';
-    const FallbackComponent = isDevelopment ? (devFallback || DefaultDevelopmentFallback) : (fallback || DefaultProductionFallback);
-    
+    const FallbackComponent = isDevelopment
+      ? devFallback || DefaultDevelopmentFallback
+      : fallback || DefaultProductionFallback;
+
     return (
       <FallbackComponent
         error={error}
@@ -561,10 +588,6 @@ export const ErrorBoundaryProvider: React.FC<ErrorBoundaryProviderProps> = ({
     onError: globalErrorHandler,
     ...config,
   };
-  
-  return (
-    <ErrorBoundary {...defaultConfig}>
-      {children}
-    </ErrorBoundary>
-  );
+
+  return <ErrorBoundary {...defaultConfig}>{children}</ErrorBoundary>;
 };

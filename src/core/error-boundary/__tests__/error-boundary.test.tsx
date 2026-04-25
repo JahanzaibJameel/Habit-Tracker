@@ -1,7 +1,7 @@
 /**
  * Comprehensive unit tests for error boundary system
  * Tests ErrorBoundary, HOC, fallbacks, context, and circuit breaker
- * 
+ *
  * @fileoverview Error boundary system tests
  * @version 1.0.0
  * @author Enterprise Frontend Team
@@ -16,12 +16,12 @@ import '@testing-library/jest-dom';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { withErrorBoundary } from '../withErrorBoundary';
 import { ErrorContext } from '../ErrorContext';
-import { 
-  ProductionFallback, 
-  DevFallback, 
-  AdaptiveFallback, 
+import {
+  ProductionFallback,
+  DevFallback,
+  AdaptiveFallback,
   MinimalFallback,
-  AsyncFallback 
+  AsyncFallback,
 } from '../ErrorFallback';
 import { CircuitBreaker, CircuitBreakerFactory, useCircuitBreaker } from '../CircuitBreaker';
 
@@ -104,14 +104,10 @@ describe('ErrorBoundary Component', () => {
 
   test('should handle retry strategy', async () => {
     const onRecovery = jest.fn();
-    let shouldThrow = true;
+    const shouldThrow = true;
 
     render(
-      <ErrorBoundary 
-        id="test-boundary" 
-        strategy="retry"
-        onRecovery={onRecovery}
-      >
+      <ErrorBoundary id="test-boundary" strategy="retry" onRecovery={onRecovery}>
         <ThrowErrorComponent shouldThrow={shouldThrow} />
       </ErrorBoundary>
     );
@@ -143,9 +139,7 @@ describe('ErrorBoundary Component', () => {
 });
 
 describe('withErrorBoundary HOC', () => {
-  const TestComponent = ({ name }: { name: string }) => (
-    <div>Hello {name}</div>
-  );
+  const TestComponent = ({ name }: { name: string }) => <div>Hello {name}</div>;
 
   const ThrowingComponent = ({ shouldThrow }: { shouldThrow: boolean }) => {
     if (shouldThrow) {
@@ -190,13 +184,7 @@ describe('Error Fallback Components', () => {
   };
 
   test('ProductionFallback should render minimal UI', () => {
-    render(
-      <ProductionFallback
-        error={mockError}
-        boundaryId="test"
-        onRetry={jest.fn()}
-      />
-    );
+    render(<ProductionFallback error={mockError} boundaryId="test" onRetry={jest.fn()} />);
 
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
     expect(screen.getByText('Try Again')).toBeInTheDocument();
@@ -205,22 +193,12 @@ describe('Error Fallback Components', () => {
 
   test('ProductionFallback should adapt to severity levels', () => {
     const { rerender } = render(
-      <ProductionFallback
-        error={mockError}
-        boundaryId="test"
-        severity="critical"
-      />
+      <ProductionFallback error={mockError} boundaryId="test" severity="critical" />
     );
 
     expect(screen.getByText(/critical error/i)).toBeInTheDocument();
 
-    rerender(
-      <ProductionFallback
-        error={mockError}
-        boundaryId="test"
-        severity="low"
-      />
-    );
+    rerender(<ProductionFallback error={mockError} boundaryId="test" severity="low" />);
 
     expect(screen.getByText(/continue using the app/i)).toBeInTheDocument();
   });
@@ -248,13 +226,7 @@ describe('Error Fallback Components', () => {
   });
 
   test('DevFallback should toggle details visibility', async () => {
-    render(
-      <DevFallback
-        error={mockError}
-        errorInfo={mockErrorInfo}
-        boundaryId="test"
-      />
-    );
+    render(<DevFallback error={mockError} errorInfo={mockErrorInfo} boundaryId="test" />);
 
     const toggleButton = screen.getByText('Show Details');
     expect(screen.queryByText('Error Stack')).not.toBeInTheDocument();
@@ -276,20 +248,12 @@ describe('Error Fallback Components', () => {
     };
     Object.assign(navigator, { clipboard: mockClipboard });
 
-    render(
-      <DevFallback
-        error={mockError}
-        errorInfo={mockErrorInfo}
-        boundaryId="test"
-      />
-    );
+    render(<DevFallback error={mockError} errorInfo={mockErrorInfo} boundaryId="test" />);
 
     fireEvent.click(screen.getByText('Copy'));
-    
+
     await waitFor(() => {
-      expect(mockClipboard.writeText).toHaveBeenCalledWith(
-        expect.stringContaining('Test error')
-      );
+      expect(mockClipboard.writeText).toHaveBeenCalledWith(expect.stringContaining('Test error'));
     });
 
     expect(screen.getByText('Copied!')).toBeInTheDocument();
@@ -300,22 +264,12 @@ describe('Error Fallback Components', () => {
 
     // Test development mode
     process.env.NODE_ENV = 'development';
-    const { rerender } = render(
-      <AdaptiveFallback
-        error={mockError}
-        boundaryId="test"
-      />
-    );
+    const { rerender } = render(<AdaptiveFallback error={mockError} boundaryId="test" />);
     expect(screen.getByText(/Error Stack/i)).toBeInTheDocument();
 
     // Test production mode
     process.env.NODE_ENV = 'production';
-    rerender(
-      <AdaptiveFallback
-        error={mockError}
-        boundaryId="test"
-      />
-    );
+    rerender(<AdaptiveFallback error={mockError} boundaryId="test" />);
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
 
     // Restore
@@ -323,13 +277,7 @@ describe('Error Fallback Components', () => {
   });
 
   test('MinimalFallback should render inline error', () => {
-    render(
-      <MinimalFallback
-        error={mockError}
-        boundaryId="test"
-        onRetry={jest.fn()}
-      />
-    );
+    render(<MinimalFallback error={mockError} boundaryId="test" onRetry={jest.fn()} />);
 
     expect(screen.getByText('!')).toBeInTheDocument();
     expect(screen.getByText('Failed to load')).toBeInTheDocument();
@@ -337,13 +285,7 @@ describe('Error Fallback Components', () => {
   });
 
   test('AsyncFallback should handle async operation errors', () => {
-    render(
-      <AsyncFallback
-        error={mockError}
-        boundaryId="test"
-        onRetry={jest.fn()}
-      />
-    );
+    render(<AsyncFallback error={mockError} boundaryId="test" onRetry={jest.fn()} />);
 
     expect(screen.getByText('Operation failed')).toBeInTheDocument();
     expect(screen.getByText('An async operation failed to complete.')).toBeInTheDocument();
@@ -354,7 +296,7 @@ describe('ErrorContext', () => {
   test('should provide error reporting functions', () => {
     const TestConsumer = () => {
       const { reportError, reportMessage, clearErrors } = React.useContext(ErrorContext);
-      
+
       React.useEffect(() => {
         reportError(new Error('Context test error'));
         reportMessage('Test message', 'warning');
@@ -365,13 +307,15 @@ describe('ErrorContext', () => {
     };
 
     render(
-      <ErrorContext.Provider value={{
-        errors: [],
-        reportError: jest.fn(),
-        reportMessage: jest.fn(),
-        clearErrors: jest.fn(),
-        resetAll: jest.fn(),
-      }}>
+      <ErrorContext.Provider
+        value={{
+          errors: [],
+          reportError: jest.fn(),
+          reportMessage: jest.fn(),
+          clearErrors: jest.fn(),
+          resetAll: jest.fn(),
+        }}
+      >
         <TestConsumer />
       </ErrorContext.Provider>
     );
@@ -381,15 +325,17 @@ describe('ErrorContext', () => {
 
   test('should maintain error history', () => {
     const mockReportError = jest.fn();
-    
+
     const TestProvider = ({ children }: { children: React.ReactNode }) => (
-      <ErrorContext.Provider value={{
-        errors: [],
-        reportError: mockReportError,
-        reportMessage: jest.fn(),
-        clearErrors: jest.fn(),
-        resetAll: jest.fn(),
-      }}>
+      <ErrorContext.Provider
+        value={{
+          errors: [],
+          reportError: mockReportError,
+          reportMessage: jest.fn(),
+          clearErrors: jest.fn(),
+          resetAll: jest.fn(),
+        }}
+      >
         {children}
       </ErrorContext.Provider>
     );
@@ -525,7 +471,7 @@ describe('CircuitBreaker', () => {
   test('should provide statistics', async () => {
     // Execute some operations
     await circuitBreaker.execute(async () => 'success');
-    
+
     try {
       await circuitBreaker.execute(async () => {
         throw new Error('test error');
@@ -535,7 +481,7 @@ describe('CircuitBreaker', () => {
     }
 
     const stats = circuitBreaker.getStats();
-    
+
     expect(stats.state).toBe('CLOSED');
     expect(stats.totalOperations).toBe(2);
     expect(stats.successCount).toBe(1);
@@ -614,7 +560,7 @@ describe('CircuitBreakerFactory', () => {
   test('should create and reuse instances', () => {
     const cb1 = CircuitBreakerFactory.get('factory-test');
     const cb2 = CircuitBreakerFactory.get('factory-test');
-    
+
     expect(cb1).toBe(cb2);
   });
 
@@ -627,7 +573,7 @@ describe('CircuitBreakerFactory', () => {
   test('should get all instances', () => {
     CircuitBreakerFactory.get('instance-1');
     CircuitBreakerFactory.get('instance-2');
-    
+
     const all = CircuitBreakerFactory.getAll();
     expect(all.size).toBe(2);
     expect(all.has('instance-1')).toBe(true);
@@ -637,16 +583,16 @@ describe('CircuitBreakerFactory', () => {
   test('should reset all instances', () => {
     const cb1 = CircuitBreakerFactory.get('reset-test-1');
     const cb2 = CircuitBreakerFactory.get('reset-test-2');
-    
+
     // Open circuits
     cb1.open();
     cb2.open();
-    
+
     expect(cb1.getState()).toBe('OPEN');
     expect(cb2.getState()).toBe('OPEN');
-    
+
     CircuitBreakerFactory.resetAll();
-    
+
     expect(cb1.getState()).toBe('CLOSED');
     expect(cb2.getState()).toBe('CLOSED');
   });
@@ -654,7 +600,7 @@ describe('CircuitBreakerFactory', () => {
   test('should get all stats', () => {
     CircuitBreakerFactory.get('stats-test-1');
     CircuitBreakerFactory.get('stats-test-2');
-    
+
     const stats = CircuitBreakerFactory.getAllStats();
     expect(stats).toHaveProperty('stats-test-1');
     expect(stats).toHaveProperty('stats-test-2');
@@ -669,7 +615,7 @@ describe('withCircuitBreaker HOC', () => {
     });
 
     const result = await wrappedOperation();
-    
+
     expect(result).toBe('success');
     expect(mockOperation).toHaveBeenCalled();
   });
@@ -682,7 +628,7 @@ describe('withCircuitBreaker HOC', () => {
 
     // Fail once to open circuit
     mockOperation.mockRejectedValueOnce(new Error('test error'));
-    
+
     try {
       await wrappedOperation();
     } catch (error) {
@@ -701,7 +647,7 @@ describe('useCircuitBreaker Hook', () => {
   test('should provide circuit breaker interface', () => {
     const TestComponent = () => {
       const { state, execute, reset, open } = useCircuitBreaker('hook-test');
-      
+
       return (
         <div>
           <span data-testid="state">{state}</span>
@@ -713,7 +659,7 @@ describe('useCircuitBreaker Hook', () => {
     };
 
     render(<TestComponent />);
-    
+
     expect(screen.getByTestId('state')).toHaveTextContent('CLOSED');
     expect(screen.getByText('Execute')).toBeInTheDocument();
     expect(screen.getByText('Reset')).toBeInTheDocument();
@@ -725,9 +671,9 @@ describe('useCircuitBreaker Hook', () => {
       const { state, execute } = useCircuitBreaker('hook-state-test', {
         failureThreshold: 2,
       });
-      
+
       const [executed, setExecuted] = React.useState(false);
-      
+
       const handleClick = async () => {
         try {
           await execute(async () => {
@@ -738,7 +684,7 @@ describe('useCircuitBreaker Hook', () => {
         }
         setExecuted(true);
       };
-      
+
       return (
         <div>
           <span data-testid="state">{state}</span>
@@ -749,13 +695,13 @@ describe('useCircuitBreaker Hook', () => {
     };
 
     render(<TestComponent />);
-    
+
     expect(screen.getByTestId('state')).toHaveTextContent('CLOSED');
-    
+
     // Execute failing operation twice to open circuit
     fireEvent.click(screen.getByText('Execute'));
     fireEvent.click(screen.getByText('Execute'));
-    
+
     // State should update to OPEN
     await waitFor(() => {
       expect(screen.getByTestId('state')).toHaveTextContent('OPEN');
@@ -765,25 +711,21 @@ describe('useCircuitBreaker Hook', () => {
 
 describe('Error Recovery Strategies', () => {
   test('should handle retry strategy correctly', async () => {
-    let attempts = 0;
+    const attempts = 0;
     const onRecovery = jest.fn();
 
     const RetryComponent = () => {
       const [shouldThrow, setShouldThrow] = React.useState(true);
-      
+
       if (shouldThrow) {
         throw new Error('Retry test error');
       }
-      
+
       return <div>Success after retry</div>;
     };
 
     const { rerender } = render(
-      <ErrorBoundary 
-        id="retry-test" 
-        strategy="retry"
-        onRecovery={onRecovery}
-      >
+      <ErrorBoundary id="retry-test" strategy="retry" onRecovery={onRecovery}>
         <RetryComponent />
       </ErrorBoundary>
     );
@@ -792,11 +734,7 @@ describe('Error Recovery Strategies', () => {
 
     // Simulate retry by fixing the error
     rerender(
-      <ErrorBoundary 
-        id="retry-test" 
-        strategy="retry"
-        onRecovery={onRecovery}
-      >
+      <ErrorBoundary id="retry-test" strategy="retry" onRecovery={onRecovery}>
         <div>Success after retry</div>
       </ErrorBoundary>
     );
@@ -808,11 +746,7 @@ describe('Error Recovery Strategies', () => {
     const onRecovery = jest.fn();
 
     render(
-      <ErrorBoundary 
-        id="reset-test" 
-        strategy="reset"
-        onRecovery={onRecovery}
-      >
+      <ErrorBoundary id="reset-test" strategy="reset" onRecovery={onRecovery}>
         <div>Reset test content</div>
       </ErrorBoundary>
     );
@@ -825,10 +759,7 @@ describe('Error Recovery Strategies', () => {
     const TestComponent = () => <div>Ignore strategy test</div>;
 
     render(
-      <ErrorBoundary 
-        id="ignore-test" 
-        strategy="ignore"
-      >
+      <ErrorBoundary id="ignore-test" strategy="ignore">
         <TestComponent />
       </ErrorBoundary>
     );

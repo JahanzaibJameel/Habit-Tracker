@@ -1,13 +1,14 @@
 /**
  * Real-time performance monitoring with budget enforcement
  * Tracks Core Web Vitals and custom metrics with automatic breach detection
- * 
+ *
  * @fileoverview Performance monitoring implementation
  * @version 1.0.0
  * @author Enterprise Frontend Team
  */
 
-import { getEffectiveBudget, BudgetConfig, BudgetBreachSeverity, getBreachSeverity, BudgetCategories, PerformanceBudget } from './budget.config';
+import type { BudgetConfig, BudgetBreachSeverity, PerformanceBudget } from './budget.config';
+import { getEffectiveBudget, getBreachSeverity, BudgetCategories } from './budget.config';
 
 /**
  * Performance metric entry
@@ -62,37 +63,37 @@ export interface WebhookConfig {
    * Webhook URL for notifications
    */
   url: string;
-  
+
   /**
    * Webhook secret for authentication
    */
   secret?: string;
-  
+
   /**
    * Throttle webhook notifications (in milliseconds)
    */
   throttleMs?: number;
-  
+
   /**
    * Minimum severity level to trigger webhook
    */
   minSeverity?: BudgetBreachSeverity;
-  
+
   /**
    * Custom webhook payload template
    */
   payloadTemplate?: (breach: PerformanceBreach) => any;
-  
+
   /**
    * Custom headers for webhook requests
    */
   headers?: Record<string, string>;
-  
+
   /**
    * Timeout for webhook requests (in milliseconds)
    */
   timeout?: number;
-  
+
   /**
    * Retry configuration for failed webhooks
    */
@@ -122,7 +123,7 @@ export class PerformanceMonitor {
   constructor(config: PerformanceMonitorConfig) {
     this.config = config;
     this.sessionId = this.generateSessionId();
-    
+
     // Initialize metrics storage
     this.initializeMetrics();
   }
@@ -139,24 +140,24 @@ export class PerformanceMonitor {
    */
   private initializeMetrics(): void {
     const budget = getEffectiveBudget(this.config.budgetConfig);
-    
+
     // Initialize runtime metrics
-    Object.keys(budget.runtime).forEach(metric => {
+    Object.keys(budget.runtime).forEach((metric) => {
       this.metrics.set(metric, []);
     });
-    
+
     // Initialize memory metrics
-    Object.keys(budget.memory).forEach(metric => {
+    Object.keys(budget.memory).forEach((metric) => {
       this.metrics.set(metric, []);
     });
-    
+
     // Initialize network metrics
-    Object.keys(budget.network).forEach(metric => {
+    Object.keys(budget.network).forEach((metric) => {
       this.metrics.set(metric, []);
     });
-    
+
     // Initialize animation metrics
-    Object.keys(budget.animation).forEach(metric => {
+    Object.keys(budget.animation).forEach((metric) => {
       this.metrics.set(metric, []);
     });
   }
@@ -180,23 +181,23 @@ export class PerformanceMonitor {
 
     // Setup Core Web Vitals monitoring
     this.setupWebVitalsMonitoring();
-    
+
     // Setup resource monitoring
     this.setupResourceMonitoring();
-    
+
     // Setup navigation timing
     this.setupNavigationTiming();
-    
+
     // Setup memory monitoring if enabled
     if (this.config.enableMemoryMonitoring) {
       this.setupMemoryMonitoring();
     }
-    
+
     // Setup network monitoring if enabled
     if (this.config.enableNetworkMonitoring) {
       this.setupNetworkMonitoring();
     }
-    
+
     // Setup bundle analysis if enabled
     if (this.config.enableBundleAnalysis) {
       this.setupBundleAnalysis();
@@ -218,7 +219,7 @@ export class PerformanceMonitor {
     console.log('Stopping performance monitoring');
 
     // Disconnect all observers
-    this.observers.forEach(observer => observer.disconnect());
+    this.observers.forEach((observer) => observer.disconnect());
     this.observers = [];
 
     // Clear timers
@@ -268,7 +269,11 @@ export class PerformanceMonitor {
         const entries = list.getEntries();
         entries.forEach((entry) => {
           if (entry.name === 'first-input') {
-            this.recordMetric('fid', (entry as any).processingStart - entry.startTime, BudgetCategories.RUNTIME_PERFORMANCE);
+            this.recordMetric(
+              'fid',
+              (entry as any).processingStart - entry.startTime,
+              BudgetCategories.RUNTIME_PERFORMANCE
+            );
           }
         });
       });
@@ -331,7 +336,11 @@ export class PerformanceMonitor {
             // Track resource sizes
             const size = (entry as any).transferSize || 0;
             const currentTotalSize = this.getMetricValue('totalResourceSize') || 0;
-            this.recordMetric('totalResourceSize', currentTotalSize + size, BudgetCategories.RESOURCES);
+            this.recordMetric(
+              'totalResourceSize',
+              currentTotalSize + size,
+              BudgetCategories.RESOURCES
+            );
           }
         });
       });
@@ -351,12 +360,28 @@ export class PerformanceMonitor {
     }
 
     const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-    
+
     // Record key navigation metrics
-    this.recordMetric('firstContentfulPaint', navigation.responseStart - navigation.requestStart, BudgetCategories.RUNTIME_PERFORMANCE);
-    this.recordMetric('timeToInteractive', navigation.domInteractive - navigation.requestStart, BudgetCategories.RUNTIME_PERFORMANCE);
-    this.recordMetric('domContentLoaded', navigation.domContentLoadedEventEnd - navigation.requestStart, BudgetCategories.RUNTIME_PERFORMANCE);
-    this.recordMetric('loadComplete', navigation.loadEventEnd - navigation.requestStart, BudgetCategories.RUNTIME_PERFORMANCE);
+    this.recordMetric(
+      'firstContentfulPaint',
+      navigation.responseStart - navigation.requestStart,
+      BudgetCategories.RUNTIME_PERFORMANCE
+    );
+    this.recordMetric(
+      'timeToInteractive',
+      navigation.domInteractive - navigation.requestStart,
+      BudgetCategories.RUNTIME_PERFORMANCE
+    );
+    this.recordMetric(
+      'domContentLoaded',
+      navigation.domContentLoadedEventEnd - navigation.requestStart,
+      BudgetCategories.RUNTIME_PERFORMANCE
+    );
+    this.recordMetric(
+      'loadComplete',
+      navigation.loadEventEnd - navigation.requestStart,
+      BudgetCategories.RUNTIME_PERFORMANCE
+    );
   }
 
   /**
@@ -370,10 +395,22 @@ export class PerformanceMonitor {
 
     const checkMemory = () => {
       const memory = (performance as any).memory;
-      
-      this.recordMetric('usedHeapSize', memory.usedJSHeapSize / 1024 / 1024, BudgetCategories.MEMORY);
-      this.recordMetric('totalHeapSize', memory.totalJSHeapSize / 1024 / 1024, BudgetCategories.MEMORY);
-      this.recordMetric('heapSizeLimit', memory.jsHeapSizeLimit / 1024 / 1024, BudgetCategories.MEMORY);
+
+      this.recordMetric(
+        'usedHeapSize',
+        memory.usedJSHeapSize / 1024 / 1024,
+        BudgetCategories.MEMORY
+      );
+      this.recordMetric(
+        'totalHeapSize',
+        memory.totalJSHeapSize / 1024 / 1024,
+        BudgetCategories.MEMORY
+      );
+      this.recordMetric(
+        'heapSizeLimit',
+        memory.jsHeapSizeLimit / 1024 / 1024,
+        BudgetCategories.MEMORY
+      );
     };
 
     // Check memory immediately
@@ -394,9 +431,13 @@ export class PerformanceMonitor {
 
     const checkNetwork = () => {
       const connection = (navigator as any).connection;
-      
+
       if (connection) {
-        this.recordMetric('effectiveType', this.getEffectiveTypeValue(connection.effectiveType), BudgetCategories.NETWORK);
+        this.recordMetric(
+          'effectiveType',
+          this.getEffectiveTypeValue(connection.effectiveType),
+          BudgetCategories.NETWORK
+        );
         this.recordMetric('downlink', connection.downlink, BudgetCategories.NETWORK);
         this.recordMetric('rtt', connection.rtt, BudgetCategories.NETWORK);
       }
@@ -430,13 +471,13 @@ export class PerformanceMonitor {
     // For now, we'll track basic bundle metrics
     if (typeof window !== 'undefined' && 'performance' in window) {
       const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
-      
-      const jsResources = resources.filter(r => r.name.endsWith('.js'));
-      const cssResources = resources.filter(r => r.name.endsWith('.css'));
-      
+
+      const jsResources = resources.filter((r) => r.name.endsWith('.js'));
+      const cssResources = resources.filter((r) => r.name.endsWith('.css'));
+
       const totalJsSize = jsResources.reduce((sum, r) => sum + (r.transferSize || 0), 0);
       const totalCssSize = cssResources.reduce((sum, r) => sum + (r.transferSize || 0), 0);
-      
+
       this.recordMetric('jsBundleSize', totalJsSize, BudgetCategories.BUNDLE_SIZE);
       this.recordMetric('cssBundleSize', totalCssSize, BudgetCategories.BUNDLE_SIZE);
     }
@@ -445,10 +486,15 @@ export class PerformanceMonitor {
   /**
    * Record a performance metric
    */
-  recordMetric(name: string, value: number, category: string, metadata?: Record<string, unknown>): void {
+  recordMetric(
+    name: string,
+    value: number,
+    category: string,
+    metadata?: Record<string, unknown>
+  ): void {
     const budget = getEffectiveBudget(this.config.budgetConfig);
     const budgetValue = this.getBudgetValue(name, category, budget);
-    
+
     const metric: PerformanceMetric = {
       name,
       value,
@@ -462,7 +508,7 @@ export class PerformanceMonitor {
     if (budgetValue !== undefined) {
       const breached = this.checkBudgetBreach(value, budgetValue, name);
       metric.breached = breached;
-      
+
       if (breached) {
         metric.severity = getBreachSeverity(value, budgetValue);
         this.handleBudgetBreach(metric, budgetValue);
@@ -472,21 +518,27 @@ export class PerformanceMonitor {
     // Store metric
     const metricList = this.metrics.get(name) || [];
     metricList.push(metric);
-    
+
     // Keep only last 100 metrics per type
     if (metricList.length > 100) {
       metricList.splice(0, metricList.length - 100);
     }
-    
+
     this.metrics.set(name, metricList);
   }
 
   /**
    * Get budget value for a metric by name and category
    */
-  private getBudgetValue(name: string, category: string, budget: PerformanceBudget): number | undefined {
+  private getBudgetValue(
+    name: string,
+    category: string,
+    budget: PerformanceBudget
+  ): number | undefined {
     const categoryBudget = budget[category as keyof PerformanceBudget];
-    if (!categoryBudget || typeof categoryBudget !== 'object') return undefined;
+    if (!categoryBudget || typeof categoryBudget !== 'object') {
+      return undefined;
+    }
     return (categoryBudget as Record<string, number>)[name];
   }
 
@@ -522,7 +574,10 @@ export class PerformanceMonitor {
 
     // Log breach in development
     if (process.env.NODE_ENV === 'development') {
-      console.warn(`Performance budget breach: ${metric.name} (${metric.value}) exceeds budget (${budget})`, breach);
+      console.warn(
+        `Performance budget breach: ${metric.name} (${metric.value}) exceeds budget (${budget})`,
+        breach
+      );
     }
 
     // Report breach if enabled
@@ -592,9 +647,9 @@ export class PerformanceMonitor {
         ${breach.metric}: ${Math.round(breach.actual)} exceeds budget of ${Math.round(breach.budget)}
         <button onclick="this.parentElement.remove()" style="margin-left: 10px; border: none; background: white; color: #ff6b6b; padding: 2px 6px; border-radius: 2px; cursor: pointer;">×</button>
       `;
-      
+
       document.body.appendChild(warning);
-      
+
       // Auto-remove after 10 seconds
       setTimeout(() => {
         if (warning.parentElement) {
@@ -625,7 +680,7 @@ export class PerformanceMonitor {
     if (!metrics || metrics.length === 0) {
       return undefined;
     }
-    
+
     // Return the latest value
     return metrics[metrics.length - 1]!.value;
   }
@@ -646,11 +701,11 @@ export class PerformanceMonitor {
    */
   getMetricsByCategory(category: string): PerformanceMetric[] {
     const categoryMetrics: PerformanceMetric[] = [];
-    
+
     for (const metrics of this.metrics.values()) {
-      categoryMetrics.push(...metrics.filter(m => m.category === category));
+      categoryMetrics.push(...metrics.filter((m) => m.category === category));
     }
-    
+
     return categoryMetrics.sort((a, b) => b.timestamp - a.timestamp);
   }
 
@@ -672,19 +727,25 @@ export class PerformanceMonitor {
   } {
     const now = Date.now();
     const oneHourAgo = now - 3600000;
-    
-    const recentBreaches = this.breaches.filter(b => b.timestamp > oneHourAgo);
-    
-    const byCategory = this.breaches.reduce((acc, breach) => {
-      acc[breach.category] = (acc[breach.category] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-    
-    const bySeverity = this.breaches.reduce((acc, breach) => {
-      acc[breach.severity] = (acc[breach.severity] || 0) + 1;
-      return acc;
-    }, {} as Record<BudgetBreachSeverity, number>);
-    
+
+    const recentBreaches = this.breaches.filter((b) => b.timestamp > oneHourAgo);
+
+    const byCategory = this.breaches.reduce(
+      (acc, breach) => {
+        acc[breach.category] = (acc[breach.category] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+
+    const bySeverity = this.breaches.reduce(
+      (acc, breach) => {
+        acc[breach.severity] = (acc[breach.severity] || 0) + 1;
+        return acc;
+      },
+      {} as Record<BudgetBreachSeverity, number>
+    );
+
     return {
       total: this.breaches.length,
       byCategory,
@@ -703,7 +764,7 @@ export class PerformanceMonitor {
       breaches: this.getBreaches(),
       stats: this.getBreachStats(),
     };
-    
+
     console.log('Performance Report:', report);
   }
 
@@ -717,7 +778,7 @@ export class PerformanceMonitor {
       breaches: this.getBreaches(),
       stats: this.getBreachStats(),
     };
-    
+
     return JSON.stringify(data, null, 2);
   }
 
@@ -737,7 +798,7 @@ export class PerformanceMonitor {
    */
   private async sendWebhookNotification(breach: PerformanceBreach): Promise<void> {
     const webhookConfig = this.config.webhookConfig!;
-    
+
     // Check minimum severity requirement
     if (webhookConfig.minSeverity && breach.severity < webhookConfig.minSeverity) {
       return;
@@ -748,7 +809,7 @@ export class PerformanceMonitor {
     const now = Date.now();
     const lastSent = this.webhookLastSent.get(throttleKey) || 0;
     const throttleMs = webhookConfig.throttleMs || 60000; // 1 minute default
-    
+
     if (now - lastSent < throttleMs) {
       // Add to queue for later processing
       this.webhookQueue.push(breach);
@@ -763,7 +824,7 @@ export class PerformanceMonitor {
       await this.executeWebhook(breach, webhookConfig);
     } catch (error) {
       console.error('Webhook notification failed:', error);
-      
+
       // Add to queue for retry
       this.webhookQueue.push(breach);
       this.scheduleWebhookProcessing();
@@ -776,11 +837,13 @@ export class PerformanceMonitor {
   private async executeWebhook(breach: PerformanceBreach, config: WebhookConfig): Promise<void> {
     const maxAttempts = config.retry?.maxAttempts || 3;
     const backoffMs = config.retry?.backoffMs || 1000;
-    
+
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
-        const payload = config.payloadTemplate ? config.payloadTemplate(breach) : this.createDefaultWebhookPayload(breach);
-        
+        const payload = config.payloadTemplate
+          ? config.payloadTemplate(breach)
+          : this.createDefaultWebhookPayload(breach);
+
         const headers: Record<string, string> = {
           'Content-Type': 'application/json',
           'User-Agent': 'PerformanceMonitor/1.0',
@@ -805,18 +868,18 @@ export class PerformanceMonitor {
         }
 
         // Success - clear any queued notifications for this metric
-        this.webhookQueue = this.webhookQueue.filter(q => 
-          !(q.metric === breach.metric && q.category === breach.category)
+        this.webhookQueue = this.webhookQueue.filter(
+          (q) => !(q.metric === breach.metric && q.category === breach.category)
         );
-        
+
         return;
       } catch (error) {
         if (attempt === maxAttempts) {
           throw error;
         }
-        
+
         // Exponential backoff
-        await new Promise(resolve => setTimeout(resolve, backoffMs * Math.pow(2, attempt - 1)));
+        await new Promise((resolve) => setTimeout(resolve, backoffMs * Math.pow(2, attempt - 1)));
       }
     }
   }
@@ -832,14 +895,14 @@ export class PerformanceMonitor {
       category: breach.category,
       actual: breach.actual,
       budget: breach.budget,
-      percentageOverBudget: ((breach.actual - breach.budget) / breach.budget * 100).toFixed(2),
+      percentageOverBudget: (((breach.actual - breach.budget) / breach.budget) * 100).toFixed(2),
       url: breach.url || '',
       userAgent: breach.userAgent || '',
       sessionId: breach.sessionId || '',
       environment: process.env.NODE_ENV || 'unknown',
       alert: {
         title: `Performance Budget Breach: ${breach.metric}`,
-        text: `${breach.metric} (${breach.actual}) exceeds budget (${breach.budget}) by ${((breach.actual - breach.budget) / breach.budget * 100).toFixed(2)}%`,
+        text: `${breach.metric} (${breach.actual}) exceeds budget (${breach.budget}) by ${(((breach.actual - breach.budget) / breach.budget) * 100).toFixed(2)}%`,
         severity: breach.severity,
         category: breach.category,
       },
@@ -850,10 +913,9 @@ export class PerformanceMonitor {
    * Generate webhook signature for authentication
    */
   private async generateWebhookSignature(payload: any, secret: string): Promise<string> {
-    const crypto = typeof window !== 'undefined' && window.crypto 
-      ? window.crypto 
-      : (globalThis as any).crypto;
-    
+    const crypto =
+      typeof window !== 'undefined' && window.crypto ? window.crypto : (globalThis as any).crypto;
+
     if (!crypto) {
       console.warn('Crypto API not available, webhook signature omitted');
       return '';
@@ -862,7 +924,7 @@ export class PerformanceMonitor {
     const payloadString = JSON.stringify(payload);
     const encoder = new TextEncoder();
     const data = encoder.encode(payloadString + secret);
-    
+
     const buffer: ArrayBuffer = await crypto.subtle.digest('SHA-256', data);
     const hashArray = Array.from(new Uint8Array(buffer))
       .map((b: number) => b.toString(16).padStart(2, '0'))

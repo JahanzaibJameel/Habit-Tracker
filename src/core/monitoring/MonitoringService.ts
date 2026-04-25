@@ -1,33 +1,35 @@
 /**
  * Unified monitoring service that integrates all subsystems
  * Provides enterprise-grade telemetry with privacy-preserving features
- * 
+ *
  * @fileoverview Main monitoring service implementation
  * @version 1.0.0
  * @author Enterprise Frontend Team
  */
 
-import { 
-  MonitoringAdapter, 
-  MonitoringConfig, 
-  MonitoringEvent, 
-  ErrorEvent, 
-  PerformanceEvent, 
-  UserActionEvent, 
-  SystemEvent, 
-  BusinessEvent, 
-  SecurityEvent,
+import type {
+  MonitoringAdapter,
+  MonitoringConfig,
+  MonitoringEvent,
+  ErrorEvent,
   MonitoringBreadcrumb,
   MonitoringContext,
   MonitoringStats,
   MonitoringFilter,
   MonitoringExportOptions,
   RedactionRule,
+  AnyMonitoringEvent,
+} from './types';
+import {
+  PerformanceEvent,
+  UserActionEvent,
+  SystemEvent,
+  BusinessEvent,
+  SecurityEvent,
   ContextEnricher,
   MonitoringEventFactory,
-  AnyMonitoringEvent,
   MonitoringSeverity,
-  MonitoringCategory
+  MonitoringCategory,
 } from './types';
 
 /**
@@ -38,32 +40,32 @@ export interface MonitoringServiceConfig extends MonitoringConfig {
    * Service name
    */
   serviceName: string;
-  
+
   /**
    * Service version
    */
   serviceVersion: string;
-  
+
   /**
    * Enable offline queue
    */
   enableOfflineQueue: boolean;
-  
+
   /**
    * Maximum queue size
    */
   maxQueueSize: number;
-  
+
   /**
    * Queue flush interval (ms)
    */
   queueFlushInterval: number;
-  
+
   /**
    * Enable session tracking
    */
   enableSessionTracking: boolean;
-  
+
   /**
    * Session timeout (ms)
    */
@@ -90,10 +92,10 @@ export class MonitoringService {
     this.config = config;
     this.adapter = config.adapter;
     this.sessionStartTime = Date.now();
-    
+
     // Initialize context
     this.context = this.createBaseContext();
-    
+
     // Initialize stats
     this.stats = {
       totalEvents: 0,
@@ -161,8 +163,14 @@ export class MonitoringService {
   /**
    * Capture an error event
    */
-  async captureError(error: Error, context?: Partial<MonitoringContext>, errorInfo?: any): Promise<void> {
-    if (!this.shouldCapture()) return;
+  async captureError(
+    error: Error,
+    context?: Partial<MonitoringContext>,
+    errorInfo?: any
+  ): Promise<void> {
+    if (!this.shouldCapture()) {
+      return;
+    }
 
     const event = MonitoringEventFactory.createError(error, context, errorInfo);
     await this.processEvent(event);
@@ -178,7 +186,9 @@ export class MonitoringService {
     context?: Partial<MonitoringContext>,
     budget?: number
   ): Promise<void> {
-    if (!this.shouldCapture()) return;
+    if (!this.shouldCapture()) {
+      return;
+    }
 
     const event = MonitoringEventFactory.createPerformance(name, value, unit, context, budget);
     await this.processEvent(event);
@@ -193,7 +203,9 @@ export class MonitoringService {
     properties?: Record<string, unknown>,
     context?: Partial<MonitoringContext>
   ): Promise<void> {
-    if (!this.shouldCapture() || !this.config.userActionTracking) return;
+    if (!this.shouldCapture() || !this.config.userActionTracking) {
+      return;
+    }
 
     const event = MonitoringEventFactory.createUserAction(actionType, target, properties, context);
     await this.processEvent(event);
@@ -209,7 +221,9 @@ export class MonitoringService {
     metrics?: Record<string, number>,
     context?: Partial<MonitoringContext>
   ): Promise<void> {
-    if (!this.shouldCapture()) return;
+    if (!this.shouldCapture()) {
+      return;
+    }
 
     const event = MonitoringEventFactory.createSystem(component, status, message, metrics, context);
     await this.processEvent(event);
@@ -226,9 +240,18 @@ export class MonitoringService {
     currency?: string,
     context?: Partial<MonitoringContext>
   ): Promise<void> {
-    if (!this.shouldCapture()) return;
+    if (!this.shouldCapture()) {
+      return;
+    }
 
-    const businessEvent = MonitoringEventFactory.createBusiness(event, properties, message, value, currency, context);
+    const businessEvent = MonitoringEventFactory.createBusiness(
+      event,
+      properties,
+      message,
+      value,
+      currency,
+      context
+    );
     await this.processEvent(businessEvent);
   }
 
@@ -243,9 +266,18 @@ export class MonitoringService {
     target?: string,
     context?: Partial<MonitoringContext>
   ): Promise<void> {
-    if (!this.shouldCapture()) return;
+    if (!this.shouldCapture()) {
+      return;
+    }
 
-    const securityEvent = MonitoringEventFactory.createSecurity(type, severity, message, source, target, context);
+    const securityEvent = MonitoringEventFactory.createSecurity(
+      type,
+      severity,
+      message,
+      source,
+      target,
+      context
+    );
     await this.processEvent(securityEvent);
   }
 
@@ -253,7 +285,9 @@ export class MonitoringService {
    * Capture a generic event
    */
   async captureEvent(event: AnyMonitoringEvent): Promise<void> {
-    if (!this.shouldCapture()) return;
+    if (!this.shouldCapture()) {
+      return;
+    }
     await this.processEvent(event as any);
   }
 
@@ -276,7 +310,7 @@ export class MonitoringService {
     };
 
     this.breadcrumbs.push(breadcrumb);
-    
+
     // Keep only last 100 breadcrumbs
     if (this.breadcrumbs.length > 100) {
       this.breadcrumbs.shift();
@@ -320,7 +354,7 @@ export class MonitoringService {
    */
   async exportData(options: MonitoringExportOptions): Promise<string> {
     const events = this.filterEvents(options.filter);
-    
+
     const exportData = {
       timestamp: Date.now(),
       service: {
@@ -412,12 +446,12 @@ export class MonitoringService {
    */
   private addToQueue(event: AnyMonitoringEvent): void {
     this.queue.push(event as any);
-    
+
     // Limit queue size
     if (this.queue.length > this.config.maxQueueSize) {
       this.queue.shift();
     }
-    
+
     this.stats.queueSize = this.queue.length;
   }
 
@@ -449,7 +483,9 @@ export class MonitoringService {
    * Flush event queue
    */
   private async flushQueue(): Promise<void> {
-    if (this.queue.length === 0) return;
+    if (this.queue.length === 0) {
+      return;
+    }
 
     const events = [...this.queue];
     this.queue = [];
@@ -475,12 +511,12 @@ export class MonitoringService {
   private startSessionTracking(): void {
     this.sessionTimer = setInterval(() => {
       const sessionDuration = Date.now() - this.sessionStartTime;
-      
+
       if (sessionDuration > this.config.sessionTimeout) {
         // Session expired, create new session
         this.sessionStartTime = Date.now();
         this.context.sessionId = this.generateSessionId();
-        
+
         this.addBreadcrumb('New session started', 'session', 'info', {
           sessionId: this.context.sessionId,
           previousSessionDuration: sessionDuration,
@@ -565,7 +601,7 @@ export class MonitoringService {
     const keys = path.split('.');
     const lastKey = keys.pop()!;
     const target = keys.reduce((current, key) => current?.[key], obj);
-    
+
     if (target) {
       target[lastKey] = value;
     }
@@ -610,11 +646,11 @@ export class MonitoringService {
   private updateStats(event: AnyMonitoringEvent): void {
     this.stats.totalEvents++;
     this.stats.lastEventTimestamp = event.timestamp;
-    
-    this.stats.eventsByCategory[event.category] = 
+
+    this.stats.eventsByCategory[event.category] =
       (this.stats.eventsByCategory[event.category] || 0) + 1;
-    
-    this.stats.eventsBySeverity[event.severity] = 
+
+    this.stats.eventsBySeverity[event.severity] =
       (this.stats.eventsBySeverity[event.severity] || 0) + 1;
   }
 
@@ -662,7 +698,7 @@ export class MonitoringService {
       event.message,
     ]);
 
-    return [headers, ...rows].map(row => row.join(',')).join('\n');
+    return [headers, ...rows].map((row) => row.join(',')).join('\n');
   }
 
   /**
@@ -675,13 +711,17 @@ export class MonitoringService {
   <timestamp>${data.timestamp}</timestamp>
   <service>${data.service.name}</service>
   <events>
-    ${data.events.map((event: any) => `
+    ${data.events
+      .map(
+        (event: any) => `
     <event>
       <timestamp>${event.timestamp}</timestamp>
       <category>${event.category}</category>
       <severity>${event.severity}</severity>
       <message>${event.message}</message>
-    </event>`).join('')}
+    </event>`
+      )
+      .join('')}
   </events>
 </monitoring>`;
   }
@@ -711,7 +751,7 @@ export class MonitoringService {
     const fingerprint = [
       navigator.userAgent,
       navigator.language,
-      screen.width + 'x' + screen.height,
+      `${screen.width}x${screen.height}`,
       new Date().getTimezoneOffset(),
     ].join('|');
 
@@ -726,7 +766,7 @@ export class MonitoringService {
     let hash = 0;
     for (let i = 0; i < userId.length; i++) {
       const char = userId.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32-bit integer
     }
     return `user_${Math.abs(hash).toString(36)}`;
@@ -757,13 +797,13 @@ export class MonitoringService {
         tags: event.tags,
         context: event.context,
       };
-      
+
       await this.captureEvent(fullEvent as any);
       return { success: true };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -778,18 +818,18 @@ export class MonitoringService {
     }
 
     let purgedCount = 0;
-    
+
     // Purge from events
     const initialEventCount = this.events.length;
-    this.events = this.events.filter((event: MonitoringEvent) => 
-      !event.context?.userId || event.context.userId !== targetUserId
+    this.events = this.events.filter(
+      (event: MonitoringEvent) => !event.context?.userId || event.context.userId !== targetUserId
     );
     purgedCount += initialEventCount - this.events.length;
 
     // Purge from queue
     const initialQueueCount = this.queue.length;
-    this.queue = this.queue.filter((event: MonitoringEvent) => 
-      !event.context?.userId || event.context.userId !== targetUserId
+    this.queue = this.queue.filter(
+      (event: MonitoringEvent) => !event.context?.userId || event.context.userId !== targetUserId
     );
     purgedCount += initialQueueCount - this.queue.length;
 
@@ -811,8 +851,6 @@ export class MonitoringService {
       return [];
     }
 
-    return this.events.filter((event: MonitoringEvent) => 
-      event.context?.userId === targetUserId
-    );
+    return this.events.filter((event: MonitoringEvent) => event.context?.userId === targetUserId);
   }
 }

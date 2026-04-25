@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -66,13 +65,9 @@ export function Toast({ message, type = 'info', duration = 3000, onClose }: Toas
   };
 
   return (
-    <AnimatePresence>
+    <>
       {isVisible && (
-        <motion.div
-          initial={{ opacity: 0, y: -50, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -50, scale: 0.95 }}
-          transition={{ duration: 0.3 }}
+        <div
           className={cn(
             'flex items-center space-x-3 p-4 rounded-lg border shadow-lg max-w-md',
             getColors()
@@ -86,9 +81,9 @@ export function Toast({ message, type = 'info', duration = 3000, onClose }: Toas
           >
             <X className="w-4 h-4" />
           </button>
-        </motion.div>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   );
 }
 
@@ -155,11 +150,9 @@ export function ToastContainer() {
 
   return (
     <div className="fixed top-4 right-4 z-50 space-y-2">
-      <AnimatePresence>
-        {toasts.map(({ id, props }) => (
-          <Toast key={id} {...props} onClose={() => removeToast(id)} />
-        ))}
-      </AnimatePresence>
+      {toasts.map(({ id, props }) => (
+        <Toast key={id} {...props} onClose={() => removeToast(id)} />
+      ))}
     </div>
   );
 }

@@ -10,7 +10,9 @@ export function useAnimationState(duration: number = 600) {
   const isMountedRef = useRef(true);
 
   const startAnimation = useCallback(() => {
-    if (isAnimating || !isMountedRef.current) return;
+    if (isAnimating || !isMountedRef.current) {
+      return;
+    }
 
     // Clear any existing timeout
     if (timeoutRef.current) {

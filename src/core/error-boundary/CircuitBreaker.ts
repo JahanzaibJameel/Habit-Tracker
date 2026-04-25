@@ -1,7 +1,7 @@
 /**
  * Circuit Breaker utility for preventing infinite render loops
  * Tracks failures and opens circuits after threshold is exceeded
- * 
+ *
  * @fileoverview Circuit breaker implementation for error isolation
  * @version 1.0.0
  * @author Enterprise Frontend Team
@@ -22,42 +22,42 @@ export interface CircuitBreakerConfig {
    * Number of failures before opening the circuit
    */
   failureThreshold: number;
-  
+
   /**
    * Time in milliseconds to wait before attempting to close the circuit
    */
   recoveryTimeout: number;
-  
+
   /**
    * Time in milliseconds to monitor for success rate in half-open state
    */
   monitoringPeriod: number;
-  
+
   /**
    * Minimum success rate required to close the circuit (0-1)
    */
   successThreshold: number;
-  
+
   /**
    * Maximum number of attempts in half-open state
    */
   maxHalfOpenAttempts: number;
-  
+
   /**
    * Whether to automatically reset on successful operations
    */
   autoReset: boolean;
-  
+
   /**
    * Callback when circuit state changes
    */
   onStateChange?: (from: CircuitState, to: CircuitState, context: CircuitBreakerContext) => void;
-  
+
   /**
    * Callback when circuit opens
    */
   onCircuitOpen?: (context: CircuitBreakerContext) => void;
-  
+
   /**
    * Callback when circuit closes
    */
@@ -72,52 +72,52 @@ export interface CircuitBreakerContext {
    * Unique identifier for this circuit breaker
    */
   id: string;
-  
+
   /**
    * Current state of the circuit
    */
   state: CircuitState;
-  
+
   /**
    * Number of failures recorded
    */
   failureCount: number;
-  
+
   /**
    * Number of successful operations
    */
   successCount: number;
-  
+
   /**
    * Total number of operations
    */
   totalOperations: number;
-  
+
   /**
    * Timestamp when circuit was opened
    */
   openedAt?: number;
-  
+
   /**
    * Timestamp of last operation
    */
   lastOperationAt: number;
-  
+
   /**
    * Timestamp when circuit will attempt recovery
    */
   nextAttemptAt?: number;
-  
+
   /**
    * Number of attempts in half-open state
    */
   halfOpenAttempts: number;
-  
+
   /**
    * Average operation duration
    */
   averageOperationTime: number;
-  
+
   /**
    * Last error that occurred
    */
@@ -132,27 +132,27 @@ export interface CircuitBreakerResult<T> {
    * Whether the operation was allowed to proceed
    */
   allowed: boolean;
-  
+
   /**
    * The result of the operation if successful
    */
   result?: T;
-  
+
   /**
    * Error that occurred during operation
    */
   error?: Error;
-  
+
   /**
    * Current circuit state
    */
   state: CircuitState;
-  
+
   /**
    * Whether the circuit was tripped by this operation
    */
   tripped?: boolean;
-  
+
   /**
    * Operation duration in milliseconds
    */
@@ -161,14 +161,14 @@ export interface CircuitBreakerResult<T> {
 
 /**
  * Advanced Circuit Breaker implementation
- * 
+ *
  * @example
  * const circuitBreaker = new CircuitBreaker('user-api', {
  *   failureThreshold: 5,
  *   recoveryTimeout: 60000,
  *   successThreshold: 0.5,
  * });
- * 
+ *
  * const result = await circuitBreaker.execute(async () => {
  *   return await fetchUserData();
  * });
@@ -223,7 +223,7 @@ export class CircuitBreaker {
    */
   async execute<T>(operation: () => Promise<T>): Promise<CircuitBreakerResult<T>> {
     const startTime = Date.now();
-    
+
     // Check if operation is allowed
     if (!this.isOperationAllowed()) {
       const duration = Date.now() - startTime;
@@ -237,9 +237,9 @@ export class CircuitBreaker {
     try {
       const result = await operation();
       const duration = Date.now() - startTime;
-      
+
       this.recordSuccess(duration);
-      
+
       return {
         allowed: true,
         result,
@@ -249,9 +249,9 @@ export class CircuitBreaker {
     } catch (error) {
       const duration = Date.now() - startTime;
       const err = error instanceof Error ? error : new Error(String(error));
-      
+
       this.recordFailure(err, duration);
-      
+
       return {
         allowed: true,
         error: err,
@@ -267,7 +267,7 @@ export class CircuitBreaker {
    */
   executeSync<T>(operation: () => T): CircuitBreakerResult<T> {
     const startTime = Date.now();
-    
+
     if (!this.isOperationAllowed()) {
       const duration = Date.now() - startTime;
       return {
@@ -280,9 +280,9 @@ export class CircuitBreaker {
     try {
       const result = operation();
       const duration = Date.now() - startTime;
-      
+
       this.recordSuccess(duration);
-      
+
       return {
         allowed: true,
         result,
@@ -292,9 +292,9 @@ export class CircuitBreaker {
     } catch (error) {
       const duration = Date.now() - startTime;
       const err = error instanceof Error ? error : new Error(String(error));
-      
+
       this.recordFailure(err, duration);
-      
+
       return {
         allowed: true,
         error: err,
@@ -310,7 +310,7 @@ export class CircuitBreaker {
    */
   reset(): void {
     const previousState = this.context.state;
-    
+
     const newContext: CircuitBreakerContext = {
       ...this.context,
       state: 'CLOSED',
@@ -322,20 +322,20 @@ export class CircuitBreaker {
       lastOperationAt: this.context.lastOperationAt,
       averageOperationTime: this.context.averageOperationTime,
     };
-    
+
     // Only include optional properties if they should be undefined
     if (this.context.openedAt !== undefined) {
       delete newContext.openedAt;
     }
-    
+
     if (this.context.nextAttemptAt !== undefined) {
       delete newContext.nextAttemptAt;
     }
-    
+
     if (this.context.lastError !== undefined) {
       delete newContext.lastError;
     }
-    
+
     this.context = newContext;
 
     this.operationTimes = [];
@@ -351,11 +351,13 @@ export class CircuitBreaker {
    * Manually open the circuit
    */
   open(reason?: string): void {
-    if (this.context.state === 'OPEN') return;
+    if (this.context.state === 'OPEN') {
+      return;
+    }
 
     const previousState = this.context.state;
     const now = Date.now();
-    
+
     this.context.state = 'OPEN';
     this.context.openedAt = now;
     this.context.nextAttemptAt = now + this.config.recoveryTimeout;
@@ -376,13 +378,13 @@ export class CircuitBreaker {
     switch (this.context.state) {
       case 'CLOSED':
         return true;
-      
+
       case 'OPEN':
         return false;
-      
+
       case 'HALF_OPEN':
         return this.context.halfOpenAttempts < this.config.maxHalfOpenAttempts;
-      
+
       default:
         return false;
     }
@@ -401,12 +403,13 @@ export class CircuitBreaker {
           this.transitionToHalfOpen();
         }
         break;
-      
+
       case 'HALF_OPEN':
         if (this.context.halfOpenAttempts >= this.config.maxHalfOpenAttempts) {
           // Check if we have enough data to make a decision
           if (this.halfOpenResults.length > 0) {
-            const successRate = this.halfOpenResults.filter(Boolean).length / this.halfOpenResults.length;
+            const successRate =
+              this.halfOpenResults.filter(Boolean).length / this.halfOpenResults.length;
             if (successRate >= this.config.successThreshold) {
               this.transitionToClosed();
             } else {
@@ -429,7 +432,7 @@ export class CircuitBreaker {
     this.context.totalOperations++;
     this.context.successCount++;
     this.context.lastOperationAt = Date.now();
-    
+
     this.updateOperationTime(duration);
 
     switch (this.context.state) {
@@ -439,14 +442,15 @@ export class CircuitBreaker {
           this.context.failureCount = 0;
         }
         break;
-      
+
       case 'HALF_OPEN':
         this.halfOpenResults.push(true);
         this.context.halfOpenAttempts++;
-        
+
         // Check if we should close the circuit immediately
         if (this.halfOpenResults.length >= this.config.maxHalfOpenAttempts) {
-          const successRate = this.halfOpenResults.filter(Boolean).length / this.halfOpenResults.length;
+          const successRate =
+            this.halfOpenResults.filter(Boolean).length / this.halfOpenResults.length;
           if (successRate >= this.config.successThreshold) {
             this.transitionToClosed();
           }
@@ -463,7 +467,7 @@ export class CircuitBreaker {
     this.context.failureCount++;
     this.context.lastOperationAt = Date.now();
     this.context.lastError = error;
-    
+
     this.updateOperationTime(duration);
 
     switch (this.context.state) {
@@ -472,11 +476,11 @@ export class CircuitBreaker {
           this.transitionToOpen();
         }
         break;
-      
+
       case 'HALF_OPEN':
         this.halfOpenResults.push(false);
         this.context.halfOpenAttempts++;
-        
+
         // Any failure in half-open state should open the circuit
         this.transitionToOpen();
         break;
@@ -488,15 +492,15 @@ export class CircuitBreaker {
    */
   private updateOperationTime(duration: number): void {
     this.operationTimes.push(duration);
-    
+
     // Keep only the last 100 operation times
     if (this.operationTimes.length > 100) {
       this.operationTimes.shift();
     }
-    
+
     // Calculate average
     if (this.operationTimes.length > 0) {
-      this.context.averageOperationTime = 
+      this.context.averageOperationTime =
         this.operationTimes.reduce((sum, time) => sum + time, 0) / this.operationTimes.length;
     }
   }
@@ -505,11 +509,13 @@ export class CircuitBreaker {
    * Transition to OPEN state
    */
   private transitionToOpen(): void {
-    if (this.context.state === 'OPEN') return;
+    if (this.context.state === 'OPEN') {
+      return;
+    }
 
     const previousState = this.context.state;
     const now = Date.now();
-    
+
     this.context.state = 'OPEN';
     this.context.openedAt = now;
     this.context.nextAttemptAt = now + this.config.recoveryTimeout;
@@ -523,10 +529,12 @@ export class CircuitBreaker {
    * Transition to HALF_OPEN state
    */
   private transitionToHalfOpen(): void {
-    if (this.context.state === 'HALF_OPEN') return;
+    if (this.context.state === 'HALF_OPEN') {
+      return;
+    }
 
     const previousState = this.context.state;
-    
+
     this.context.state = 'HALF_OPEN';
     this.context.halfOpenAttempts = 0;
     this.halfOpenResults = [];
@@ -538,10 +546,12 @@ export class CircuitBreaker {
    * Transition to CLOSED state
    */
   private transitionToClosed(): void {
-    if (this.context.state === 'CLOSED') return;
+    if (this.context.state === 'CLOSED') {
+      return;
+    }
 
     const previousState = this.context.state;
-    
+
     this.context.state = 'CLOSED';
     this.context.failureCount = 0;
     delete this.context.openedAt;
@@ -562,15 +572,17 @@ export class CircuitBreaker {
       failureCount: this.context.failureCount,
       successCount: this.context.successCount,
       totalOperations: this.context.totalOperations,
-      failureRate: this.context.totalOperations > 0 
-        ? this.context.failureCount / this.context.totalOperations 
-        : 0,
-      successRate: this.context.totalOperations > 0 
-        ? this.context.successCount / this.context.totalOperations 
-        : 0,
+      failureRate:
+        this.context.totalOperations > 0
+          ? this.context.failureCount / this.context.totalOperations
+          : 0,
+      successRate:
+        this.context.totalOperations > 0
+          ? this.context.successCount / this.context.totalOperations
+          : 0,
       averageOperationTime: this.context.averageOperationTime,
-      timeInCurrentState: this.context.openedAt 
-        ? Date.now() - this.context.openedAt 
+      timeInCurrentState: this.context.openedAt
+        ? Date.now() - this.context.openedAt
         : Date.now() - this.context.lastOperationAt,
       nextAttemptAt: this.context.nextAttemptAt,
     };
@@ -611,7 +623,7 @@ export class CircuitBreakerFactory {
    * Reset all circuit breaker instances
    */
   static resetAll(): void {
-    this.instances.forEach(instance => instance.reset());
+    this.instances.forEach((instance) => instance.reset());
   }
 
   /**
@@ -619,11 +631,11 @@ export class CircuitBreakerFactory {
    */
   static getAllStats(): Record<string, ReturnType<CircuitBreaker['getStats']>> {
     const stats: Record<string, ReturnType<CircuitBreaker['getStats']>> = {};
-    
+
     this.instances.forEach((breaker, id) => {
       stats[id] = breaker.getStats();
     });
-    
+
     return stats;
   }
 }
@@ -637,20 +649,20 @@ export function withCircuitBreaker<T extends (...args: any[]) => any>(
   config?: Partial<CircuitBreakerConfig>
 ): T {
   const circuitBreaker = CircuitBreakerFactory.get(circuitBreakerId, config);
-  
+
   return (async (...args: Parameters<T>) => {
     const result = await circuitBreaker.execute(async () => {
       return operation(...args);
     });
-    
+
     if (!result.allowed) {
       throw new Error(`Circuit breaker is ${result.state} for ${circuitBreakerId}`);
     }
-    
+
     if (result.error) {
       throw result.error;
     }
-    
+
     return result.result;
   }) as T;
 }
@@ -658,14 +670,8 @@ export function withCircuitBreaker<T extends (...args: any[]) => any>(
 /**
  * React hook for circuit breaker functionality
  */
-export function useCircuitBreaker(
-  id: string,
-  config?: Partial<CircuitBreakerConfig>
-) {
-  const circuitBreaker = React.useMemo(
-    () => CircuitBreakerFactory.get(id, config),
-    [id, config]
-  );
+export function useCircuitBreaker(id: string, config?: Partial<CircuitBreakerConfig>) {
+  const circuitBreaker = React.useMemo(() => CircuitBreakerFactory.get(id, config), [id, config]);
 
   const [state, setState] = React.useState(() => circuitBreaker.getState());
   const [stats, setStats] = React.useState(() => circuitBreaker.getStats());
@@ -674,7 +680,7 @@ export function useCircuitBreaker(
     const interval = setInterval(() => {
       const newState = circuitBreaker.getState();
       const newStats = circuitBreaker.getStats();
-      
+
       if (newState !== state || JSON.stringify(newStats) !== JSON.stringify(stats)) {
         setState(newState);
         setStats(newStats);
@@ -695,7 +701,10 @@ export function useCircuitBreaker(
   );
 
   const reset = React.useCallback(() => circuitBreaker.reset(), [circuitBreaker]);
-  const open = React.useCallback((reason?: string) => circuitBreaker.open(reason), [circuitBreaker]);
+  const open = React.useCallback(
+    (reason?: string) => circuitBreaker.open(reason),
+    [circuitBreaker]
+  );
 
   return {
     state,

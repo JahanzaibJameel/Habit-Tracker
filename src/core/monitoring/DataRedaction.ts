@@ -1,7 +1,7 @@
 /**
  * Data redaction utilities for sensitive information protection
  * Removes or masks sensitive data before sending to monitoring services
- * 
+ *
  * @fileoverview Data redaction and PII protection for monitoring
  * @version 1.0.0
  * @author Enterprise Frontend Team
@@ -15,22 +15,22 @@ export interface RedactionRule {
    * Pattern to match (string or RegExp)
    */
   pattern: string | RegExp;
-  
+
   /**
    * Replacement value
    */
   replacement: string;
-  
+
   /**
    * Rule description
    */
   description: string;
-  
+
   /**
    * Whether to apply recursively to nested objects
    */
   recursive?: boolean;
-  
+
   /**
    * Field names to apply this rule to (optional)
    */
@@ -45,27 +45,27 @@ export interface RedactionConfig {
    * Enable/disable redaction
    */
   enabled: boolean;
-  
+
   /**
    * Custom redaction rules
    */
   rules: RedactionRule[];
-  
+
   /**
    * Default replacement for unknown sensitive data
    */
   defaultReplacement: string;
-  
+
   /**
    * Fields to always redact
    */
   sensitiveFields: string[];
-  
+
   /**
    * Maximum string length before truncation
    */
   maxStringLength: number;
-  
+
   /**
    * Whether to truncate long strings
    */
@@ -80,17 +80,17 @@ export interface RedactionResult {
    * Redacted data
    */
   data: unknown;
-  
+
   /**
    * Number of redactions performed
    */
   redactionCount: number;
-  
+
   /**
    * List of applied rules
    */
   appliedRules: string[];
-  
+
   /**
    * Whether any data was modified
    */
@@ -108,7 +108,7 @@ export const DEFAULT_REDACTION_RULES: RedactionRule[] = [
     description: 'Email addresses',
     recursive: true,
   },
-  
+
   // Phone numbers (various formats)
   {
     pattern: /\b(?:\+?1[-.\s]?)?\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})\b/g,
@@ -116,7 +116,7 @@ export const DEFAULT_REDACTION_RULES: RedactionRule[] = [
     description: 'Phone numbers',
     recursive: true,
   },
-  
+
   // Social Security Numbers
   {
     pattern: /\b\d{3}-\d{2}-\d{4}\b/g,
@@ -124,7 +124,7 @@ export const DEFAULT_REDACTION_RULES: RedactionRule[] = [
     description: 'Social Security Numbers',
     recursive: true,
   },
-  
+
   // Credit card numbers
   {
     pattern: /\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b/g,
@@ -132,7 +132,7 @@ export const DEFAULT_REDACTION_RULES: RedactionRule[] = [
     description: 'Credit card numbers',
     recursive: true,
   },
-  
+
   // API keys and tokens
   {
     pattern: /\b[A-Za-z0-9]{20,}\b/g,
@@ -140,7 +140,7 @@ export const DEFAULT_REDACTION_RULES: RedactionRule[] = [
     description: 'API keys and tokens',
     fields: ['token', 'apiKey', 'api_key', 'secret', 'password', 'key'],
   },
-  
+
   // URLs with potential sensitive parameters
   {
     pattern: /\bhttps?:\/\/[^\s]*\?(?:token|key|password|secret)=[^\s&]+/gi,
@@ -148,7 +148,7 @@ export const DEFAULT_REDACTION_RULES: RedactionRule[] = [
     description: 'URLs with sensitive parameters',
     recursive: true,
   },
-  
+
   // IP addresses
   {
     pattern: /\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b/g,
@@ -156,7 +156,7 @@ export const DEFAULT_REDACTION_RULES: RedactionRule[] = [
     description: 'IP addresses',
     recursive: true,
   },
-  
+
   // JWT tokens
   {
     pattern: /eyJ[A-Za-z0-9_-]*\.eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*/g,
@@ -205,14 +205,14 @@ export const DEFAULT_SENSITIVE_FIELDS = [
 
 /**
  * Data redactor class
- * 
+ *
  * @example
  * const redactor = new DataRedactor({
  *   enabled: true,
  *   rules: DEFAULT_REDACTION_RULES,
  *   sensitiveFields: DEFAULT_SENSITIVE_FIELDS,
  * });
- * 
+ *
  * const result = redactor.redact(userData);
  */
 export class DataRedactor {
@@ -267,11 +267,11 @@ export class DataRedactor {
     // Apply each rule
     for (const rule of this.config.rules) {
       const shouldApply = !rule.fields || this.shouldApplyRule(rule, context);
-      
+
       if (shouldApply) {
         const before = result;
         result = result.replace(rule.pattern, rule.replacement);
-        
+
         if (result !== before) {
           redactionCount++;
           appliedRules.push(rule.description);
@@ -293,7 +293,7 @@ export class DataRedactor {
    * Remove a redaction rule by description
    */
   removeRule(description: string): boolean {
-    const index = this.config.rules.findIndex(rule => rule.description === description);
+    const index = this.config.rules.findIndex((rule) => rule.description === description);
     if (index > -1) {
       this.config.rules.splice(index, 1);
       return true;
@@ -319,7 +319,7 @@ export class DataRedactor {
    * Check if a field is sensitive
    */
   isSensitiveField(fieldName: string): boolean {
-    return this.config.sensitiveFields.some(field => 
+    return this.config.sensitiveFields.some((field) =>
       fieldName.toLowerCase().includes(field.toLowerCase())
     );
   }
@@ -342,7 +342,10 @@ export class DataRedactor {
   /**
    * Recursively redact values in an object
    */
-  private redactValue(value: unknown, context: string): {
+  private redactValue(
+    value: unknown,
+    context: string
+  ): {
     value: unknown;
     count: number;
     rules: string[];
@@ -357,7 +360,7 @@ export class DataRedactor {
     if (typeof value === 'string') {
       const redacted = this.redactString(value, context);
       const ruleCount = this.countRedactions(value, redacted);
-      
+
       return {
         value: this.truncateIfNeeded(redacted),
         count: ruleCount,
@@ -371,14 +374,14 @@ export class DataRedactor {
 
     if (Array.isArray(value)) {
       const redactedArray: unknown[] = [];
-      
+
       for (let i = 0; i < value.length; i++) {
         const result = this.redactValue(value[i], `${context}[${i}]`);
         redactedArray.push(result.value);
         totalCount += result.count;
         allAppliedRules.push(...result.rules);
       }
-      
+
       return {
         value: redactedArray,
         count: totalCount,
@@ -388,10 +391,10 @@ export class DataRedactor {
 
     if (typeof value === 'object') {
       const redactedObj: Record<string, unknown> = {};
-      
+
       for (const [key, val] of Object.entries(value)) {
         const fieldContext = context ? `${context}.${key}` : key;
-        
+
         // Check if this field should be completely redacted
         if (this.isSensitiveField(key)) {
           redactedObj[key] = this.config.defaultReplacement;
@@ -404,7 +407,7 @@ export class DataRedactor {
           allAppliedRules.push(...result.rules);
         }
       }
-      
+
       return {
         value: redactedObj,
         count: totalCount,
@@ -424,9 +427,7 @@ export class DataRedactor {
     }
 
     const fieldName = context.split('.').pop() || '';
-    return rule.fields.some(field => 
-      fieldName.toLowerCase().includes(field.toLowerCase())
-    );
+    return rule.fields.some((field) => fieldName.toLowerCase().includes(field.toLowerCase()));
   }
 
   /**
@@ -447,7 +448,9 @@ export class DataRedactor {
 
     let count = 0;
     for (const marker of redactionMarkers) {
-      const matches = redacted.match(new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'));
+      const matches = redacted.match(
+        new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')
+      );
       count += matches ? matches.length : 0;
     }
 
@@ -462,7 +465,7 @@ export class DataRedactor {
       return value;
     }
 
-    const truncated = value.substring(0, this.config.maxStringLength - 3) + '...';
+    const truncated = `${value.substring(0, this.config.maxStringLength - 3)}...`;
     return truncated;
   }
 }
@@ -481,7 +484,7 @@ export const defaultDataRedactor = createDataRedactor();
 
 /**
  * Quick redaction function for one-off use
- * 
+ *
  * @example
  * const safeData = redactSensitiveData(userData);
  */
@@ -511,13 +514,15 @@ export function extractSensitivePatterns(data: unknown): {
   ips: string[];
 } {
   const dataString = JSON.stringify(data);
-  
+
   return {
-    emails: (dataString.match(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g) || []),
-    phones: (dataString.match(/\b(?:\+?1[-.\s]?)?\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})\b/g) || []),
-    tokens: (dataString.match(/\b[A-Za-z0-9]{20,}\b/g) || []),
-    urls: (dataString.match(/\bhttps?:\/\/[^\s]*\?(?:token|key|password|secret)=[^\s&]+/gi) || []),
-    ips: (dataString.match(/\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b/g) || []),
+    emails: dataString.match(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g) || [],
+    phones:
+      dataString.match(/\b(?:\+?1[-.\s]?)?\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})\b/g) ||
+      [],
+    tokens: dataString.match(/\b[A-Za-z0-9]{20,}\b/g) || [],
+    urls: dataString.match(/\bhttps?:\/\/[^\s]*\?(?:token|key|password|secret)=[^\s&]+/gi) || [],
+    ips: dataString.match(/\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b/g) || [],
   };
 }
 
@@ -558,7 +563,7 @@ export function validateRedactionRules(rules: RedactionRule[]): {
  * Create redaction rules for custom fields
  */
 export function createCustomFieldRules(fields: string[], replacement?: string): RedactionRule[] {
-  return fields.map(field => ({
+  return fields.map((field) => ({
     pattern: new RegExp(`\\b${field}\\b`, 'gi'),
     replacement: replacement || `[REDACTED_${field.toUpperCase()}]`,
     description: `Custom field: ${field}`,
@@ -580,15 +585,23 @@ export function mergeRedactionConfigs(...configs: Partial<RedactionConfig>[]): R
   };
 
   for (const config of configs) {
-    if (config.enabled !== undefined) merged.enabled = config.enabled;
-    if (config.defaultReplacement !== undefined) merged.defaultReplacement = config.defaultReplacement;
-    if (config.maxStringLength !== undefined) merged.maxStringLength = config.maxStringLength;
-    if (config.truncateLongStrings !== undefined) merged.truncateLongStrings = config.truncateLongStrings;
-    
+    if (config.enabled !== undefined) {
+      merged.enabled = config.enabled;
+    }
+    if (config.defaultReplacement !== undefined) {
+      merged.defaultReplacement = config.defaultReplacement;
+    }
+    if (config.maxStringLength !== undefined) {
+      merged.maxStringLength = config.maxStringLength;
+    }
+    if (config.truncateLongStrings !== undefined) {
+      merged.truncateLongStrings = config.truncateLongStrings;
+    }
+
     if (config.rules) {
       merged.rules = [...(merged.rules || []), ...config.rules];
     }
-    
+
     if (config.sensitiveFields) {
       merged.sensitiveFields = [...(merged.sensitiveFields || []), ...config.sensitiveFields];
     }

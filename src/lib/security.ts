@@ -8,7 +8,9 @@ export const sanitizeInput = {
    * Sanitize string input to prevent XSS attacks
    */
   string: (input: string): string => {
-    if (typeof input !== 'string') return '';
+    if (typeof input !== 'string') {
+      return '';
+    }
 
     return input
       .replace(/[<>]/g, '') // Remove potential HTML tags
@@ -22,7 +24,9 @@ export const sanitizeInput = {
    * Sanitize HTML content
    */
   html: (input: string): string => {
-    if (typeof input !== 'string') return '';
+    if (typeof input !== 'string') {
+      return '';
+    }
 
     // Basic HTML sanitization - in production, use a library like DOMPurify
     const div = typeof document !== 'undefined' ? document.createElement('div') : null;
@@ -43,7 +47,9 @@ export const sanitizeInput = {
    * Sanitize URL to prevent malicious URLs
    */
   url: (input: string): string => {
-    if (typeof input !== 'string') return '';
+    if (typeof input !== 'string') {
+      return '';
+    }
 
     try {
       const url = new URL(

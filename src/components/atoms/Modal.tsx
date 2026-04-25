@@ -80,7 +80,9 @@ const Modal: React.FC<ModalProps> = ({
     }
   };
 
-  if (!isOpen || !isMounted) return null;
+  if (!isOpen || !isMounted) {
+    return null;
+  }
 
   const modalContent = (
     <div className="fixed inset-0 z-50 overflow-y-auto p-4">
@@ -101,7 +103,7 @@ const Modal: React.FC<ModalProps> = ({
             'max-h-[calc(100vh-3rem)] overflow-hidden',
             'transform transition-all duration-200 ease-out',
             sizeClasses[size],
-            className
+            className || ''
           )}
           role="dialog"
           aria-modal="true"

@@ -1,7 +1,7 @@
 /**
  * Comprehensive unit tests for monitoring system
  * Tests monitoring service, adapters, offline queue, provider, and redaction
- * 
+ *
  * @fileoverview Monitoring system tests
  * @version 1.0.0
  * @author Enterprise Frontend Team
@@ -14,10 +14,12 @@ import '@testing-library/jest-dom';
 
 // Import monitoring components
 import { MonitoringService } from '../MonitoringService';
-import { OfflineQueue, createOfflineQueue } from '../OfflineQueue';
+import type { OfflineQueue } from '../OfflineQueue';
+import { createOfflineQueue } from '../OfflineQueue';
 import { MonitoringProvider, useMonitoring, withMonitoring } from '../MonitoringProvider';
 import { DataRedactor, redactSensitiveData, DEFAULT_REDACTION_RULES } from '../DataRedaction';
-import { MonitoringEvent, MonitoringSeverity, MonitoringCategory } from '../types';
+import type { MonitoringEvent } from '../types';
+import { MonitoringSeverity, MonitoringCategory } from '../types';
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -87,7 +89,7 @@ describe('MonitoringService', () => {
 
   test('should handle disabled service', async () => {
     monitoringService.setEnabled(false);
-    
+
     const event: MonitoringEvent = {
       id: 'test-event-2',
       timestamp: Date.now(),
@@ -121,7 +123,7 @@ describe('MonitoringService', () => {
 
     const results = await monitoringService.trackEvents(events);
     expect(results).toHaveLength(2);
-    results.forEach(result => {
+    results.forEach((result) => {
       expect(result.success).toBe(true);
     });
   });
@@ -171,7 +173,7 @@ describe('OfflineQueue', () => {
 
     const result = queue.addEvent(event);
     expect(result).toBe(true);
-    
+
     const stats = queue.getStats();
     expect(stats.totalEvents).toBe(1);
     expect(stats.memoryEvents).toBe(1);
@@ -210,7 +212,7 @@ describe('OfflineQueue', () => {
 
     const added = queue.addEvents(events);
     expect(added).toBe(2);
-    
+
     const stats = queue.getStats();
     expect(stats.totalEvents).toBe(2);
   });
@@ -225,7 +227,7 @@ describe('OfflineQueue', () => {
     };
 
     queue.addEvent(event);
-    
+
     const mockProcessor = jest.fn().mockResolvedValue({
       success: true,
       processed: 1,
@@ -234,7 +236,7 @@ describe('OfflineQueue', () => {
     });
 
     queue.addProcessor(mockProcessor);
-    
+
     const result = await queue.flush();
     expect(result.success).toBe(true);
     expect(result.processed).toBe(1);
@@ -251,26 +253,33 @@ describe('OfflineQueue', () => {
     };
 
     queue.addEvent(event);
-    
-    const mockProcessor = jest.fn().mockImplementation(() => 
-      new Promise(resolve => setTimeout(() => resolve({
-        success: true,
-        processed: 1,
-        failed: 0,
-        remaining: 0,
-      }), 100))
+
+    const mockProcessor = jest.fn().mockImplementation(
+      () =>
+        new Promise((resolve) =>
+          setTimeout(
+            () =>
+              resolve({
+                success: true,
+                processed: 1,
+                failed: 0,
+                remaining: 0,
+              }),
+            100
+          )
+        )
     );
 
     queue.addProcessor(mockProcessor);
-    
+
     // Start first flush
     const flush1 = queue.flush();
-    
+
     // Second flush should fail
     const flush2 = await queue.flush();
     expect(flush2.success).toBe(false);
     expect(flush2.error).toContain('already processing');
-    
+
     await flush1;
   });
 
@@ -293,11 +302,11 @@ describe('OfflineQueue', () => {
     ];
 
     queue.addEvents(events);
-    
+
     const errorEvents = queue.getEventsBySeverity(MonitoringSeverity.ERROR);
     expect(errorEvents).toHaveLength(1);
     expect(errorEvents[0].id).toBe('severity-1');
-    
+
     const infoEvents = queue.getEventsBySeverity(MonitoringSeverity.INFO);
     expect(infoEvents).toHaveLength(1);
     expect(infoEvents[0].id).toBe('severity-2');
@@ -306,7 +315,7 @@ describe('OfflineQueue', () => {
   test('should clear old events', () => {
     const oldEvent: MonitoringEvent = {
       id: 'old-event',
-      timestamp: Date.now() - (2 * 24 * 60 * 60 * 1000), // 2 days ago
+      timestamp: Date.now() - 2 * 24 * 60 * 60 * 1000, // 2 days ago
       severity: MonitoringSeverity.INFO,
       category: MonitoringCategory.SYSTEM,
       message: 'Old event',
@@ -321,10 +330,10 @@ describe('OfflineQueue', () => {
     };
 
     queue.addEvents([oldEvent, recentEvent]);
-    
+
     const cleared = queue.clearOldEvents(24 * 60 * 60 * 1000); // 1 day
     expect(cleared).toBe(1);
-    
+
     const remainingEvents = queue.getAllEvents();
     expect(remainingEvents).toHaveLength(1);
     expect(remainingEvents[0].id).toBe('recent-event');
@@ -349,16 +358,16 @@ describe('OfflineQueue', () => {
     ];
 
     queue.addEvents(events);
-    
+
     const exported = queue.exportEvents();
     expect(exported).toContain('export-1');
     expect(exported).toContain('export-2');
-    
+
     // Clear and import
     queue.clear();
     const imported = queue.importEvents(exported);
     expect(imported).toBe(2);
-    
+
     const stats = queue.getStats();
     expect(stats.totalEvents).toBe(2);
   });
@@ -387,7 +396,7 @@ describe('DataRedaction', () => {
     const result = redactor.redact(data);
     expect(result.modified).toBe(true);
     expect(result.redactionCount).toBeGreaterThan(0);
-    
+
     const redactedData = result.data as any;
     expect(redactedData.user.email).toBe('[REDACTED_EMAIL]');
     expect(redactedData.user.phone).toBe('[REDACTED_PHONE]');
@@ -404,7 +413,7 @@ describe('DataRedaction', () => {
 
     const result = redactor.redact(data);
     const redactedData = result.data as any;
-    
+
     expect(redactedData.credentials.password).toBe('[REDACTED]');
     expect(redactedData.credentials.token).toBe('[REDACTED]');
     expect(redactedData.credentials.username).toBe('john.doe'); // Not redacted
@@ -422,7 +431,7 @@ describe('DataRedaction', () => {
 
     const result = redactor.redact(data);
     const redactedData = result.data as any;
-    
+
     expect(redactedData.level1.level2.email).toBe('[REDACTED_EMAIL]');
     expect(redactedData.level1.level2.api_key).toBe('[REDACTED_TOKEN]');
   });
@@ -437,7 +446,7 @@ describe('DataRedaction', () => {
 
     const result = redactor.redact(data);
     const redactedData = result.data as any;
-    
+
     expect(redactedData.users[0].email).toBe('[REDACTED_EMAIL]');
     expect(redactedData.users[1].email).toBe('[REDACTED_EMAIL]');
     expect(redactedData.users[0].name).toBe('User 1');
@@ -450,7 +459,7 @@ describe('DataRedaction', () => {
 
     const result = redactor.redact(data);
     const redactedData = result.data as any;
-    
+
     expect(redactedData.longString.length).toBeLessThanOrEqual(1003); // 1000 + '...'
     expect(redactedData.longString.endsWith('...')).toBe(true);
   });
@@ -472,11 +481,11 @@ describe('DataRedaction', () => {
     };
 
     redactor.addRule(customRule);
-    
+
     const data = { customField: 'CUSTOM_SECRET_VALUE' };
     const result = redactor.redact(data);
     const redactedData = result.data as any;
-    
+
     expect(redactedData.customField).toBe('[REDACTED_CUSTOM]');
   });
 
@@ -497,7 +506,7 @@ describe('MonitoringProvider', () => {
       serviceName: 'test-service',
       environment: 'test',
     });
-    
+
     offlineQueue = createOfflineQueue({
       maxMemoryEvents: 10,
     });
@@ -506,7 +515,7 @@ describe('MonitoringProvider', () => {
   test('should provide monitoring context', () => {
     const TestComponent = () => {
       const { service, trackEvent, trackError } = useMonitoring();
-      
+
       const handleTrackEvent = () => {
         trackEvent({
           message: 'Test event',
@@ -545,7 +554,7 @@ describe('MonitoringProvider', () => {
   test('should track events through context', async () => {
     const TestComponent = () => {
       const { trackEvent } = useMonitoring();
-      
+
       React.useEffect(() => {
         trackEvent({
           message: 'Context test event',
@@ -557,10 +566,7 @@ describe('MonitoringProvider', () => {
     };
 
     render(
-      <MonitoringProvider
-        service={monitoringService}
-        offlineQueue={offlineQueue}
-      >
+      <MonitoringProvider service={monitoringService} offlineQueue={offlineQueue}>
         <TestComponent />
       </MonitoringProvider>
     );
@@ -599,7 +605,7 @@ describe('MonitoringProvider', () => {
   test('should respect sampling rate', () => {
     const TestComponent = () => {
       const { trackEvent } = useMonitoring();
-      
+
       React.useEffect(() => {
         // Track multiple events
         for (let i = 0; i < 100; i++) {
@@ -633,7 +639,7 @@ describe('MonitoringProvider', () => {
     const TestComponent = () => {
       const { trackEvent, setEnabled, getStats } = useMonitoring();
       const [isEnabled, setIsEnabledState] = React.useState(true);
-      
+
       const handleToggle = () => {
         setEnabled(!isEnabled);
         setIsEnabledState(!isEnabled);
@@ -657,10 +663,7 @@ describe('MonitoringProvider', () => {
     };
 
     render(
-      <MonitoringProvider
-        service={monitoringService}
-        offlineQueue={offlineQueue}
-      >
+      <MonitoringProvider service={monitoringService} offlineQueue={offlineQueue}>
         <TestComponent />
       </MonitoringProvider>
     );
@@ -688,7 +691,7 @@ describe('withMonitoring HOC', () => {
       serviceName: 'test-service',
       environment: 'test',
     });
-    
+
     offlineQueue = createOfflineQueue({
       maxMemoryEvents: 10,
     });
@@ -731,7 +734,7 @@ describe('withMonitoring HOC', () => {
 
     // Component should be tracked on unmount
     unmount();
-    
+
     await waitFor(() => {
       const stats = monitoringService.getStats();
       expect(stats.totalEvents).toBeGreaterThan(1);
@@ -745,20 +748,18 @@ describe('Integration Tests', () => {
       serviceName: 'integration-test',
       environment: 'test',
     });
-    
+
     const offlineQueue = createOfflineQueue({
       maxMemoryEvents: 5,
     });
 
     // Add processor to queue
     offlineQueue.addProcessor(async (events) => {
-      const results = await Promise.all(
-        events.map(event => monitoringService.trackEvent(event))
-      );
-      
-      const processed = results.filter(r => r.success).length;
+      const results = await Promise.all(events.map((event) => monitoringService.trackEvent(event)));
+
+      const processed = results.filter((r) => r.success).length;
       const failed = results.length - processed;
-      
+
       return {
         success: failed === 0,
         processed,
@@ -785,13 +786,13 @@ describe('Integration Tests', () => {
       },
     ];
 
-    events.forEach(event => offlineQueue.addEvent(event));
-    
+    events.forEach((event) => offlineQueue.addEvent(event));
+
     // Flush queue
     const result = await offlineQueue.flush();
     expect(result.success).toBe(true);
     expect(result.processed).toBe(2);
-    
+
     // Verify events were tracked
     const stats = monitoringService.getStats();
     expect(stats.totalEvents).toBe(2);
@@ -818,7 +819,7 @@ describe('Integration Tests', () => {
     const result = redactor.redact(sensitiveData);
     expect(result.modified).toBe(true);
     expect(result.redactionCount).toBeGreaterThan(0);
-    
+
     const redacted = result.data as any;
     expect(redacted.user.email).toBe('[REDACTED_EMAIL]');
     expect(redacted.user.password).toBe('[REDACTED]');
@@ -832,29 +833,29 @@ describe('Integration Tests', () => {
       serviceName: 'full-test',
       environment: 'test',
     });
-    
+
     const offlineQueue = createOfflineQueue();
     const redactor = new DataRedactor();
 
     const TestComponent = () => {
       const { trackEvent, trackError, trackPerformance, trackUserAction } = useMonitoring();
-      
+
       React.useEffect(() => {
         // Track different types of events
         trackEvent({
           message: 'Test event',
           category: MonitoringCategory.SYSTEM,
         });
-        
+
         trackPerformance('load_time', 1500);
         trackUserAction('button_click', { buttonId: 'test' });
-        
+
         // Track error with sensitive data
         const error = new Error('Test error with sensitive data');
         try {
           throw error;
         } catch (e) {
-          trackError(e, { 
+          trackError(e, {
             userEmail: 'user@example.com',
             apiKey: 'secret-key-123',
           });
@@ -884,8 +885,8 @@ describe('Integration Tests', () => {
 
     // Verify redaction was applied to sensitive data
     const events = monitoringService.getRecentEvents(10);
-    const errorEvent = events.find(e => e.message.includes('Test error'));
-    
+    const errorEvent = events.find((e) => e.message.includes('Test error'));
+
     if (errorEvent && errorEvent.data) {
       const eventData = errorEvent.data as any;
       // Should have been redacted by the monitoring service
@@ -949,7 +950,7 @@ describe('Error Handling and Edge Cases', () => {
 
   test('should handle redaction of circular references', () => {
     const redactor = new DataRedactor();
-    
+
     const circular: any = { name: 'test' };
     circular.self = circular;
 
@@ -976,7 +977,7 @@ describe('Error Handling and Edge Cases', () => {
     const result = redactor.redact(largeData);
     expect(result.modified).toBe(true);
     expect(result.redactionCount).toBeGreaterThan(0);
-    
+
     // Should have truncated long strings
     const redactedData = result.data as any;
     expect(redactedData.users[0].name.length).toBeLessThanOrEqual(103);

@@ -1,7 +1,7 @@
 /**
  * Comprehensive unit tests for performance budget system
  * Tests budget configuration, monitoring, hooks, and banner components
- * 
+ *
  * @fileoverview Performance system tests
  * @version 1.0.0
  * @author Enterprise Frontend Team
@@ -19,7 +19,11 @@ const mockPerformance = global.performance;
 // Import components (adjust paths as needed based on actual exports)
 import { PerformanceMonitor } from '../PerformanceMonitor';
 import { usePerformanceBudgetReporter } from '../usePerformanceBudgetReporter';
-import { BudgetViolationBanner, useBudgetViolationBanner, PerformanceAlert } from '../BudgetViolationBanner';
+import {
+  BudgetViolationBanner,
+  useBudgetViolationBanner,
+  PerformanceAlert,
+} from '../BudgetViolationBanner';
 
 describe('Performance Budget Configuration', () => {
   test('should define budget thresholds for different environments', () => {
@@ -56,7 +60,9 @@ describe('Performance Budget Configuration', () => {
     };
 
     expect(expectedBudgets).toBeDefined();
-    expect(expectedBudgets.production.metrics.LCP).toBeLessThan(expectedBudgets.development.metrics.LCP);
+    expect(expectedBudgets.production.metrics.LCP).toBeLessThan(
+      expectedBudgets.development.metrics.LCP
+    );
   });
 
   test('should validate budget configuration structure', () => {
@@ -92,7 +98,7 @@ describe('PerformanceMonitor', () => {
   beforeEach(() => {
     // Mock PerformanceObserver
     global.PerformanceObserver = mockPerformanceObserver;
-    
+
     // Mock performance.getEntriesByType
     global.performance = {
       ...mockPerformance,
@@ -137,8 +143,8 @@ describe('PerformanceMonitor', () => {
     const violations = await performanceMonitor.checkBudgetViolations(mockMetrics);
 
     expect(violations).toHaveLength(2);
-    expect(violations.some(v => v.metric === 'LCP')).toBe(true);
-    expect(violations.some(v => v.metric === 'CLS')).toBe(true);
+    expect(violations.some((v) => v.metric === 'LCP')).toBe(true);
+    expect(violations.some((v) => v.metric === 'CLS')).toBe(true);
   });
 
   test('should track repeated violations', async () => {
@@ -188,7 +194,7 @@ describe('usePerformanceBudgetReporter Hook', () => {
   test('should provide performance reporting interface', () => {
     const TestComponent = () => {
       const { reportMetric, getViolations, clearViolations } = usePerformanceBudgetReporter();
-      
+
       return (
         <div>
           <button onClick={() => reportMetric('LCP', 3000)}>Report LCP</button>
@@ -208,7 +214,7 @@ describe('usePerformanceBudgetReporter Hook', () => {
   test('should track metric violations', async () => {
     const TestComponent = () => {
       const { reportMetric, violations } = usePerformanceBudgetReporter();
-      
+
       React.useEffect(() => {
         reportMetric('LCP', 4000); // Exceeds budget
         reportMetric('FID', 50); // Within budget
@@ -217,7 +223,7 @@ describe('usePerformanceBudgetReporter Hook', () => {
       return (
         <div>
           <span data-testid="violation-count">{violations.length}</span>
-          {violations.map(v => (
+          {violations.map((v) => (
             <div key={v.metric} data-testid={`violation-${v.metric}`}>
               {v.metric}: {v.actual}
             </div>
@@ -238,7 +244,7 @@ describe('usePerformanceBudgetReporter Hook', () => {
   test('should aggregate multiple violations', async () => {
     const TestComponent = () => {
       const { reportMetric, violations } = usePerformanceBudgetReporter();
-      
+
       React.useEffect(() => {
         reportMetric('LCP', 4000);
         reportMetric('LCP', 4500); // Same metric, worse value
@@ -248,7 +254,7 @@ describe('usePerformanceBudgetReporter Hook', () => {
       return (
         <div>
           <span data-testid="violation-count">{violations.length}</span>
-          {violations.map(v => (
+          {violations.map((v) => (
             <div key={v.metric} data-testid={`violation-${v.metric}`}>
               {v.metric}: {v.actual} (count: {v.count})
             </div>
@@ -269,11 +275,11 @@ describe('usePerformanceBudgetReporter Hook', () => {
   test('should clear violations', async () => {
     const TestComponent = () => {
       const { reportMetric, violations, clearViolations } = usePerformanceBudgetReporter();
-      
+
       const handleReport = () => {
         reportMetric('LCP', 4000);
       };
-      
+
       const handleClear = () => {
         clearViolations();
       };
@@ -291,14 +297,14 @@ describe('usePerformanceBudgetReporter Hook', () => {
 
     // Report violation
     fireEvent.click(screen.getByText('Report Violation'));
-    
+
     await waitFor(() => {
       expect(screen.getByTestId('violation-count')).toHaveTextContent('1');
     });
 
     // Clear violations
     fireEvent.click(screen.getByText('Clear Violations'));
-    
+
     await waitFor(() => {
       expect(screen.getByTestId('violation-count')).toHaveTextContent('0');
     });
@@ -345,11 +351,7 @@ describe('BudgetViolationBanner Component', () => {
 
   test('should not render when no violations', () => {
     render(
-      <BudgetViolationBanner
-        violations={[]}
-        onDismiss={jest.fn()}
-        onAcknowledge={jest.fn()}
-      />
+      <BudgetViolationBanner violations={[]} onDismiss={jest.fn()} onAcknowledge={jest.fn()} />
     );
 
     expect(screen.queryByText('Performance Budget Violations')).not.toBeInTheDocument();
@@ -400,7 +402,7 @@ describe('BudgetViolationBanner Component', () => {
 
     // Select first violation
     fireEvent.click(screen.getByText('Dismiss'));
-    
+
     // Click acknowledge
     const acknowledgeButton = screen.getByText('Acknowledge Selected');
     if (acknowledgeButton) {
@@ -440,7 +442,7 @@ describe('BudgetViolationBanner Component', () => {
     );
 
     expect(screen.getByText('Show Details')).toBeInTheDocument();
-    
+
     fireEvent.click(screen.getByText('Show Details'));
     expect(screen.getByText('Hide Details')).toBeInTheDocument();
   });
@@ -449,8 +451,9 @@ describe('BudgetViolationBanner Component', () => {
 describe('useBudgetViolationBanner Hook', () => {
   test('should manage violation state', () => {
     const TestComponent = () => {
-      const { violations, addViolation, removeViolation, clearViolations } = useBudgetViolationBanner();
-      
+      const { violations, addViolation, removeViolation, clearViolations } =
+        useBudgetViolationBanner();
+
       const handleAddViolation = () => {
         addViolation({
           metric: 'LCP',
@@ -483,7 +486,7 @@ describe('useBudgetViolationBanner Hook', () => {
   test('should track violation count', () => {
     const TestComponent = () => {
       const { violations, addViolation } = useBudgetViolationBanner();
-      
+
       const handleAddViolation = () => {
         addViolation({
           metric: 'LCP',
@@ -495,7 +498,7 @@ describe('useBudgetViolationBanner Hook', () => {
 
       return (
         <div>
-          {violations.map(v => (
+          {violations.map((v) => (
             <div key={v.metric} data-testid={`violation-${v.metric}`}>
               Count: {v.count}
             </div>
@@ -517,8 +520,9 @@ describe('useBudgetViolationBanner Hook', () => {
 
   test('should handle dismissed violations', () => {
     const TestComponent = () => {
-      const { violations, addViolation, dismissViolation, dismissedCount } = useBudgetViolationBanner();
-      
+      const { violations, addViolation, dismissViolation, dismissedCount } =
+        useBudgetViolationBanner();
+
       const handleAddViolation = () => {
         addViolation({
           metric: 'LCP',
@@ -608,7 +612,7 @@ describe('Integration Tests', () => {
     const TestComponent = () => {
       const { reportMetric } = usePerformanceBudgetReporter();
       const { violations } = useBudgetViolationBanner();
-      
+
       React.useEffect(() => {
         // Simulate performance violation
         reportMetric('LCP', 4000);
@@ -638,7 +642,7 @@ describe('Integration Tests', () => {
     const TestComponent = () => {
       const { reportMetric } = usePerformanceBudgetReporter();
       const { violations } = useBudgetViolationBanner();
-      
+
       React.useEffect(() => {
         reportMetric('LCP', 4000);
         reportMetric('CLS', 0.3);
@@ -670,11 +674,7 @@ describe('Integration Tests', () => {
 describe('Edge Cases and Error Handling', () => {
   test('should handle empty violations array', () => {
     render(
-      <BudgetViolationBanner
-        violations={[]}
-        onDismiss={jest.fn()}
-        onAcknowledge={jest.fn()}
-      />
+      <BudgetViolationBanner violations={[]} onDismiss={jest.fn()} onAcknowledge={jest.fn()} />
     );
 
     expect(screen.queryByText('Performance Budget Violations')).not.toBeInTheDocument();
@@ -726,7 +726,7 @@ describe('Edge Cases and Error Handling', () => {
   test('should handle rapid violation updates', async () => {
     const TestComponent = () => {
       const { violations, addViolation } = useBudgetViolationBanner();
-      
+
       const handleRapidAdd = () => {
         for (let i = 0; i < 10; i++) {
           addViolation({
@@ -778,9 +778,7 @@ describe('Performance Metrics Formatting', () => {
   });
 
   test('should format ratio-based metrics correctly', () => {
-    const ratioViolations = [
-      { metric: 'CLS', actual: 0.25, threshold: 0.1 },
-    ];
+    const ratioViolations = [{ metric: 'CLS', actual: 0.25, threshold: 0.1 }];
 
     render(
       <BudgetViolationBanner

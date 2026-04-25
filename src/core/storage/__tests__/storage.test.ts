@@ -1,7 +1,7 @@
 /**
  * Comprehensive unit tests for storage system
  * Tests storage engines, migrations, quota handling, and React hooks
- * 
+ *
  * @fileoverview Complete storage system tests
  * @version 1.0.0
  * @author Enterprise Frontend Team
@@ -9,10 +9,9 @@
 
 import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import { z } from 'zod';
-import { 
-  StorageEngine, 
-  createStorageEngine, 
-  StorageConfig, 
+import type { StorageEngine, StorageConfig } from '../StorageEngine';
+import {
+  createStorageEngine,
   StorageBackend,
   StorageResult,
   Migration as StorageEngineMigration,
@@ -20,7 +19,7 @@ import {
 } from '../StorageEngine';
 import { useStorage } from '../useStorage';
 import { settingsMigrations, settingsMigrationRegistry } from '../migrations/settings.migrations';
-import { 
+import type {
   StorageBackend as StorageBackendType,
   StorageConfig as StorageConfigType,
   Migration as TypesMigration,
@@ -31,6 +30,7 @@ import {
   StorageErrorCode,
   type StorageEvent as StorageEventType,
 } from '../types';
+
 import { AppSettingsSchema } from '../../validation/schemas';
 
 // Mock localStorage with quota simulation
@@ -47,12 +47,12 @@ const createLocalStorageMock = (quota: number = 1024 * 1024) => {
         (error as any).name = 'QuotaExceededError';
         throw error;
       }
-      
+
       // Remove old size if key exists
       if (store[key]) {
         usedSpace -= new Blob([store[key]]).size;
       }
-      
+
       store[key] = value;
       usedSpace += size;
     }),
@@ -85,7 +85,7 @@ const createLocalStorageMock = (quota: number = 1024 * 1024) => {
 // Mock IndexedDB
 const createIndexedDBMock = () => {
   const stores: Record<string, Record<string, any>> = {};
-  
+
   return {
     open: jest.fn((name: string, version: number) => {
       const request = {
@@ -117,24 +117,26 @@ const createIndexedDBMock = () => {
               }),
               getAll: jest.fn(() => {
                 const store = stores[storeName] || {};
-                return Promise.resolve(Object.entries(store).map(([key, value]) => ({ key, value })));
+                return Promise.resolve(
+                  Object.entries(store).map(([key, value]) => ({ key, value }))
+                );
               }),
             })),
           })),
         },
       };
-      
+
       // Simulate successful open
       setTimeout(() => {
         if (request.onsuccess) {
           request.onsuccess({ target: request });
         }
       }, 0);
-      
+
       return request;
     }),
     reset: () => {
-      Object.keys(stores).forEach(key => delete stores[key]);
+      Object.keys(stores).forEach((key) => delete stores[key]);
     },
   };
 };
@@ -210,7 +212,7 @@ describe('StorageEngine - Basic Operations', () => {
   test('should store and retrieve data', async () => {
     const testData = { id: '123', name: 'Test' };
     const result = await storageEngine.set('user', testData);
-    
+
     expect(result.success).toBe(true);
     expect(result.data).toEqual(testData);
     expect(result.metadata?.version).toBe(1);
@@ -222,7 +224,7 @@ describe('StorageEngine - Basic Operations', () => {
 
   test('should handle missing data gracefully', async () => {
     const result = await storageEngine.get('nonexistent');
-    
+
     expect(result.success).toBe(false);
     expect(result.data).toBeUndefined();
     expect(result.error).toBeDefined();
@@ -231,7 +233,7 @@ describe('StorageEngine - Basic Operations', () => {
   test('should remove data', async () => {
     const testData = { id: '123', name: 'Test' };
     await storageEngine.set('user', testData);
-    
+
     const removeResult = await storageEngine.remove('user');
     expect(removeResult.success).toBe(true);
 
@@ -242,13 +244,13 @@ describe('StorageEngine - Basic Operations', () => {
   test('should clear all data', async () => {
     await storageEngine.set('user1', { id: '1' });
     await storageEngine.set('user2', { id: '2' });
-    
+
     const clearResult = await storageEngine.clear();
     expect(clearResult.success).toBe(true);
 
     const getResult1 = await storageEngine.get('user1');
     const getResult2 = await storageEngine.get('user2');
-    
+
     expect(getResult1.success).toBe(false);
     expect(getResult2.success).toBe(false);
   });
@@ -258,7 +260,7 @@ describe('StorageEngine - Basic Operations', () => {
       ...config,
       backend: 'sessionStorage',
     });
-    
+
     expect(sessionStorageEngine.getBackend()).toBe('sessionStorage');
   });
 });
@@ -292,7 +294,7 @@ describe('StorageEngine - Migration Logic', () => {
 
     // Read with migration
     const result = await storageEngine.get('settings');
-    
+
     expect(result.success).toBe(true);
     expect(result.data).toBeDefined();
     expect((result.data as any)._version).toBe(3); // Should migrate to latest
@@ -403,7 +405,7 @@ describe('StorageEngine - Quota Handling', () => {
       namespace: 'test',
       ...DEFAULT_STORAGE_CONFIG,
     };
-    
+
     // Create localStorage with small quota
     const smallQuotaMock = createLocalStorageMock(100); // 100 bytes
     Object.defineProperty(window, 'localStorage', {
@@ -412,14 +414,14 @@ describe('StorageEngine - Quota Handling', () => {
     });
 
     const storageEngine = createStorageEngine(smallQuotaConfig);
-    
+
     // Fill up the quota
     await storageEngine.set('small', { data: 'x'.repeat(50) });
-    
+
     // This should fail due to quota exceeded
     const largeData = { data: 'x'.repeat(100) };
     const result = await storageEngine.set('large', largeData);
-    
+
     expect(result.success).toBe(false);
     expect(result.error).toContain('Quota exceeded');
   });
@@ -433,11 +435,11 @@ describe('StorageEngine - Quota Handling', () => {
     };
 
     const storageEngine = createStorageEngine(config);
-    
+
     // Add some old data
     await storageEngine.set('old1', { data: 'test', timestamp: new Date('2020-01-01') });
     await storageEngine.set('old2', { data: 'test', timestamp: new Date('2020-01-02') });
-    
+
     // Simulate quota exceeded
     const smallQuotaMock = createLocalStorageMock(50);
     Object.defineProperty(window, 'localStorage', {
@@ -447,7 +449,7 @@ describe('StorageEngine - Quota Handling', () => {
 
     // The engine should attempt to clean up old items
     const result = await storageEngine.set('new', { data: 'important' });
-    
+
     // In a real implementation, this would attempt cleanup
     expect(result).toBeDefined();
   });
@@ -483,7 +485,7 @@ describe('StorageEngine - Data Integrity', () => {
     };
 
     const storageEngine = createStorageEngine(config);
-    
+
     // Valid data
     const validData = {
       _version: 1,
@@ -546,7 +548,7 @@ describe('StorageEngine - Cross-Tab Synchronization', () => {
 
     const storageEngine = createStorageEngine(config);
     const eventListener = jest.fn();
-    
+
     storageEngine.addEventListener('set', eventListener);
 
     // Simulate storage event from another tab
@@ -581,7 +583,7 @@ describe('StorageEngine - Performance and Statistics', () => {
     await storageEngine.set('settings', { theme: 'dark' });
 
     const stats = await storageEngine.getStats();
-    
+
     expect(stats.totalItems).toBe(3);
     expect(stats.totalSize).toBeGreaterThan(0);
     expect(stats.backend).toBe('localStorage');
@@ -589,7 +591,7 @@ describe('StorageEngine - Performance and Statistics', () => {
 
   test('should perform health check', async () => {
     const healthCheck = await storageEngine.healthCheck();
-    
+
     expect(healthCheck.backend).toBe('localStorage');
     expect(healthCheck.available).toBe(true);
     expect(healthCheck.quota).toBeDefined();
@@ -599,7 +601,7 @@ describe('StorageEngine - Performance and Statistics', () => {
 
   test('should measure operation performance', async () => {
     const testData = { data: 'x'.repeat(1000) };
-    
+
     const startTime = performance.now();
     await storageEngine.set('performance', testData);
     const writeTime = performance.now() - startTime;
@@ -632,9 +634,9 @@ describe('StorageEngine - Batch Operations', () => {
     ];
 
     const results = await storageEngine.batch(operations);
-    
+
     expect(results).toHaveLength(3);
-    results.forEach(result => {
+    results.forEach((result) => {
       expect(result.success).toBe(true);
     });
 
@@ -642,7 +644,7 @@ describe('StorageEngine - Batch Operations', () => {
     const user1 = await storageEngine.get('user1');
     const user2 = await storageEngine.get('user2');
     const user3 = await storageEngine.get('user3');
-    
+
     expect(user1.success).toBe(true);
     expect(user2.success).toBe(true);
     expect(user3.success).toBe(true);
@@ -660,7 +662,7 @@ describe('StorageEngine - Batch Operations', () => {
     ];
 
     const results = await storageEngine.batch(operations);
-    
+
     expect(results).toHaveLength(3);
     expect(results[0].success).toBe(true); // set user3
     expect(results[1].success).toBe(true); // remove user1
@@ -671,11 +673,11 @@ describe('StorageEngine - Batch Operations', () => {
     const user2 = await storageEngine.get('user2');
     const user3 = await storageEngine.get('user3');
     const user4 = await storageEngine.get('user4');
-    
+
     expect(user1.success).toBe(false); // Should be removed
-    expect(user2.success).toBe(true);  // Should still exist
-    expect(user3.success).toBe(true);  // Should be added
-    expect(user4.success).toBe(true);  // Should be added
+    expect(user2.success).toBe(true); // Should still exist
+    expect(user3.success).toBe(true); // Should be added
+    expect(user4.success).toBe(true); // Should be added
   });
 });
 
@@ -706,7 +708,7 @@ describe('StorageEngine - Error Handling', () => {
 
     const storageEngine = createStorageEngine(config);
     const result = await storageEngine.set('test', { data: 'test' });
-    
+
     expect(result.success).toBe(false);
     expect(result.error).toContain('unavailable');
   });
@@ -731,7 +733,7 @@ describe('useStorage Hook - Mock Tests', () => {
   // Note: These are interface tests since we can't easily test React hooks without a renderer
   test('useStorage should have correct interface', () => {
     expect(typeof useStorage).toBe('function');
-    
+
     // The hook should return an object with these properties
     const expectedReturn = {
       value: expect.anything(),
@@ -817,20 +819,20 @@ describe('Edge Cases and Stress Tests', () => {
     }));
 
     const startTime = performance.now();
-    
+
     for (const item of largeDataset) {
       await storageEngine.set(`item_${item.id}`, item);
     }
-    
+
     const endTime = performance.now();
     const totalTime = endTime - startTime;
 
     expect(totalTime).toBeLessThan(5000); // Should complete within 5 seconds
-    
+
     // Verify some items were stored
     const firstItem = await storageEngine.get('item_0');
     const lastItem = await storageEngine.get('item_999');
-    
+
     expect(firstItem.success).toBe(true);
     expect(lastItem.success).toBe(true);
   });
@@ -847,8 +849,8 @@ describe('Edge Cases and Stress Tests', () => {
     );
 
     const results = await Promise.all(concurrentOperations);
-    
-    results.forEach(result => {
+
+    results.forEach((result) => {
       expect(result.success).toBe(true);
     });
 

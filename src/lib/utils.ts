@@ -1,8 +1,5 @@
-import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+export function cn(...inputs: string[]) {
+  return inputs.filter(Boolean).join(' ');
 }
 
 export function formatDate(date: Date): string {
@@ -85,7 +82,9 @@ export function capitalize(str: string): string {
 }
 
 export function truncate(str: string, length: number): string {
-  if (str.length <= length) return str;
+  if (str.length <= length) {
+    return str;
+  }
   return `${str.slice(0, length)}...`;
 }
 
@@ -98,23 +97,28 @@ export function slugify(str: string): string {
 }
 
 export function calculateStreak(completions: Date[]): number {
-  if (!completions.length) return 0;
-  
+  if (!completions.length) {
+    return 0;
+  }
+
   const sortedDates = [...completions].sort((a, b) => a.getTime() - b.getTime());
   let streak = 1;
-  
+
   for (let i = sortedDates.length - 1; i > 0; i--) {
     const current = sortedDates[i];
     const previous = sortedDates[i - 1];
+    if (!current || !previous) {
+      break;
+    }
     const diffDays = Math.floor((current.getTime() - previous.getTime()) / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 1) {
       streak++;
     } else if (diffDays > 1) {
       break;
     }
   }
-  
+
   return streak;
 }
 
@@ -124,11 +128,11 @@ export function getDaysInMonth(date: Date): Date[] {
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
   const days: Date[] = [];
-  
+
   for (let d = firstDay; d <= lastDay; d.setDate(d.getDate() + 1)) {
     days.push(new Date(d));
   }
-  
+
   return days;
 }
 
@@ -138,13 +142,13 @@ export function getWeekDates(date: Date): Date[] {
   const day = startOfWeek.getDay();
   const diff = startOfWeek.getDate() - day;
   startOfWeek.setDate(diff);
-  
+
   for (let i = 0; i < 7; i++) {
     const weekDate = new Date(startOfWeek);
     weekDate.setDate(startOfWeek.getDate() + i);
     week.push(weekDate);
   }
-  
+
   return week;
 }
 
@@ -152,9 +156,9 @@ export function getContrastColor(hexColor: string): string {
   const r = parseInt(hexColor.slice(1, 3), 16);
   const g = parseInt(hexColor.slice(3, 5), 16);
   const b = parseInt(hexColor.slice(5, 7), 16);
-  
+
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  
+
   return luminance > 0.5 ? 'black' : 'white';
 }
 
@@ -175,9 +179,13 @@ export function generateColorFromString(str: string): string {
 export function formatDuration(minutes: number): string {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
-  
-  if (hours === 0) return `${mins}m`;
-  if (mins === 0) return `${hours}h`;
+
+  if (hours === 0) {
+    return `${mins}m`;
+  }
+  if (mins === 0) {
+    return `${hours}h`;
+  }
   return `${hours}h ${mins}m`;
 }
 
@@ -187,12 +195,20 @@ export function getRelativeTime(date: Date): string {
   const diffMins = Math.floor(diffMs / (1000 * 60));
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  
-  if (diffMins < 1) return 'just now';
-  if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-  if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-  
+
+  if (diffMins < 1) {
+    return 'just now';
+  }
+  if (diffMins < 60) {
+    return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+  }
+  if (diffHours < 24) {
+    return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  }
+  if (diffDays < 7) {
+    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  }
+
   return formatDate(date);
 }
 
@@ -221,16 +237,16 @@ export function removeDuplicates<T>(array: T[]): T[] {
   return [...new Set(array)];
 }
 
-export function groupBy<T, K extends keyof any>(
-  array: T[],
-  key: (item: T) => K
-): Record<K, T[]> {
-  return array.reduce((groups, item) => {
-    const groupKey = key(item);
-    if (!groups[groupKey]) {
-      groups[groupKey] = [];
-    }
-    groups[groupKey].push(item);
-    return groups;
-  }, {} as Record<K, T[]>);
+export function groupBy<T, K extends keyof any>(array: T[], key: (item: T) => K): Record<K, T[]> {
+  return array.reduce(
+    (groups, item) => {
+      const groupKey = key(item);
+      if (!groups[groupKey]) {
+        groups[groupKey] = [];
+      }
+      groups[groupKey].push(item);
+      return groups;
+    },
+    {} as Record<K, T[]>
+  );
 }
