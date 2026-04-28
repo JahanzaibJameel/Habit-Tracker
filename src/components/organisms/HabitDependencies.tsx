@@ -104,7 +104,7 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
       (dependencyData as { value?: number }).value = newDependency.value;
     }
     if (newDependency.timeValue !== undefined) {
-      (dependencyData as { timeValue?: number }).timeValue = newDependency.timeValue;
+      (dependencyData as { timeValue?: number }).timeValue = Number(newDependency.timeValue);
     }
 
     onAddDependency(dependencyData);

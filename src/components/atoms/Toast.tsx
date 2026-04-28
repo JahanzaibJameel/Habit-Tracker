@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -98,7 +98,17 @@ export function ToastContainer() {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const _toastIdRef = useRef(0);
 
-  const addToast = (props: Omit<ToastProps, 'onClose'>) => {
+  const removeToast = useCallback((id: string) => {
+    setToasts((prev) => {
+      const toast = prev.find((t) => t.id === id);
+      if (toast?.timer) {
+        clearTimeout(toast.timer);
+      }
+      return prev.filter((toast) => toast.id !== id);
+    });
+  }, []);
+
+  const addToast = useCallback((props: Omit<ToastProps, 'onClose'>) => {
     const id = `toast-${_toastIdRef.current++}`;
     const newToast = { id, props };
 
@@ -108,23 +118,19 @@ export function ToastContainer() {
     const duration = props.duration ?? 3000;
     if (duration > 0) {
       const timer = setTimeout(() => {
-        removeToast(id);
+        setToasts((prev) => {
+          const toast = prev.find((t) => t.id === id);
+          if (toast?.timer) {
+            clearTimeout(toast.timer);
+          }
+          return prev.filter((toast) => toast.id !== id);
+        });
       }, duration + 300); // Add animation time
 
       // Store timer reference for cleanup
       setToasts((prev) => prev.map((toast) => (toast.id === id ? { ...toast, timer } : toast)));
     }
-  };
-
-  const removeToast = (id: string) => {
-    setToasts((prev) => {
-      const toast = prev.find((t) => t.id === id);
-      if (toast?.timer) {
-        clearTimeout(toast.timer);
-      }
-      return prev.filter((toast) => toast.id !== id);
-    });
-  };
+  }, []);
 
   // Cleanup all timers on unmount
   useEffect(() => {

@@ -365,7 +365,7 @@ const HabitForm: React.FC<HabitFormProps> = ({
               checked={false}
               onCheckedChange={(checked: boolean) => {
                 if (process.env.NODE_ENV === 'development') {
-                  console.log('Public setting:', checked);
+                  console.warn('Public setting:', checked);
                 }
               }}
             />

@@ -1,4 +1,5 @@
 import { Inter } from 'next/font/google';
+import Image from 'next/image';
 import { ErrorBoundary } from '@/components/atoms/ErrorBoundary';
 
 import { Providers } from './providers';
@@ -10,6 +11,18 @@ const inter = Inter({
   display: 'swap',
   variable: '--font-inter',
 });
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
+      <body className={inter.className} suppressHydrationWarning>
+        <ErrorBoundary>
+          <Providers>{children}</Providers>
+        </ErrorBoundary>
+      </body>
+    </html>
+  );
+}
 
 export const metadata = {
   title: 'Habit Tracker - Build Better Habits',
@@ -33,14 +46,3 @@ export const viewport = {
   ],
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en" suppressHydrationWarning className={inter.variable}>
-      <body suppressHydrationWarning className={inter.className}>
-        <ErrorBoundary>
-          <Providers>{children}</Providers>
-        </ErrorBoundary>
-      </body>
-    </html>
-  );
-}
