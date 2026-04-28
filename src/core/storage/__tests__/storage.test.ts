@@ -511,7 +511,7 @@ describe('StorageEngine - Data Integrity', () => {
 
     // Valid data
     const validData = {
-      _version: 1,
+      _version: 1 as const,
       _createdAt: new Date().toISOString(),
       _updatedAt: new Date().toISOString(),
       featureFlags: {},
@@ -537,7 +537,27 @@ describe('StorageEngine - Data Integrity', () => {
     expect(result.success).toBe(true);
 
     // Invalid data
-    const invalidData = { invalid: 'data' };
+    const invalidData = {
+      _version: 1 as const,
+      featureFlags: {},
+      ui: {
+        density: 'comfortable' as const,
+        animations: true,
+        reducedMotion: false,
+        highContrast: false,
+      },
+      api: {
+        baseUrl: 'https://api.example.com',
+        timeout: 10000,
+        retryAttempts: 3,
+      },
+      security: {
+        sessionTimeout: 3600,
+        requireMfa: false,
+        allowedOrigins: [],
+      },
+      invalid: 'data',
+    };
     const invalidResult = await storageEngine.set('settings', invalidData);
     expect(invalidResult.success).toBe(false);
   });

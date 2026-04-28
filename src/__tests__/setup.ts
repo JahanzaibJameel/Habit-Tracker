@@ -60,3 +60,36 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: vi.fn(),
   })),
 });
+
+// Mock PerformanceObserver for performance monitoring tests
+global.PerformanceObserver = class {
+  observe() {}
+  disconnect() {}
+  takeRecords() { return []; }
+} as any;
+
+// Mock performance.now()
+Object.defineProperty(global, 'performance', {
+  value: {
+    ...global.performance,
+    now: vi.fn(() => Date.now()),
+  },
+  writable: true,
+});
+
+// Mock PerformanceEntry
+global.PerformanceEntry = class {} as any;
+
+// Mock PerformanceObserver
+class MockPerformanceObserver implements PerformanceObserver {
+  static supportedEntryTypes: string[] = [];
+  constructor(callback: PerformanceObserverCallback) {}
+  observe(options?: PerformanceObserverInit) {}
+  disconnect() {}
+  takeRecords(): PerformanceEntryList { return []; }
+}
+
+Object.defineProperty(window, 'PerformanceObserver', {
+  value: MockPerformanceObserver,
+  writable: true,
+});

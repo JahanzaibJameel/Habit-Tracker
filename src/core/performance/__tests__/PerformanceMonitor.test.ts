@@ -135,9 +135,9 @@ describe('PerformanceMonitor', () => {
 
       const breaches = monitor.getBreaches();
       expect(breaches.length).toBeGreaterThan(0);
-      expect(breaches[0].metric).toBe('lcp');
-      expect(breaches[0].actual).toBe(5000);
-      expect(breaches[0].budget).toBe(2500);
+      expect(breaches[0]!.metric).toBe('lcp');
+      expect(breaches[0]!.actual).toBe(5000);
+      expect(breaches[0]!.budget).toBe(2500);
     });
 
     test('should handle metadata in metrics', () => {
@@ -169,7 +169,7 @@ describe('PerformanceMonitor', () => {
 
       const breaches = monitor.getBreaches();
       expect(breaches.length).toBe(1);
-      expect(breaches[0].severity).toBeDefined();
+      expect(breaches[0]!.severity).toBeDefined();
     });
 
     test('should detect budget breaches for memory metrics', () => {
@@ -177,7 +177,7 @@ describe('PerformanceMonitor', () => {
 
       const breaches = monitor.getBreaches();
       expect(breaches.length).toBe(1);
-      expect(breaches[0].category).toBe('memory');
+      expect(breaches[0]!.category).toBe('memory');
     });
 
     test('should handle FPS metrics correctly', () => {
@@ -185,7 +185,7 @@ describe('PerformanceMonitor', () => {
 
       const breaches = monitor.getBreaches();
       expect(breaches.length).toBe(1);
-      expect(breaches[0].metric).toBe('minFps');
+      expect(breaches[0]!.metric).toBe('minFps');
     });
 
     test('should not breach when within budget', () => {
@@ -480,6 +480,14 @@ describe('PerformanceMonitor', () => {
           customBudget: {
             runtime: {
               lcp: 1000, // Custom budget
+              fid: 100,
+              cls: 0.1,
+              inp: 200,
+              tbt: 300,
+              timeToHydration: 1500,
+              timeToFirstMeaningfulPaint: 2000,
+              timeToInteractive: 3800,
+              firstContentfulPaint: 1800,
             },
           },
         },
@@ -492,7 +500,7 @@ describe('PerformanceMonitor', () => {
 
       const breaches = customMonitor.getBreaches();
       expect(breaches.length).toBe(1);
-      expect(breaches[0].budget).toBe(1000);
+      expect(breaches[0]!.budget).toBe(1000);
 
       customMonitor.stop();
     });

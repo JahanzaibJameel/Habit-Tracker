@@ -8,7 +8,20 @@
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { test, expect } from 'vitest';
+import { test, expect, beforeEach } from 'vitest';
+
+// Extend global types for chaos testing
+declare global {
+  var __CHAOS_MODE__: boolean;
+  var __CHAOS_EVENTS__: any[];
+  var recordChaosEvent: (event: any) => void;
+  var page: any;
+  var __CRASH_COMPONENT__: any;
+  var __MONITORING_FAILURE__: boolean;
+  var __MONITORING_ENABLED__: boolean;
+  var __RANDOM_CRASH__: any;
+  var __CHAOS_CONFIG__: any;
+}
 import { z } from 'zod';
 import { createStorageEngine } from '../storage/StorageEngine';
 
@@ -72,6 +85,17 @@ describe('Chaos Engineering Tests', () => {
         timestamp: Date.now(),
       });
     };
+
+    // Mock page object for chaos tests
+    const mockPage = {
+      addInitScript: vi.fn().mockResolvedValue(undefined),
+      locator: vi.fn().mockReturnValue({
+        toBeVisible: vi.fn().mockResolvedValue(true),
+      }),
+    };
+
+    // Make page available to all tests
+    (globalThis as any).page = mockPage;
   });
 
   test('survives localStorage quota exceeded', async () => {
@@ -189,7 +213,8 @@ describe('Chaos Engineering Tests', () => {
     globalThis.fetch = originalFetch;
   });
 
-  test('survives API version mismatch', async ({ page }) => {
+  test('survives API version mismatch', async () => {
+    const page = (globalThis as any).page;
     await page.addInitScript(() => {
       // Override fetch to return wrong API version
       const originalFetch = window.fetch;
@@ -234,7 +259,8 @@ describe('Chaos Engineering Tests', () => {
     expect(versionMismatch).toBeTruthy();
   });
 
-  test('survives memory pressure', async ({ page }) => {
+  test('survives memory pressure', async () => {
+    const page = (globalThis as any).page;
     await page.addInitScript(() => {
       // Simulate memory pressure
       const originalCreateElement = document.createElement;
@@ -273,7 +299,8 @@ describe('Chaos Engineering Tests', () => {
     await expect(page.locator('[data-testid="performance-degradation"]')).toBeVisible();
   });
 
-  test('survives component crashes', async ({ page }) => {
+  test('survives component crashes', async () => {
+    const page = (globalThis as any).page;
     await page.addInitScript(() => {
       // Inject a component that crashes
       window.__CRASH_COMPONENT__ = () => {

@@ -451,7 +451,28 @@ describe('safeFetchBatch', () => {
 
 describe('safeFetchCached', () => {
   test('should return cached data on second call', async () => {
-    const mockData = { id: '123', email: 'test@example.com' };
+    const mockData = {
+      _version: 1,
+      id: '123e4567-e89b-12d3-a456-426614174000',
+      email: 'test@example.com',
+      username: 'testuser',
+      profile: {
+        firstName: 'Test',
+        lastName: 'User',
+      },
+      preferences: {
+        theme: 'auto',
+        language: 'en',
+        timezone: 'UTC',
+        notifications: {
+          email: true,
+          push: true,
+          sms: false,
+        },
+      },
+      roles: ['user'],
+      isActive: true,
+    };
 
     mockFetch.mockResolvedValueOnce({
       ok: true,
@@ -471,8 +492,50 @@ describe('safeFetchCached', () => {
   });
 
   test('should invalidate cache on validation error', async () => {
-    const invalidData = { id: '123', email: 'invalid-email' };
-    const validData = { id: '123', email: 'test@example.com' };
+    const invalidData = {
+      _version: 1,
+      id: '123e4567-e89b-12d3-a456-426614174000',
+      email: 'invalid-email',
+      username: 'testuser',
+      profile: {
+        firstName: 'Test',
+        lastName: 'User',
+      },
+      preferences: {
+        theme: 'auto',
+        language: 'en',
+        timezone: 'UTC',
+        notifications: {
+          email: true,
+          push: true,
+          sms: false,
+        },
+      },
+      roles: ['user'],
+      isActive: true,
+    };
+    const validData = {
+      _version: 1,
+      id: '123e4567-e89b-12d3-a456-426614174000',
+      email: 'test@example.com',
+      username: 'testuser',
+      profile: {
+        firstName: 'Test',
+        lastName: 'User',
+      },
+      preferences: {
+        theme: 'auto',
+        language: 'en',
+        timezone: 'UTC',
+        notifications: {
+          email: true,
+          push: true,
+          sms: false,
+        },
+      },
+      roles: ['user'],
+      isActive: true,
+    };
 
     mockFetch
       .mockResolvedValueOnce({
@@ -595,28 +658,67 @@ describe('Edge Cases and Error Handling', () => {
   });
 
   test('should handle null response body', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      body: null,
-    });
+    const mockUserData = {
+      _version: 1,
+      id: '123e4567-e89b-12d3-a456-426614174000',
+      email: 'test@example.com',
+      username: 'testuser',
+      profile: {
+        firstName: 'Test',
+        lastName: 'User',
+      },
+      preferences: {
+        theme: 'auto',
+        language: 'en',
+        timezone: 'UTC',
+        notifications: {
+          email: true,
+          push: true,
+          sms: false,
+        },
+      },
+      roles: ['user'],
+      isActive: true,
+    };
 
-    // This would be tested with safeFetchStream, but for basic fetch it should work
     mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
-      json: async () => ({ id: '123', email: 'test@example.com' }),
+      json: async () => mockUserData,
     });
 
     const result = await safeFetchJson('https://api.example.com/user/123', UserSchema);
-    expect(result).toEqual({ id: '123', email: 'test@example.com' });
+    expect(result).toEqual(mockUserData);
   });
 
   test('should handle request with custom headers', async () => {
+    const mockUserData = {
+      _version: 1,
+      id: '123e4567-e89b-12d3-a456-426614174000',
+      email: 'test@example.com',
+      username: 'testuser',
+      profile: {
+        firstName: 'Test',
+        lastName: 'User',
+      },
+      preferences: {
+        theme: 'auto',
+        language: 'en',
+        timezone: 'UTC',
+        notifications: {
+          email: true,
+          push: true,
+          sms: false,
+        },
+      },
+      roles: ['user'],
+      isActive: true,
+    };
+
     mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
-      json: async () => ({ id: '123', email: 'test@example.com' }),
+      json: async () => mockUserData,
     });
 
     await safeFetchJson('https://api.example.com/user/123', UserSchema, {
