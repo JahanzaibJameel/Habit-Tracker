@@ -164,6 +164,8 @@ module.exports = [
       '*.min.js',
       '*.bundle.js',
       'storybook-static/**',
+      'public/**/*.js',
+      'public/~partytown/**',
     ],
   },
 ];
