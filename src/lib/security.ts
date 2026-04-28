@@ -3,23 +3,24 @@
  */
 
 // XSS prevention utilities
-export const sanitizeInput = {
+export function sanitizeInput(input: unknown): string {
   /**
    * Sanitize string input to prevent XSS attacks
    */
-  string: (input: string): string => {
-    if (typeof input !== 'string') {
-      return '';
-    }
+  if (typeof input !== 'string') {
+    return '';
+  }
 
-    return input
-      .replace(/[<>]/g, '') // Remove potential HTML tags
-      .replace(/javascript:/gi, '') // Remove javascript: protocol
-      .replace(/on\w+\s*=/gi, '') // Remove event handlers
-      .replace(/data:text\/html/gi, '') // Remove data URLs
-      .trim();
-  },
+  return input
+    .replace(/[<>]/g, '') // Remove potential HTML tags
+    .replace(/javascript:/gi, '') // Remove javascript: protocol
+    .replace(/on\w+\s*=/gi, '') // Remove event handlers
+    .replace(/data:text\/html/gi, '') // Remove data URLs
+    .trim();
+}
 
+// XSS prevention utilities
+export const sanitize = {
   /**
    * Sanitize HTML content
    */
@@ -215,68 +216,4 @@ export const csp = {
   validateNonce: (nonce: string, expectedNonce: string): boolean => {
     return nonce === expectedNonce && nonce.length > 0;
   },
-};
-
-// Data sanitization for API responses
-export const sanitizeApiResponse = {
-  /**
-   * Sanitize habit data from API
-   */
-  habit: (habit: any) => {
-    return {
-      id: typeof habit.id === 'string' ? sanitizeInput.string(habit.id) : '',
-      name: validateInput.habitName(habit.name)
-        ? sanitizeInput.string(habit.name)
-        : 'Untitled Habit',
-      description: validateInput.habitDescription(habit.description || '')
-        ? sanitizeInput.html(habit.description || '')
-        : '',
-      icon: typeof habit.icon === 'string' ? sanitizeInput.string(habit.icon) : 'default',
-      color: typeof habit.color === 'string' ? sanitizeInput.string(habit.color) : '#6b7280',
-      category: validateInput.category(habit.category || 'other') ? habit.category : 'other',
-      target: validateInput.target(Number(habit.target)) ? Number(habit.target) : 1,
-      unit: typeof habit.unit === 'string' ? sanitizeInput.string(habit.unit) : 'times',
-      frequency: validateInput.frequency(habit.frequency) ? habit.frequency : 'daily',
-      createdAt: habit.createdAt instanceof Date ? habit.createdAt : new Date(),
-      updatedAt: habit.updatedAt instanceof Date ? habit.updatedAt : new Date(),
-      archivedAt: habit.archivedAt instanceof Date ? habit.archivedAt : undefined,
-      position: typeof habit.position === 'number' ? habit.position : 0,
-      isPublic: Boolean(habit.isPublic),
-      tags: Array.isArray(habit.tags)
-        ? habit.tags.map((tag: any) => sanitizeInput.string(tag)).filter(Boolean)
-        : [],
-    };
-  },
-
-  /**
-   * Sanitize completion data from API
-   */
-  completion: (completion: any) => {
-    return {
-      id: typeof completion.id === 'string' ? sanitizeInput.string(completion.id) : '',
-      habitId:
-        typeof completion.habitId === 'string' ? sanitizeInput.string(completion.habitId) : '',
-      value: validateInput.target(Number(completion.value)) ? Number(completion.value) : 1,
-      completedAt: completion.completedAt instanceof Date ? completion.completedAt : new Date(),
-      notes: typeof completion.notes === 'string' ? sanitizeInput.html(completion.notes) : '',
-      metadata:
-        typeof completion.metadata === 'object' && completion.metadata !== null
-          ? completion.metadata
-          : {},
-    };
-  },
-};
-
-// Security headers utilities
-export const securityHeaders = {
-  /**
-   * Get security headers for API responses
-   */
-  getHeaders: () => ({
-    'X-Content-Type-Options': 'nosniff',
-    'X-Frame-Options': 'DENY',
-    'X-XSS-Protection': '1; mode=block',
-    'Referrer-Policy': 'strict-origin-when-cross-origin',
-    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-  }),
 };

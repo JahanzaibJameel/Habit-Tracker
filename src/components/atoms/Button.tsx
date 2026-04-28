@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useState } from 'react';
+import React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '../../lib/utils';
@@ -49,7 +49,7 @@ export interface ButtonProps
   asChild?: boolean;
 }
 
-const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
       className,
@@ -64,14 +64,14 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       asChild = false,
       ...props
     },
-    ref
+    _ref
   ) => {
     const Comp = asChild ? 'span' : 'button';
 
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, fullWidth, className }))}
-        ref={ref}
+        ref={_ref}
         disabled={disabled || loading}
         {...props}
       >

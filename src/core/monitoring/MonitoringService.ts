@@ -20,17 +20,7 @@ import type {
   RedactionRule,
   AnyMonitoringEvent,
 } from './types';
-import {
-  PerformanceEvent,
-  UserActionEvent,
-  SystemEvent,
-  BusinessEvent,
-  SecurityEvent,
-  ContextEnricher,
-  MonitoringEventFactory,
-  MonitoringSeverity,
-  MonitoringCategory,
-} from './types';
+import { MonitoringEventFactory, MonitoringSeverity, MonitoringCategory } from './types';
 
 /**
  * Monitoring service configuration
@@ -99,8 +89,8 @@ export class MonitoringService {
     // Initialize stats
     this.stats = {
       totalEvents: 0,
-      eventsByCategory: {} as any,
-      eventsBySeverity: {} as any,
+      eventsByCategory: {} as Record<string, number>,
+      eventsBySeverity: {} as Record<string, number>,
       queueSize: 0,
       lastEventTimestamp: 0,
       adapterStatus: 'disconnected',
@@ -117,7 +107,7 @@ export class MonitoringService {
     }
 
     if (!this.config.enabled) {
-      console.log('Monitoring service disabled');
+      console.warn('Monitoring service disabled');
       return;
     }
 
@@ -152,7 +142,7 @@ export class MonitoringService {
       );
 
       this.initialized = true;
-      console.log('Monitoring service initialized successfully');
+      console.warn('Monitoring service initialized successfully');
     } catch (error) {
       this.stats.adapterStatus = 'error';
       console.error('Failed to initialize monitoring service:', error);
@@ -166,7 +156,7 @@ export class MonitoringService {
   async captureError(
     error: Error,
     context?: Partial<MonitoringContext>,
-    errorInfo?: any
+    errorInfo?: Record<string, unknown>
   ): Promise<void> {
     if (!this.shouldCapture()) {
       return;
@@ -288,7 +278,7 @@ export class MonitoringService {
     if (!this.shouldCapture()) {
       return;
     }
-    await this.processEvent(event as any);
+    await this.processEvent(event as MonitoringEvent);
   }
 
   /**
@@ -305,7 +295,7 @@ export class MonitoringService {
       timestamp: Date.now(),
       message,
       category,
-      level: level as any,
+      level: level as MonitoringSeverity,
       data,
     };
 
@@ -379,8 +369,8 @@ export class MonitoringService {
     this.breadcrumbs = [];
     this.stats = {
       totalEvents: 0,
-      eventsByCategory: {} as any,
-      eventsBySeverity: {} as any,
+      eventsByCategory: {} as Record<string, number>,
+      eventsBySeverity: {} as Record<string, number>,
       queueSize: 0,
       lastEventTimestamp: 0,
       adapterStatus: this.stats.adapterStatus,
@@ -405,7 +395,7 @@ export class MonitoringService {
     await this.adapter.cleanup();
 
     this.initialized = false;
-    console.log('Monitoring service cleaned up');
+    console.warn('Monitoring service cleaned up');
   }
 
   /**
@@ -445,7 +435,7 @@ export class MonitoringService {
    * Add event to queue
    */
   private addToQueue(event: AnyMonitoringEvent): void {
-    this.queue.push(event as any);
+    this.queue.push(event);
 
     // Limit queue size
     if (this.queue.length > this.config.maxQueueSize) {
@@ -492,7 +482,7 @@ export class MonitoringService {
     this.stats.queueSize = 0;
 
     for (const event of events) {
-      await this.sendEvent(event as any);
+      await this.sendEvent(event);
     }
   }
 
@@ -520,7 +510,7 @@ export class MonitoringService {
         this.addBreadcrumb('New session started', 'session', 'info', {
           sessionId: this.context.sessionId,
           previousSessionDuration: sessionDuration,
-        });
+        } as Record<string, unknown>);
       }
     }, 60000); // Check every minute
   }
@@ -576,7 +566,7 @@ export class MonitoringService {
   /**
    * Apply a single redaction rule
    */
-  private applyRedactionRule(obj: any, rule: RedactionRule): void {
+  private applyRedactionRule(obj: Record<string, unknown>, rule: RedactionRule): void {
     for (const field of rule.fields) {
       const value = this.getNestedValue(obj, field);
       if (value && typeof value === 'string') {
@@ -590,19 +580,29 @@ export class MonitoringService {
   /**
    * Get nested object value by path
    */
-  private getNestedValue(obj: any, path: string): any {
-    return path.split('.').reduce((current, key) => current?.[key], obj);
+  private getNestedValue(obj: Record<string, unknown>, path: string): unknown {
+    return path.split('.').reduce((current: unknown, key: string) => {
+      if (current && typeof current === 'object' && key in current) {
+        return (current as Record<string, unknown>)[key];
+      }
+      return undefined;
+    }, obj);
   }
 
   /**
    * Set nested object value by path
    */
-  private setNestedValue(obj: any, path: string, value: any): void {
+  private setNestedValue(obj: Record<string, unknown>, path: string, value: unknown): void {
     const keys = path.split('.');
-    const lastKey = keys.pop()!;
-    const target = keys.reduce((current, key) => current?.[key], obj);
+    const lastKey = keys.pop();
+    const target = keys.reduce((current: unknown, key: string) => {
+      if (current && typeof current === 'object' && key in current) {
+        return (current as Record<string, unknown>)[key];
+      }
+      return undefined;
+    }, obj) as Record<string, unknown> | undefined;
 
-    if (target) {
+    if (lastKey && target) {
       target[lastKey] = value;
     }
   }
@@ -665,14 +665,14 @@ export class MonitoringService {
    * Strip context from events
    */
   private stripContext = (event: MonitoringEvent): MonitoringEvent => {
-    const { context, ...eventWithoutContext } = event;
+    const { context: _context, ...eventWithoutContext } = event;
     return eventWithoutContext;
   };
 
   /**
    * Format export data based on format
    */
-  private formatExportData(data: any, format: string): string {
+  private formatExportData(data: Record<string, unknown>, format: string): string {
     switch (format) {
       case 'json':
         return JSON.stringify(data, null, 2);
@@ -688,10 +688,11 @@ export class MonitoringService {
   /**
    * Convert data to CSV format
    */
-  private convertToCSV(data: any): string {
+  private convertToCSV(data: Record<string, unknown>): string {
     // Simplified CSV conversion
     const headers = ['timestamp', 'category', 'severity', 'message'];
-    const rows = data.events.map((event: any) => [
+    const exportData = data as { events: MonitoringEvent[]; service: { name: string } };
+    const rows = exportData.events.map((event: MonitoringEvent) => [
       event.timestamp,
       event.category,
       event.severity,
@@ -704,16 +705,21 @@ export class MonitoringService {
   /**
    * Convert data to XML format
    */
-  private convertToXML(data: any): string {
+  private convertToXML(data: Record<string, unknown>): string {
     // Simplified XML conversion
+    const exportData = data as {
+      events: MonitoringEvent[];
+      service: { name: string };
+      timestamp: number;
+    };
     return `<?xml version="1.0" encoding="UTF-8"?>
 <monitoring>
-  <timestamp>${data.timestamp}</timestamp>
-  <service>${data.service.name}</service>
+  <timestamp>${exportData.timestamp}</timestamp>
+  <service>${exportData.service.name}</service>
   <events>
-    ${data.events
+    ${exportData.events
       .map(
-        (event: any) => `
+        (event: MonitoringEvent) => `
     <event>
       <timestamp>${event.timestamp}</timestamp>
       <category>${event.category}</category>
@@ -798,7 +804,7 @@ export class MonitoringService {
         context: event.context,
       };
 
-      await this.captureEvent(fullEvent as any);
+      await this.captureEvent(fullEvent);
       return { success: true };
     } catch (error) {
       return {

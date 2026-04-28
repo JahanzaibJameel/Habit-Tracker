@@ -130,15 +130,14 @@ const DefaultProductionFallback: ComponentType<ErrorFallbackProps> = ({
 
   return (
     <div
-      role="alert"
-      aria-live="polite"
+      data-boundary-id={boundaryId}
       style={{
         padding: '1rem',
-        border: '1px solid #ff6b6b',
-        borderRadius: '4px',
-        backgroundColor: '#ffe0e0',
-        color: '#d63031',
-        margin: '1rem 0',
+        textAlign: 'center',
+        backgroundColor: '#fef2f2',
+        border: '1px solid #fecaca',
+        borderRadius: '0.5rem',
+        color: '#991b1b',
       }}
     >
       <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', fontWeight: 'bold' }}>

@@ -442,7 +442,7 @@ export class MonitoringEventFactory {
   static createError(
     error: Error,
     context?: Partial<MonitoringContext>,
-    errorInfo?: any
+    errorInfo?: Record<string, unknown>
   ): ErrorEvent {
     return {
       id: this.generateId(),

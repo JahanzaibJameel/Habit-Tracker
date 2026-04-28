@@ -4,12 +4,11 @@
  *
  * @fileoverview React form validation hook with Zod schemas
  * @version 1.0.0
- * @author Enterprise Frontend Team
+ * @author Your Name
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { z } from 'zod';
-import { ValidationError, ValidationErrorFactory } from './errors';
 
 /**
  * Form field configuration
@@ -24,7 +23,7 @@ export interface FormField<T = unknown> {
 /**
  * Form state interface
  */
-export interface FormState<T extends Record<string, unknown>> {
+export interface FormState<T = Record<string, unknown>> {
   values: T;
   errors: Partial<Record<keyof T, string>>;
   touched: Partial<Record<keyof T, boolean>>;
@@ -72,7 +71,7 @@ export interface UseSafeFormOptions<T extends z.ZodTypeAny> {
   /**
    * Submit handler
    */
-  onSubmit?: (values: any, form: FormState<any>) => void | Promise<void>;
+  onSubmit?: (values: z.infer<T>, form: FormState<z.infer<T>>) => void | Promise<void>;
 
   /**
    * Reset form after successful submit
@@ -90,6 +89,7 @@ export interface FormControl<T = unknown> {
   error?: string;
   touched: boolean;
   dirty: boolean;
+  isValid: boolean;
 }
 
 /**
@@ -123,16 +123,16 @@ export interface FormActions<T extends Record<string, unknown>> {
 export function useSafeForm<T extends z.ZodTypeAny>(
   options: UseSafeFormOptions<T>
 ): {
-  form: FormState<any>;
-  control: (field: keyof z.infer<T>) => FormControl<any>;
+  form: FormState<z.infer<T>>;
+  control: (field: keyof z.infer<T>) => FormControl<z.infer<T>[keyof z.infer<T>]>;
   actions: {
-    setValue: (field: any, value: any) => void;
-    setError: (field: any, error?: string) => void;
-    setTouched: (field: any, touched: boolean) => void;
-    setDirty: (field: any, dirty: boolean) => void;
+    setValue: (field: keyof z.infer<T>, value: z.infer<T>[keyof z.infer<T>]) => void;
+    setError: (field: keyof z.infer<T>, error?: string) => void;
+    setTouched: (field: keyof z.infer<T>, touched: boolean) => void;
+    setDirty: (field: keyof z.infer<T>, dirty: boolean) => void;
     validate: () => Promise<boolean>;
-    validateField: (field: any) => Promise<boolean>;
-    reset: (values?: Partial<any>) => void;
+    validateField: (field: keyof z.infer<T>) => Promise<boolean>;
+    reset: (values?: Partial<z.infer<T>>) => void;
     handleSubmit: () => Promise<void>;
     setSubmitting: (isSubmitting: boolean) => void;
   };
@@ -149,7 +149,7 @@ export function useSafeForm<T extends z.ZodTypeAny>(
   } = options;
 
   // Form state
-  const [form, setForm] = useState<FormState<any>>({
+  const [form, setForm] = useState<FormState<z.infer<T>>>({
     values: initialValues,
     errors: {},
     touched: {},
@@ -208,11 +208,11 @@ export function useSafeForm<T extends z.ZodTypeAny>(
    * Validates a single field
    */
   const validateField = useCallback(
-    async (field: any): Promise<boolean> => {
+    async (field: keyof z.infer<T>): Promise<boolean> => {
       try {
-        // Create a partial schema for the specific field
-        const fieldSchema = z.object({ [field]: (schema as any).shape[field as string] });
-        fieldSchema.parse({ [field]: form.values[field] });
+        // Validate the specific field using the original schema
+        const fieldData = { [field]: form.values[field] };
+        schema.parse(fieldData);
 
         setForm((prev) => ({
           ...prev,
@@ -239,16 +239,16 @@ export function useSafeForm<T extends z.ZodTypeAny>(
         return false;
       }
     },
-    [form.values, (schema as any).shape, messages]
+    [form.values, schema, messages]
   );
 
   /**
    * Sets field value with validation
    */
   const setValue = useCallback(
-    (field: any, value: any) => {
+    <K extends keyof z.infer<T>>(field: K, value: z.infer<T>[K]) => {
       setForm((prev) => {
-        const newValues = { ...(prev.values as any), [field]: value };
+        const newValues = Object.assign({}, prev.values, { [field]: value }) as z.infer<T>;
         const isDirty = JSON.stringify(newValues) !== JSON.stringify(initialValues);
 
         return {
@@ -279,7 +279,7 @@ export function useSafeForm<T extends z.ZodTypeAny>(
   /**
    * Sets field error
    */
-  const setError = useCallback((field: any, error?: string) => {
+  const setError = useCallback(<K extends keyof z.infer<T>>(field: K, error?: string) => {
     setForm((prev) => ({
       ...prev,
       errors: { ...prev.errors, [field]: error },
@@ -291,7 +291,7 @@ export function useSafeForm<T extends z.ZodTypeAny>(
    * Sets field touched state
    */
   const setTouched = useCallback(
-    (field: any, touched: boolean) => {
+    <K extends keyof z.infer<T>>(field: K, touched: boolean) => {
       setForm((prev) => ({
         ...prev,
         touched: { ...prev.touched, [field]: touched },
@@ -308,7 +308,7 @@ export function useSafeForm<T extends z.ZodTypeAny>(
   /**
    * Sets field dirty state
    */
-  const setDirty = useCallback((field: any, dirty: boolean) => {
+  const setDirty = useCallback(<K extends keyof z.infer<T>>(field: K, dirty: boolean) => {
     setForm((prev) => {
       const newDirty = { ...prev.dirty, [field]: dirty };
       const isDirty = Object.values(newDirty).some(Boolean);
@@ -325,8 +325,10 @@ export function useSafeForm<T extends z.ZodTypeAny>(
    * Resets form state
    */
   const reset = useCallback(
-    (values?: Partial<any>) => {
-      const newValues = values ? { ...(initialValues as any), ...(values as any) } : initialValues;
+    (values?: Partial<z.infer<T>>) => {
+      const newValues = values
+        ? (Object.assign({}, initialValues, values) as z.infer<T>)
+        : initialValues;
 
       setForm({
         values: newValues,
@@ -370,19 +372,20 @@ export function useSafeForm<T extends z.ZodTypeAny>(
     } finally {
       setForm((prev) => ({ ...prev, isSubmitting: false }));
     }
-  }, [validateForm, onSubmit, resetOnSubmit, form.values, form, reset]);
+  }, [validateForm, onSubmit, resetOnSubmit, reset, form]);
 
   /**
    * Creates form control for a field
    */
   const control = useCallback(
     (field: keyof z.infer<T>): FormControl<z.infer<T>[keyof z.infer<T>]> => {
-      const result: any = {
+      const result: FormControl<z.infer<T>[keyof z.infer<T>]> = {
         value: form.values[field],
         onChange: (value: z.infer<T>[keyof z.infer<T>]) => setValue(field, value),
         onBlur: () => setTouched(field, true),
         touched: form.touched[field] || false,
         dirty: form.dirty[field] || false,
+        isValid: !form.errors[field],
       };
 
       if (form.errors[field]) {
@@ -447,7 +450,7 @@ export function useSafeField<T>(
   const [error, setError] = useState<string | undefined>();
   const [touched, setTouched] = useState(false);
   const [dirty, setDirty] = useState(false);
-  const [isValid, setIsValid] = useState(true);
+  const [_isValid, setIsValid] = useState(true);
 
   const debounceTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
@@ -504,13 +507,13 @@ export function useSafeField<T>(
     validateField(value);
   }, [validateField, value]);
 
-  const result: any = {
+  const result: FormControl<T> = {
     value,
     onChange,
     onBlur,
     touched,
     dirty,
-    isValid,
+    isValid: !error,
   };
 
   if (touched && error) {
@@ -535,32 +538,60 @@ export class FormValidationRules {
       required: boolean;
       minLength?: number;
       maxLength?: number;
+      min?: number;
+      max?: number;
       pattern?: RegExp;
       custom?: (value: unknown) => string | undefined;
     }
   > {
-    const rules: Record<string, any> = {};
+    const rules: Record<
+      string,
+      {
+        required: boolean;
+        minLength?: number;
+        maxLength?: number;
+        min?: number;
+        max?: number;
+        pattern?: RegExp;
+        custom?: (value: unknown) => string | undefined;
+      }
+    > = {};
 
-    const extractRules = (zodSchema: any, path: string = '') => {
-      if (zodSchema._def.typeName === 'ZodString') {
+    const extractRules = (zodSchema: unknown, path: string = '') => {
+      if ((zodSchema as { _def?: { typeName?: string } })._def?.typeName === 'ZodString') {
         if (path) {
           rules[path] = {
-            required: !zodSchema.isOptional(),
-            minLength: zodSchema._def.checks?.find((c: any) => c.kind === 'min')?.value,
-            maxLength: zodSchema._def.checks?.find((c: any) => c.kind === 'max')?.value,
-            pattern: zodSchema._def.checks?.find((c: any) => c.kind === 'regex')?.regex,
+            required: !(zodSchema as { isOptional?: () => boolean }).isOptional?.(),
+            minLength: (
+              zodSchema as { _def?: { checks?: Array<{ kind: string; value?: number }> } }
+            )._def?.checks?.find((c: { kind: string }) => c.kind === 'min')?.value,
+            maxLength: (
+              zodSchema as { _def?: { checks?: Array<{ kind: string; value?: number }> } }
+            )._def?.checks?.find((c: { kind: string }) => c.kind === 'max')?.value,
+            pattern: (
+              zodSchema as { _def?: { checks?: Array<{ kind: string; regex?: RegExp }> } }
+            )._def?.checks?.find((c: { kind: string }) => c.kind === 'regex')?.regex,
           };
         }
-      } else if (zodSchema._def.typeName === 'ZodNumber') {
+      } else if ((zodSchema as { _def?: { typeName?: string } })._def?.typeName === 'ZodNumber') {
         if (path) {
           rules[path] = {
-            required: !zodSchema.isOptional(),
-            min: zodSchema._def.checks?.find((c: any) => c.kind === 'min')?.value,
-            max: zodSchema._def.checks?.find((c: any) => c.kind === 'max')?.value,
+            required: !(zodSchema as { isOptional?: () => boolean }).isOptional?.(),
+            min: (
+              zodSchema as { _def?: { checks?: Array<{ kind: string; value?: number }> } }
+            )._def?.checks?.find((c: { kind: string }) => c.kind === 'min')?.value,
+            max: (
+              zodSchema as { _def?: { checks?: Array<{ kind: string; value?: number }> } }
+            )._def?.checks?.find((c: { kind: string }) => c.kind === 'max')?.value,
           };
         }
-      } else if (zodSchema._def.typeName === 'ZodObject') {
-        Object.entries(zodSchema._def.shape()).forEach(([key, subSchema]) => {
+      } else if ((zodSchema as { _def?: { typeName?: string } })._def?.typeName === 'ZodObject') {
+        Object.entries(
+          ((zodSchema as { shape?: Record<string, unknown> }).shape || {}) as Record<
+            string,
+            unknown
+          >
+        ).forEach(([key, subSchema]) => {
           extractRules(subSchema, path ? `${path}.${key}` : key);
         });
       }

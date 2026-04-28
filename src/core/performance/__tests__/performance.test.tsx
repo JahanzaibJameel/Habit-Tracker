@@ -7,18 +7,17 @@
  * @author Enterprise Frontend Team
  */
 
-import { describe, test, expect, jest, beforeEach, afterEach } from '@jest/globals';
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 // Mock performance APIs
-const mockPerformanceObserver = jest.fn();
+const mockPerformanceObserver = vi.fn();
 const mockPerformance = global.performance;
 
 // Import components (adjust paths as needed based on actual exports)
 import { PerformanceMonitor } from '../PerformanceMonitor';
-import { usePerformanceBudgetReporter } from '../usePerformanceBudgetReporter';
 import {
   BudgetViolationBanner,
   useBudgetViolationBanner,
@@ -102,15 +101,15 @@ describe('PerformanceMonitor', () => {
     // Mock performance.getEntriesByType
     global.performance = {
       ...mockPerformance,
-      getEntriesByType: jest.fn(),
-      now: jest.fn(() => Date.now()),
+      getEntriesByType: vi.fn(),
+      now: vi.fn(() => Date.now()),
     };
 
     performanceMonitor = new PerformanceMonitor();
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   test('should initialize with default configuration', () => {
@@ -338,8 +337,8 @@ describe('BudgetViolationBanner Component', () => {
     render(
       <BudgetViolationBanner
         violations={mockViolations}
-        onDismiss={jest.fn()}
-        onAcknowledge={jest.fn()}
+        onDismiss={vi.fn()}
+        onAcknowledge={vi.fn()}
       />
     );
 
@@ -350,9 +349,7 @@ describe('BudgetViolationBanner Component', () => {
   });
 
   test('should not render when no violations', () => {
-    render(
-      <BudgetViolationBanner violations={[]} onDismiss={jest.fn()} onAcknowledge={jest.fn()} />
-    );
+    render(<BudgetViolationBanner violations={[]} onDismiss={vi.fn()} onAcknowledge={vi.fn()} />);
 
     expect(screen.queryByText('Performance Budget Violations')).not.toBeInTheDocument();
   });
@@ -361,8 +358,8 @@ describe('BudgetViolationBanner Component', () => {
     render(
       <BudgetViolationBanner
         violations={mockViolations}
-        onDismiss={jest.fn()}
-        onAcknowledge={jest.fn()}
+        onDismiss={vi.fn()}
+        onAcknowledge={vi.fn()}
       />
     );
 
@@ -375,13 +372,13 @@ describe('BudgetViolationBanner Component', () => {
   });
 
   test('should handle dismiss action', () => {
-    const onDismiss = jest.fn();
+    const onDismiss = vi.fn();
 
     render(
       <BudgetViolationBanner
         violations={mockViolations}
         onDismiss={onDismiss}
-        onAcknowledge={jest.fn()}
+        onAcknowledge={vi.fn()}
       />
     );
 
@@ -390,13 +387,13 @@ describe('BudgetViolationBanner Component', () => {
   });
 
   test('should handle acknowledge action', () => {
-    const onAcknowledge = jest.fn();
+    const onAcknowledge = vi.fn();
 
     render(
       <BudgetViolationBanner
         violations={mockViolations}
         onAcknowledge={onAcknowledge}
-        onDismiss={jest.fn()}
+        onDismiss={vi.fn()}
       />
     );
 
@@ -422,8 +419,8 @@ describe('BudgetViolationBanner Component', () => {
       <BudgetViolationBanner
         violations={manyViolations}
         maxViolations={5}
-        onDismiss={jest.fn()}
-        onAcknowledge={jest.fn()}
+        onDismiss={vi.fn()}
+        onAcknowledge={vi.fn()}
       />
     );
 
@@ -436,8 +433,8 @@ describe('BudgetViolationBanner Component', () => {
       <BudgetViolationBanner
         violations={mockViolations}
         showDetails={true}
-        onDismiss={jest.fn()}
-        onAcknowledge={jest.fn()}
+        onDismiss={vi.fn()}
+        onAcknowledge={vi.fn()}
       />
     );
 
@@ -451,7 +448,7 @@ describe('BudgetViolationBanner Component', () => {
 describe('useBudgetViolationBanner Hook', () => {
   test('should manage violation state', () => {
     const TestComponent = () => {
-      const { violations, addViolation, removeViolation, clearViolations } =
+      const { violations, addViolation, _removeViolation, clearViolations } =
         useBudgetViolationBanner();
 
       const handleAddViolation = () => {
@@ -589,7 +586,7 @@ describe('PerformanceAlert Component', () => {
   });
 
   test('should handle dismiss action', () => {
-    const onDismiss = jest.fn();
+    const onDismiss = vi.fn();
 
     render(<PerformanceAlert violation={mockViolation} onDismiss={onDismiss} />);
 
@@ -622,8 +619,8 @@ describe('Integration Tests', () => {
         <div>
           <BudgetViolationBanner
             violations={violations}
-            onDismiss={jest.fn()}
-            onAcknowledge={jest.fn()}
+            onDismiss={vi.fn()}
+            onAcknowledge={vi.fn()}
           />
           <span data-testid="violation-count">{violations.length}</span>
         </div>
@@ -653,8 +650,8 @@ describe('Integration Tests', () => {
         <div>
           <BudgetViolationBanner
             violations={violations}
-            onDismiss={jest.fn()}
-            onAcknowledge={jest.fn()}
+            onDismiss={vi.fn()}
+            onAcknowledge={vi.fn()}
           />
         </div>
       );
@@ -673,9 +670,7 @@ describe('Integration Tests', () => {
 
 describe('Edge Cases and Error Handling', () => {
   test('should handle empty violations array', () => {
-    render(
-      <BudgetViolationBanner violations={[]} onDismiss={jest.fn()} onAcknowledge={jest.fn()} />
-    );
+    render(<BudgetViolationBanner violations={[]} onDismiss={vi.fn()} onAcknowledge={vi.fn()} />);
 
     expect(screen.queryByText('Performance Budget Violations')).not.toBeInTheDocument();
   });
@@ -693,8 +688,8 @@ describe('Edge Cases and Error Handling', () => {
     render(
       <BudgetViolationBanner
         violations={[violationWithoutContext]}
-        onDismiss={jest.fn()}
-        onAcknowledge={jest.fn()}
+        onDismiss={vi.fn()}
+        onAcknowledge={vi.fn()}
       />
     );
 
@@ -714,8 +709,8 @@ describe('Edge Cases and Error Handling', () => {
     render(
       <BudgetViolationBanner
         violations={[malformedViolation]}
-        onDismiss={jest.fn()}
-        onAcknowledge={jest.fn()}
+        onDismiss={vi.fn()}
+        onAcknowledge={vi.fn()}
       />
     );
 
@@ -767,8 +762,8 @@ describe('Performance Metrics Formatting', () => {
     render(
       <BudgetViolationBanner
         violations={timeViolations}
-        onDismiss={jest.fn()}
-        onAcknowledge={jest.fn()}
+        onDismiss={vi.fn()}
+        onAcknowledge={vi.fn()}
       />
     );
 
@@ -783,8 +778,8 @@ describe('Performance Metrics Formatting', () => {
     render(
       <BudgetViolationBanner
         violations={ratioViolations}
-        onDismiss={jest.fn()}
-        onAcknowledge={jest.fn()}
+        onDismiss={vi.fn()}
+        onAcknowledge={vi.fn()}
       />
     );
 
@@ -799,8 +794,8 @@ describe('Performance Metrics Formatting', () => {
     render(
       <BudgetViolationBanner
         violations={sizeViolations}
-        onDismiss={jest.fn()}
-        onAcknowledge={jest.fn()}
+        onDismiss={vi.fn()}
+        onAcknowledge={vi.fn()}
       />
     );
 
@@ -809,5 +804,5 @@ describe('Performance Metrics Formatting', () => {
 });
 
 afterEach(() => {
-  jest.restoreAllMocks();
+  vi.restoreAllMocks();
 });

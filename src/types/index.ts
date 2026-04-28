@@ -71,7 +71,7 @@ export interface HabitCompletion {
   value: number;
   completedAt: Date;
   notes?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface Streak {

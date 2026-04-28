@@ -7,15 +7,16 @@
  * @author Enterprise Frontend Team
  */
 
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { PerformanceMonitorConfig } from '../PerformanceMonitor';
 import { PerformanceMonitor } from '../PerformanceMonitor';
 import { DefaultBudgetConfig, getEffectiveBudget } from '../budget.config';
 
 // Mock performance API
-const mockPerformanceObserver = jest.fn();
+const mockPerformanceObserver = vi.fn();
 const mockPerformance = {
-  getEntriesByType: jest.fn(),
+  getEntriesByType: vi.fn(),
   navigation: {
     requestStart: 100,
     responseStart: 500,
@@ -61,8 +62,8 @@ describe('PerformanceMonitor', () => {
   let config: PerformanceMonitorConfig;
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.useFakeTimers();
+    vi.clearAllMocks();
+    vi.useFakeTimers();
 
     config = {
       budgetConfig: DefaultBudgetConfig,
@@ -79,7 +80,7 @@ describe('PerformanceMonitor', () => {
 
   afterEach(() => {
     monitor.stop();
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe('Initialization', () => {
@@ -89,7 +90,7 @@ describe('PerformanceMonitor', () => {
 
     test('should not start if already monitoring', () => {
       monitor.start();
-      const consoleSpy = jest.spyOn(console, 'warn');
+      const consoleSpy = vi.spyOn(console, 'warn');
       monitor.start();
       expect(consoleSpy).toHaveBeenCalledWith('Performance monitoring is already active');
       consoleSpy.mockRestore();
@@ -101,7 +102,7 @@ describe('PerformanceMonitor', () => {
         samplingRate: 0.0, // Never sample
       };
       const lowSamplingMonitor = new PerformanceMonitor(lowSamplingConfig);
-      const consoleSpy = jest.spyOn(console, 'log');
+      const consoleSpy = vi.spyOn(console, 'log');
 
       lowSamplingMonitor.start();
       expect(consoleSpy).toHaveBeenCalledWith('Performance monitoring skipped (sampling rate)');
@@ -214,12 +215,12 @@ describe('PerformanceMonitor', () => {
 
     test('should track recent breaches', () => {
       const now = Date.now();
-      jest.spyOn(Date, 'now').mockReturnValue(now);
+      vi.spyOn(Date, 'now').mockReturnValue(now);
 
       monitor.recordMetric('lcp', 3000, 'runtime');
 
       // Advance time by 30 minutes
-      jest.spyOn(Date, 'now').mockReturnValue(now + 30 * 60 * 1000);
+      vi.spyOn(Date, 'now').mockReturnValue(now + 30 * 60 * 1000);
       monitor.recordMetric('fid', 200, 'runtime');
 
       const stats = monitor.getBreachStats();
@@ -296,7 +297,7 @@ describe('PerformanceMonitor', () => {
       const memoryMonitor = new PerformanceMonitor(memoryConfig);
 
       memoryMonitor.start();
-      jest.advanceTimersByTime(30000); // 30 seconds
+      vi.advanceTimersByTime(30000); // 30 seconds
 
       expect(mockPerformance.memory).toBeDefined();
 
@@ -311,7 +312,7 @@ describe('PerformanceMonitor', () => {
       const noMemoryMonitor = new PerformanceMonitor(noMemoryConfig);
 
       noMemoryMonitor.start();
-      jest.advanceTimersByTime(30000);
+      vi.advanceTimersByTime(30000);
 
       // Should not have memory-related timers
       expect(noMemoryMonitor.getMetricValue('usedHeapSize')).toBeUndefined();
@@ -329,7 +330,7 @@ describe('PerformanceMonitor', () => {
       const networkMonitor = new PerformanceMonitor(networkConfig);
 
       networkMonitor.start();
-      jest.advanceTimersByTime(10000); // 10 seconds
+      vi.advanceTimersByTime(10000); // 10 seconds
 
       expect(networkMonitor.getMetricValue('effectiveType')).toBeDefined();
 
@@ -344,7 +345,7 @@ describe('PerformanceMonitor', () => {
       const noNetworkMonitor = new PerformanceMonitor(noNetworkConfig);
 
       noNetworkMonitor.start();
-      jest.advanceTimersByTime(10000);
+      vi.advanceTimersByTime(10000);
 
       expect(noNetworkMonitor.getMetricValue('effectiveType')).toBeUndefined();
 
@@ -397,7 +398,7 @@ describe('PerformanceMonitor', () => {
         throw new Error('PerformanceObserver not supported');
       });
 
-      const consoleSpy = jest.spyOn(console, 'warn');
+      const consoleSpy = vi.spyOn(console, 'warn');
 
       expect(() => monitor.start()).not.toThrow();
       expect(consoleSpy).toHaveBeenCalledWith(
@@ -410,10 +411,10 @@ describe('PerformanceMonitor', () => {
     test('should handle memory API unavailability', () => {
       delete (mockPerformance as any).memory;
 
-      const consoleSpy = jest.spyOn(console, 'warn');
+      const consoleSpy = vi.spyOn(console, 'warn');
 
       monitor.start();
-      jest.advanceTimersByTime(30000);
+      vi.advanceTimersByTime(30000);
 
       expect(consoleSpy).toHaveBeenCalledWith('Memory API not available');
 
@@ -423,10 +424,10 @@ describe('PerformanceMonitor', () => {
     test('should handle network API unavailability', () => {
       delete (mockNavigator as any).connection;
 
-      const consoleSpy = jest.spyOn(console, 'warn');
+      const consoleSpy = vi.spyOn(console, 'warn');
 
       monitor.start();
-      jest.advanceTimersByTime(10000);
+      vi.advanceTimersByTime(10000);
 
       expect(consoleSpy).toHaveBeenCalledWith('Network Information API not available');
 
@@ -446,7 +447,7 @@ describe('PerformanceMonitor', () => {
       reportingMonitor.start();
 
       // Should setup timer for periodic reporting
-      jest.advanceTimersByTime(300000); // 5 minutes
+      vi.advanceTimersByTime(300000); // 5 minutes
 
       // Timer should be active
       expect(setTimeout).toHaveBeenCalled();
@@ -464,7 +465,7 @@ describe('PerformanceMonitor', () => {
       noReportingMonitor.start();
 
       // Should not setup reporting timer
-      jest.advanceTimersByTime(300000);
+      vi.advanceTimersByTime(300000);
 
       noReportingMonitor.stop();
     });

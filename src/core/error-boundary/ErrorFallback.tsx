@@ -8,7 +8,7 @@
  */
 
 import type { ComponentType } from 'react';
-import React, { ReactNode } from 'react';
+import React from 'react';
 
 /**
  * Error fallback props
@@ -40,6 +40,11 @@ export interface ErrorFallbackProps {
   onReset?: () => void;
 
   /**
+   * Function to ignore the error
+   */
+  onIgnore?: () => void;
+
+  /**
    * Recovery strategy to use
    */
   strategy?: ErrorRecoveryStrategy;
@@ -55,6 +60,21 @@ export interface ErrorFallbackProps {
   severity?: 'low' | 'medium' | 'high' | 'critical';
 
   /**
+   * Number of retry attempts
+   */
+  retryCount?: number;
+
+  /**
+   * Available recovery strategies
+   */
+  recoveryStrategies?: string[];
+
+  /**
+   * Whether circuit breaker is open
+   */
+  circuitBreakerOpen?: boolean;
+
+  /**
    * Whether this is in development mode
    */
   isDevelopment?: boolean;
@@ -63,7 +83,13 @@ export interface ErrorFallbackProps {
 /**
  * Error recovery strategies
  */
-export type ErrorRecoveryStrategy = 'retry' | 'reset' | 'fallback' | 'ignore';
+export enum ErrorRecoveryStrategy {
+  RETRY = 'retry',
+  RESET = 'reset',
+  FALLBACK = 'fallback',
+  IGNORE = 'ignore',
+  ESCALATE = 'escalate',
+}
 
 /**
  * Production fallback component - minimal and user-friendly
@@ -132,6 +158,7 @@ export const ProductionFallback: ComponentType<ErrorFallbackProps> = ({
       aria-live="polite"
       data-boundary-id={boundaryId}
       data-error-severity={severity}
+      data-error-message={error.message}
     >
       <div className="error-fallback-content">
         <div className="error-fallback-icon">
@@ -242,11 +269,16 @@ export const DevFallback: ComponentType<ErrorFallbackProps> = ({
   error,
   errorInfo,
   boundaryId,
+  retryCount,
   onRetry,
   onReset,
-  strategy = 'retry',
+  onIgnore,
+  recoveryStrategies,
+  isDevelopment,
+  circuitBreakerOpen,
   componentName,
-  severity = 'medium',
+  severity,
+  strategy,
 }) => {
   const [showDetails, setShowDetails] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
@@ -266,6 +298,9 @@ export const DevFallback: ComponentType<ErrorFallbackProps> = ({
       boundaryId,
       componentName,
       severity,
+      recoveryStrategies,
+      isDevelopment,
+      circuitBreakerOpen,
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
       url: window.location.href,
@@ -294,7 +329,7 @@ export const DevFallback: ComponentType<ErrorFallbackProps> = ({
           <h3 className="error-fallback-title">
             {componentName ? `${componentName} Error` : 'Component Error'}
           </h3>
-          <span className="error-fallback-severity">{severity.toUpperCase()}</span>
+          <span className="error-fallback-severity">{(severity || 'medium').toUpperCase()}</span>
         </div>
 
         <div className="error-fallback-actions">
@@ -314,6 +349,15 @@ export const DevFallback: ComponentType<ErrorFallbackProps> = ({
               aria-label="Reset component"
             >
               Reset
+            </button>
+          )}
+          {strategy === 'ignore' && onIgnore && (
+            <button
+              onClick={onIgnore}
+              className="error-fallback-button error-fallback-ignore"
+              aria-label="Ignore error"
+            >
+              Ignore
             </button>
           )}
           <button
@@ -340,7 +384,7 @@ export const DevFallback: ComponentType<ErrorFallbackProps> = ({
         </p>
         {boundaryId && (
           <p className="error-fallback-boundary">
-            <strong>Boundary:</strong> {boundaryId}
+            Boundary: {boundaryId} {retryCount && `(Retry: ${retryCount})`}
           </p>
         )}
       </div>

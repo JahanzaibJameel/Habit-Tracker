@@ -602,7 +602,7 @@ export class CircuitBreakerFactory {
     if (!this.instances.has(id)) {
       this.instances.set(id, new CircuitBreaker(id, config));
     }
-    return this.instances.get(id)!;
+    return this.instances.get(id) as CircuitBreaker;
   }
 
   /**
@@ -643,7 +643,7 @@ export class CircuitBreakerFactory {
 /**
  * Higher-order function to wrap operations with circuit breaker
  */
-export function withCircuitBreaker<T extends (...args: any[]) => any>(
+export function withCircuitBreaker<T extends (...args: unknown[]) => unknown>(
   operation: T,
   circuitBreakerId: string,
   config?: Partial<CircuitBreakerConfig>

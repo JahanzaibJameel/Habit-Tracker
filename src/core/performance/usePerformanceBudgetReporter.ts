@@ -7,7 +7,7 @@
  * @author Enterprise Frontend Team
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type {
   PerformanceMonitorConfig,
   PerformanceMetric,
@@ -90,10 +90,13 @@ export function usePerformanceBudget(options: UsePerformanceBudgetOptions = {}):
     enableNetworkMonitoring = true,
   } = options;
 
-  const finalBudgetConfig: BudgetConfig = {
-    ...DefaultBudgetConfig,
-    ...budgetConfig,
-  };
+  const finalBudgetConfig = useMemo(
+    () => ({
+      ...DefaultBudgetConfig,
+      ...budgetConfig,
+    }),
+    [budgetConfig]
+  );
 
   // State management
   const [state, setState] = useState<PerformanceBudgetState>({
@@ -301,7 +304,7 @@ export function usePerformanceBudget(options: UsePerformanceBudgetOptions = {}):
     if (enableRealTimeMonitoring && !state.isMonitoring) {
       actions.startMonitoring();
     }
-  }, [enableRealTimeMonitoring, state.isMonitoring, actions.startMonitoring]);
+  }, [enableRealTimeMonitoring, state.isMonitoring, actions]);
 
   return { state, actions };
 }
@@ -324,13 +327,15 @@ export function usePerformanceVisualization() {
     Object.entries(state.metrics).forEach(([metricName, metrics]) => {
       if (metrics.length > 0) {
         const latestMetric = metrics[metrics.length - 1];
-        chartData.push({
-          name: metricName,
-          value: latestMetric.value,
-          budget: latestMetric.budget,
-          category: latestMetric.category,
-          breached: latestMetric.breached,
-        });
+        if (latestMetric) {
+          chartData.push({
+            name: metricName,
+            value: latestMetric.value,
+            budget: latestMetric.budget,
+            category: latestMetric.category,
+            breached: latestMetric.breached,
+          });
+        }
       }
     });
 
@@ -397,14 +402,14 @@ export function usePerformanceAlerts() {
         return Date.now() - breach.timestamp < 300000;
       })
       .map((breach) => ({
-        id: `${breach.metric}-${breach.timestamp}`,
+        id: `breach-${breach.metric}`,
         type:
-          breach.severity === 'critical'
-            ? 'critical'
-            : breach.severity === 'high'
-              ? 'error'
+          breach.severity === 'high'
+            ? ('critical' as const)
+            : breach.severity === 'medium'
+              ? ('error' as const)
               : ('warning' as const),
-        message: `${breach.metric} (${Math.round(breach.actual)}) exceeds budget (${Math.round(breach.budget)})`,
+        message: breach.category || 'Performance budget breach',
         timestamp: breach.timestamp,
         acknowledged: false,
       }));
@@ -485,14 +490,24 @@ export class PerformanceBudgetDebugger {
 
       // Memory metrics
       if ('memory' in performance) {
-        const memory = (performance as any).memory;
-        metrics.usedHeapSize = memory.usedJSHeapSize / 1024 / 1024;
-        metrics.totalHeapSize = memory.totalJSHeapSize / 1024 / 1024;
+        const memory = (
+          performance as Performance & {
+            memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number };
+          }
+        ).memory;
+        if (memory) {
+          metrics.usedHeapSize = memory.usedJSHeapSize / 1024 / 1024;
+          metrics.totalHeapSize = memory.totalJSHeapSize / 1024 / 1024;
+        }
       }
 
       // Network metrics
       if ('connection' in navigator) {
-        const connection = (navigator as any).connection;
+        const connection = (
+          navigator as Navigator & {
+            connection?: { effectiveType: string; downlink: number; rtt: number };
+          }
+        ).connection;
         if (connection) {
           metrics.effectiveType = this.getEffectiveTypeValue(connection.effectiveType);
           metrics.downlink = connection.downlink;

@@ -1,8 +1,15 @@
+import { Inter } from 'next/font/google';
 import { ErrorBoundary } from '@/components/atoms/ErrorBoundary';
 
 import { Providers } from './providers';
 
 import './globals.css';
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+});
 
 export const metadata = {
   title: 'Habit Tracker - Build Better Habits',
@@ -28,8 +35,8 @@ export const viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={inter.variable}>
+      <body suppressHydrationWarning className={inter.className}>
         <ErrorBoundary>
           <Providers>{children}</Providers>
         </ErrorBoundary>

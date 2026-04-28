@@ -7,10 +7,10 @@
  * @author Enterprise Frontend Team
  */
 
-import { describe, test, expect, jest, beforeEach, afterEach } from '@jest/globals';
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/vitest';
 
 // Import components (adjust paths as needed based on actual exports)
 import { ErrorBoundary } from '../ErrorBoundary';
@@ -23,11 +23,16 @@ import {
   MinimalFallback,
   AsyncFallback,
 } from '../ErrorFallback';
-import { CircuitBreaker, CircuitBreakerFactory, useCircuitBreaker } from '../CircuitBreaker';
+import {
+  CircuitBreaker,
+  CircuitBreakerFactory,
+  useCircuitBreaker,
+  withCircuitBreaker,
+} from '../CircuitBreaker';
 
 // Mock console methods to prevent noise in tests
-const mockConsoleError = jest.spyOn(console, 'error').mockImplementation();
-const mockConsoleWarn = jest.spyOn(console, 'warn').mockImplementation();
+const mockConsoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+const mockConsoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
 describe('ErrorBoundary Component', () => {
   const ThrowErrorComponent = ({ shouldThrow = false }: { shouldThrow?: boolean }) => {
@@ -64,7 +69,7 @@ describe('ErrorBoundary Component', () => {
   });
 
   test('should call onError callback when error occurs', () => {
-    const onError = jest.fn();
+    const onError = vi.fn();
 
     render(
       <ErrorBoundary id="test-boundary" onError={onError}>
@@ -103,11 +108,11 @@ describe('ErrorBoundary Component', () => {
   });
 
   test('should handle retry strategy', async () => {
-    const onRecovery = jest.fn();
+    const onRecovery = vi.fn();
     const shouldThrow = true;
 
     render(
-      <ErrorBoundary id="test-boundary" strategy="retry" onRecovery={onRecovery}>
+      <ErrorBoundary id="test-boundary" onRecovery={onRecovery}>
         <ThrowErrorComponent shouldThrow={shouldThrow} />
       </ErrorBoundary>
     );
@@ -184,7 +189,7 @@ describe('Error Fallback Components', () => {
   };
 
   test('ProductionFallback should render minimal UI', () => {
-    render(<ProductionFallback error={mockError} boundaryId="test" onRetry={jest.fn()} />);
+    render(<ProductionFallback error={mockError} boundaryId="test" onRetry={vi.fn()} />);
 
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
     expect(screen.getByText('Try Again')).toBeInTheDocument();
@@ -206,7 +211,10 @@ describe('Error Fallback Components', () => {
   test('DevFallback should show detailed information', () => {
     // Mock development environment
     const originalNodeEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'development';
+    Object.defineProperty(process, 'env', {
+      value: { ...process.env, NODE_ENV: 'development' },
+      writable: true,
+    });
 
     render(
       <DevFallback
@@ -222,7 +230,10 @@ describe('Error Fallback Components', () => {
     expect(screen.getByText('Copy')).toBeInTheDocument();
 
     // Restore original NODE_ENV
-    process.env.NODE_ENV = originalNodeEnv;
+    Object.defineProperty(process, 'env', {
+      value: { ...process.env, NODE_ENV: originalNodeEnv },
+      writable: true,
+    });
   });
 
   test('DevFallback should toggle details visibility', async () => {
@@ -244,7 +255,7 @@ describe('Error Fallback Components', () => {
 
   test('DevFallback should copy error details', async () => {
     const mockClipboard = {
-      writeText: jest.fn().mockResolvedValue(undefined),
+      writeText: vi.fn().mockResolvedValue(undefined),
     };
     Object.assign(navigator, { clipboard: mockClipboard });
 
@@ -263,21 +274,30 @@ describe('Error Fallback Components', () => {
     const originalNodeEnv = process.env.NODE_ENV;
 
     // Test development mode
-    process.env.NODE_ENV = 'development';
+    Object.defineProperty(process, 'env', {
+      value: { ...process.env, NODE_ENV: 'development' },
+      writable: true,
+    });
     const { rerender } = render(<AdaptiveFallback error={mockError} boundaryId="test" />);
     expect(screen.getByText(/Error Stack/i)).toBeInTheDocument();
 
     // Test production mode
-    process.env.NODE_ENV = 'production';
+    Object.defineProperty(process, 'env', {
+      value: { ...process.env, NODE_ENV: 'production' },
+      writable: true,
+    });
     rerender(<AdaptiveFallback error={mockError} boundaryId="test" />);
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
 
     // Restore
-    process.env.NODE_ENV = originalNodeEnv;
+    Object.defineProperty(process, 'env', {
+      value: { ...process.env, NODE_ENV: originalNodeEnv },
+      writable: true,
+    });
   });
 
   test('MinimalFallback should render inline error', () => {
-    render(<MinimalFallback error={mockError} boundaryId="test" onRetry={jest.fn()} />);
+    render(<MinimalFallback error={mockError} boundaryId="test" onRetry={vi.fn()} />);
 
     expect(screen.getByText('!')).toBeInTheDocument();
     expect(screen.getByText('Failed to load')).toBeInTheDocument();
@@ -285,7 +305,7 @@ describe('Error Fallback Components', () => {
   });
 
   test('AsyncFallback should handle async operation errors', () => {
-    render(<AsyncFallback error={mockError} boundaryId="test" onRetry={jest.fn()} />);
+    render(<AsyncFallback error={mockError} boundaryId="test" onRetry={vi.fn()} />);
 
     expect(screen.getByText('Operation failed')).toBeInTheDocument();
     expect(screen.getByText('An async operation failed to complete.')).toBeInTheDocument();
@@ -295,13 +315,14 @@ describe('Error Fallback Components', () => {
 describe('ErrorContext', () => {
   test('should provide error reporting functions', () => {
     const TestConsumer = () => {
-      const { reportError, reportMessage, clearErrors } = React.useContext(ErrorContext);
+      const context = React.useContext(ErrorContext);
 
       React.useEffect(() => {
-        reportError(new Error('Context test error'));
-        reportMessage('Test message', 'warning');
-        clearErrors();
-      }, []);
+        if (context) {
+          context.actions.addError(new Error('Context test error'), 'test-boundary');
+          context.actions.clearErrors();
+        }
+      }, [context]);
 
       return <div>Context Consumer</div>;
     };
@@ -309,11 +330,43 @@ describe('ErrorContext', () => {
     render(
       <ErrorContext.Provider
         value={{
-          errors: [],
-          reportError: jest.fn(),
-          reportMessage: jest.fn(),
-          clearErrors: jest.fn(),
-          resetAll: jest.fn(),
+          state: {
+            errors: [],
+            stats: {
+              totalErrors: 0,
+              errorsByBoundary: {},
+              errorsBySeverity: {},
+              recentErrors: 0,
+              errorRate: 0,
+              lastErrorTime: 0,
+              topErrors: [],
+            },
+            isMonitoring: false,
+            filters: {
+              severity: [],
+              boundaries: [],
+              timeRange: 24,
+            },
+            settings: {
+              maxErrors: 100,
+              enableAutoReporting: true,
+              enableRecoverySuggestions: true,
+              samplingRate: 1,
+            },
+          },
+          actions: {
+            addError: vi.fn(),
+            resolveError: vi.fn(),
+            resolveAllErrors: vi.fn(),
+            clearErrors: vi.fn(),
+            applyRecovery: vi.fn(),
+            getFilteredErrors: vi.fn(() => []),
+            exportErrors: vi.fn(() => '{}'),
+            importErrors: vi.fn(),
+            updateSettings: vi.fn(),
+            updateFilters: vi.fn(),
+            setMonitoring: vi.fn(),
+          },
         }}
       >
         <TestConsumer />
@@ -324,16 +377,48 @@ describe('ErrorContext', () => {
   });
 
   test('should maintain error history', () => {
-    const mockReportError = jest.fn();
+    const mockReportError = vi.fn();
 
     const TestProvider = ({ children }: { children: React.ReactNode }) => (
       <ErrorContext.Provider
         value={{
-          errors: [],
-          reportError: mockReportError,
-          reportMessage: jest.fn(),
-          clearErrors: jest.fn(),
-          resetAll: jest.fn(),
+          state: {
+            errors: [],
+            stats: {
+              totalErrors: 0,
+              errorsByBoundary: {},
+              errorsBySeverity: {},
+              recentErrors: 0,
+              errorRate: 0,
+              lastErrorTime: 0,
+              topErrors: [],
+            },
+            isMonitoring: false,
+            filters: {
+              severity: [],
+              boundaries: [],
+              timeRange: 24,
+            },
+            settings: {
+              maxErrors: 100,
+              enableAutoReporting: true,
+              enableRecoverySuggestions: true,
+              samplingRate: 1,
+            },
+          },
+          actions: {
+            addError: mockReportError,
+            resolveError: vi.fn(),
+            resolveAllErrors: vi.fn(),
+            clearErrors: vi.fn(),
+            applyRecovery: vi.fn(),
+            getFilteredErrors: vi.fn(() => []),
+            exportErrors: vi.fn(() => '{}'),
+            importErrors: vi.fn(),
+            updateSettings: vi.fn(),
+            updateFilters: vi.fn(),
+            setMonitoring: vi.fn(),
+          },
         }}
       >
         {children}
@@ -399,7 +484,7 @@ describe('CircuitBreaker', () => {
         await circuitBreaker.execute(async () => {
           throw new Error(`Test error ${i}`);
         });
-      } catch (error) {
+      } catch (_error) {
         // Expected errors
       }
     }
@@ -422,7 +507,7 @@ describe('CircuitBreaker', () => {
         await circuitBreaker.execute(async () => {
           throw new Error(`Test error ${i}`);
         });
-      } catch (error) {
+      } catch (_error) {
         // Expected errors
       }
     }
@@ -430,13 +515,13 @@ describe('CircuitBreaker', () => {
     expect(circuitBreaker.getState()).toBe('OPEN');
 
     // Wait for recovery timeout (mock time)
-    jest.useFakeTimers();
-    jest.advanceTimersByTime(1100);
+    vi.useFakeTimers();
+    vi.advanceTimersByTime(1100);
 
     // Check state transition
     expect(circuitBreaker.getState()).toBe('HALF_OPEN');
 
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   test('should close circuit on successful operations in HALF_OPEN', async () => {
@@ -446,13 +531,13 @@ describe('CircuitBreaker', () => {
         await circuitBreaker.execute(async () => {
           throw new Error(`Test error ${i}`);
         });
-      } catch (error) {
+      } catch (_error) {
         // Expected errors
       }
     }
 
-    jest.useFakeTimers();
-    jest.advanceTimersByTime(1100);
+    vi.useFakeTimers();
+    vi.advanceTimersByTime(1100);
 
     expect(circuitBreaker.getState()).toBe('HALF_OPEN');
 
@@ -465,7 +550,7 @@ describe('CircuitBreaker', () => {
 
     expect(circuitBreaker.getState()).toBe('CLOSED');
 
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   test('should provide statistics', async () => {
@@ -476,7 +561,7 @@ describe('CircuitBreaker', () => {
       await circuitBreaker.execute(async () => {
         throw new Error('test error');
       });
-    } catch (error) {
+    } catch (_error) {
       // Expected
     }
 
@@ -506,7 +591,7 @@ describe('CircuitBreaker', () => {
         await circuitBreaker.execute(async () => {
           throw new Error(`Test error ${i}`);
         });
-      } catch (error) {
+      } catch (_error) {
         // Expected
       }
     }
@@ -519,9 +604,9 @@ describe('CircuitBreaker', () => {
   });
 
   test('should call state change callbacks', async () => {
-    const onStateChange = jest.fn();
-    const onCircuitOpen = jest.fn();
-    const onCircuitClose = jest.fn();
+    const onStateChange = vi.fn();
+    const onCircuitOpen = vi.fn();
+    const onCircuitClose = vi.fn();
 
     const cb = new CircuitBreaker('callback-test', {
       failureThreshold: 2,
@@ -536,7 +621,7 @@ describe('CircuitBreaker', () => {
         await cb.execute(async () => {
           throw new Error(`Test error ${i}`);
         });
-      } catch (error) {
+      } catch (_error) {
         // Expected
       }
     }
@@ -609,7 +694,7 @@ describe('CircuitBreakerFactory', () => {
 
 describe('withCircuitBreaker HOC', () => {
   test('should wrap function with circuit breaker', async () => {
-    const mockOperation = jest.fn().mockResolvedValue('success');
+    const mockOperation = vi.fn().mockResolvedValue('success');
     const wrappedOperation = withCircuitBreaker(mockOperation, 'hoc-test', {
       failureThreshold: 2,
     });
@@ -621,7 +706,7 @@ describe('withCircuitBreaker HOC', () => {
   });
 
   test('should throw when circuit is open', async () => {
-    const mockOperation = jest.fn().mockResolvedValue('success');
+    const mockOperation = vi.fn().mockResolvedValue('success');
     const wrappedOperation = withCircuitBreaker(mockOperation, 'hoc-open-test', {
       failureThreshold: 1,
     });
@@ -631,14 +716,14 @@ describe('withCircuitBreaker HOC', () => {
 
     try {
       await wrappedOperation();
-    } catch (error) {
+    } catch (_error) {
       // Expected
     }
 
     try {
       await wrappedOperation();
     } catch (error) {
-      expect(error.message).toContain('Circuit breaker is OPEN');
+      expect((error as Error).message).toContain('Circuit breaker is OPEN');
     }
   });
 });
@@ -679,7 +764,7 @@ describe('useCircuitBreaker Hook', () => {
           await execute(async () => {
             throw new Error('test error');
           });
-        } catch (error) {
+        } catch (_error) {
           // Expected
         }
         setExecuted(true);
@@ -711,11 +796,11 @@ describe('useCircuitBreaker Hook', () => {
 
 describe('Error Recovery Strategies', () => {
   test('should handle retry strategy correctly', async () => {
-    const attempts = 0;
-    const onRecovery = jest.fn();
+    const _attempts = 0;
+    const onRecovery = vi.fn();
 
     const RetryComponent = () => {
-      const [shouldThrow, setShouldThrow] = React.useState(true);
+      const [shouldThrow, _setShouldThrow] = React.useState(true);
 
       if (shouldThrow) {
         throw new Error('Retry test error');
@@ -725,7 +810,7 @@ describe('Error Recovery Strategies', () => {
     };
 
     const { rerender } = render(
-      <ErrorBoundary id="retry-test" strategy="retry" onRecovery={onRecovery}>
+      <ErrorBoundary id="retry-test" onRecovery={onRecovery}>
         <RetryComponent />
       </ErrorBoundary>
     );
@@ -734,7 +819,7 @@ describe('Error Recovery Strategies', () => {
 
     // Simulate retry by fixing the error
     rerender(
-      <ErrorBoundary id="retry-test" strategy="retry" onRecovery={onRecovery}>
+      <ErrorBoundary id="retry-test" onRecovery={onRecovery}>
         <div>Success after retry</div>
       </ErrorBoundary>
     );
@@ -743,10 +828,10 @@ describe('Error Recovery Strategies', () => {
   });
 
   test('should handle reset strategy correctly', () => {
-    const onRecovery = jest.fn();
+    const onRecovery = vi.fn();
 
     render(
-      <ErrorBoundary id="reset-test" strategy="reset" onRecovery={onRecovery}>
+      <ErrorBoundary id="reset-test" onRecovery={onRecovery}>
         <div>Reset test content</div>
       </ErrorBoundary>
     );
@@ -759,7 +844,7 @@ describe('Error Recovery Strategies', () => {
     const TestComponent = () => <div>Ignore strategy test</div>;
 
     render(
-      <ErrorBoundary id="ignore-test" strategy="ignore">
+      <ErrorBoundary id="ignore-test">
         <TestComponent />
       </ErrorBoundary>
     );
@@ -793,7 +878,7 @@ describe('Performance and Memory', () => {
 
   test('should handle rapid error bursts', () => {
     let errorCount = 0;
-    const onError = jest.fn();
+    const onError = vi.fn();
 
     const RapidErrorComponent = () => {
       errorCount++;

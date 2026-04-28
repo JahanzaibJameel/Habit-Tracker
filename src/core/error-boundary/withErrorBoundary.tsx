@@ -7,8 +7,8 @@
  * @author Enterprise Frontend Team
  */
 
-import type { ComponentType, ErrorInfo } from 'react';
-import React, { ReactNode } from 'react';
+import React, { type ComponentType, type ErrorInfo } from 'react';
+
 import type { ErrorBoundaryConfig, ErrorRecoveryStrategy } from './ErrorBoundary';
 import { ErrorBoundary } from './ErrorBoundary';
 
@@ -97,10 +97,10 @@ function createBoundaryId(componentName: string, path: string[] = []): string {
  * @param options - Error boundary configuration
  * @returns Wrapped component with error boundary
  */
-export function withErrorBoundary<P extends object>(
+export const withErrorBoundary = <P extends object>(
   Component: ComponentType<P>,
   options: WithErrorBoundaryOptions = {}
-): ComponentType<P> {
+): ComponentType<P> => {
   const {
     id,
     fallback,
@@ -165,7 +165,7 @@ export function withErrorBoundary<P extends object>(
   WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name || 'Component'})`;
 
   return WrappedComponent;
-}
+};
 
 /**
  * Creates multiple error boundaries for different component sections

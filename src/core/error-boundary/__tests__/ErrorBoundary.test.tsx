@@ -7,10 +7,11 @@
  * @author Enterprise Frontend Team
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ReactNode } from 'react';
-import React, { Component, ErrorInfo } from 'react';
+import React, { Component } from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, test, expect, jest, beforeEach } from '@jest/globals';
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { ErrorBoundaryConfig } from '../ErrorBoundary';
 import { ErrorBoundary, ErrorRecoveryStrategy } from '../ErrorBoundary';
 
@@ -19,8 +20,8 @@ const originalConsoleError = console.error;
 const originalConsoleWarn = console.warn;
 
 beforeEach(() => {
-  console.error = jest.fn();
-  console.warn = jest.fn();
+  console.error = vi.fn();
+  console.warn = vi.fn();
 });
 
 afterEach(() => {
@@ -93,7 +94,7 @@ describe('ErrorBoundary', () => {
   });
 
   test('should call onError callback when error occurs', () => {
-    const onError = jest.fn();
+    const onError = vi.fn();
     const config: ErrorBoundaryConfig = { ...defaultConfig, onError };
 
     render(
@@ -201,7 +202,7 @@ describe('ErrorBoundary', () => {
 
     const { rerender } = render(
       <ErrorBoundary {...config}>
-        <ConditionalErrorComponent shouldThrow={true} resetKeys={['key1']} />
+        <ConditionalErrorComponent shouldThrow={true} />
       </ErrorBoundary>
     );
 
@@ -210,7 +211,7 @@ describe('ErrorBoundary', () => {
     // Change resetKey
     rerender(
       <ErrorBoundary {...config}>
-        <ConditionalErrorComponent shouldThrow={false} resetKeys={['key2']} />
+        <ConditionalErrorComponent shouldThrow={false} />
       </ErrorBoundary>
     );
 
@@ -323,7 +324,7 @@ describe('ErrorBoundary', () => {
   });
 
   test('should handle recovery strategies', () => {
-    const onRecovery = jest.fn();
+    const onRecovery = vi.fn();
     const config: ErrorBoundaryConfig = {
       ...defaultConfig,
       onRecovery,
@@ -360,7 +361,7 @@ describe('ErrorBoundary', () => {
   });
 
   test('should handle reset strategy', () => {
-    const onRecovery = jest.fn();
+    const onRecovery = vi.fn();
     const config: ErrorBoundaryConfig = {
       ...defaultConfig,
       onRecovery,
@@ -422,7 +423,10 @@ describe('ErrorBoundary', () => {
 
   test('should handle errors in development mode', () => {
     const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'development';
+    Object.defineProperty(process, 'env', {
+      value: { ...process.env, NODE_ENV: 'development' },
+      writable: true,
+    });
 
     const config: ErrorBoundaryConfig = { ...defaultConfig };
 
@@ -436,12 +440,18 @@ describe('ErrorBoundary', () => {
     expect(screen.getByText(/error boundary: test-boundary/i)).toBeInTheDocument();
     expect(screen.getByText(/test error/i)).toBeInTheDocument();
 
-    process.env.NODE_ENV = originalEnv;
+    Object.defineProperty(process, 'env', {
+      value: { ...process.env, NODE_ENV: originalEnv },
+      writable: true,
+    });
   });
 
   test('should handle errors in production mode', () => {
     const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'production';
+    Object.defineProperty(process, 'env', {
+      value: { ...process.env, NODE_ENV: 'production' },
+      writable: true,
+    });
 
     const config: ErrorBoundaryConfig = { ...defaultConfig };
 
@@ -455,7 +465,10 @@ describe('ErrorBoundary', () => {
     expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
     expect(screen.queryByText(/test error/i)).not.toBeInTheDocument();
 
-    process.env.NODE_ENV = originalEnv;
+    Object.defineProperty(process, 'env', {
+      value: { ...process.env, NODE_ENV: originalEnv },
+      writable: true,
+    });
   });
 });
 

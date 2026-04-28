@@ -349,7 +349,7 @@ export function isValidStorageResult<T>(result: unknown): result is StorageResul
     typeof result === 'object' &&
     result !== null &&
     'success' in result &&
-    typeof (result as any).success === 'boolean'
+    typeof (result as { success: unknown }).success === 'boolean'
   );
 }
 

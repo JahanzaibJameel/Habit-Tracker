@@ -10,11 +10,15 @@ export function formatDate(date: Date): string {
   }).format(date);
 }
 
-export function formatTime(date: Date): string {
+export function formatTime(
+  date: string | Date | undefined,
+  _options?: Intl.DateTimeFormatOptions
+): string {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
   return new Intl.DateTimeFormat('en-US', {
     hour: '2-digit',
     minute: '2-digit',
-  }).format(date);
+  }).format(dateObj);
 }
 
 export function formatDateTime(date: Date): string {
@@ -52,7 +56,7 @@ export function generateId(): string {
   return crypto.randomUUID();
 }
 
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: never[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
@@ -63,7 +67,7 @@ export function debounce<T extends (...args: any[]) => any>(
   };
 }
 
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: never[]) => unknown>(
   func: T,
   limit: number
 ): (...args: Parameters<T>) => void {
@@ -221,6 +225,10 @@ export function sanitizeString(str: string): string {
   return str.replace(/[<>]/g, '');
 }
 
+export function validateInput(input: unknown): boolean {
+  return typeof input === 'string' && input.length > 0;
+}
+
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
@@ -233,11 +241,19 @@ export function arrayEquals<T>(a: T[], b: T[]): boolean {
   return a.length === b.length && a.every((val, index) => val === b[index]);
 }
 
+export function parseJson<T>(json: string): T | null {
+  try {
+    return JSON.parse(json) as T;
+  } catch {
+    return null;
+  }
+}
+
 export function removeDuplicates<T>(array: T[]): T[] {
   return [...new Set(array)];
 }
 
-export function groupBy<T, K extends keyof any>(array: T[], key: (item: T) => K): Record<K, T[]> {
+export function groupBy<T, K extends string>(array: T[], key: (item: T) => K): Record<K, T[]> {
   return array.reduce(
     (groups, item) => {
       const groupKey = key(item);

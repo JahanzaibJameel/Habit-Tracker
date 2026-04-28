@@ -37,6 +37,7 @@
     "tailwindcss",
     "prettier"
   ],
+  "ignorePatterns": ["public/~partytown/**", "public/**/*.js"],
   "settings": {
     "react": {
       "version": "detect"

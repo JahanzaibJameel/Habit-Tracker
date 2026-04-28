@@ -8,7 +8,7 @@
  */
 
 import { z } from 'zod';
-import { ValidationError, ValidationErrorFactory } from '../validation/errors';
+import { ValidationErrorFactory } from '../validation/errors';
 
 /**
  * Storage backend types
@@ -327,17 +327,17 @@ class IndexedDBAdapter implements IStorageAdapter {
   private initPromise: Promise<IDBDatabase> | null = null;
   private isCorrupted = false;
   private backupAdapter: IStorageAdapter | null = null;
-  private config: StorageConfig<any>;
+  private config: StorageConfig<unknown>;
   private staleCache = new Map<string, { data: string; timestamp: number }>();
 
   constructor(
     dbName: string = 'StorageEngineDB',
     storeName: string = 'storage',
-    config?: StorageConfig<any>
+    config?: StorageConfig<unknown>
   ) {
     this.dbName = dbName;
     this.storeName = storeName;
-    this.config = config || ({} as StorageConfig<any>);
+    this.config = config || ({} as StorageConfig<unknown>);
 
     // Initialize backup adapter if corruption recovery is enabled
     if (config?.enableCorruptionRecovery && config.backupBackend) {
@@ -369,7 +369,7 @@ class IndexedDBAdapter implements IStorageAdapter {
       const result = await this.get(testKey);
       await this.remove(testKey);
       return result !== 'test';
-    } catch (error) {
+    } catch (_error) {
       // If any operation fails, consider it corrupted
       return true;
     }
@@ -463,7 +463,7 @@ class IndexedDBAdapter implements IStorageAdapter {
         }
       }
 
-      console.log(`Restored ${backupKeys.length} items from backup`);
+      console.warn(`Restored ${backupKeys.length} items from backup`);
     } catch (error) {
       console.error('Failed to restore from backup:', error);
     }
@@ -522,7 +522,11 @@ class IndexedDBAdapter implements IStorageAdapter {
     try {
       // Check for stale data first if stale-while-revalidate is enabled
       if (this.config.enableStaleWhileRevalidate && this.staleCache.has(key)) {
-        const stale = this.staleCache.get(key)!;
+        const stale = this.staleCache.get(key);
+        if (!stale) {
+          return null;
+        }
+
         const now = Date.now();
         const staleAge = now - stale.timestamp;
 
@@ -1144,7 +1148,19 @@ export class StorageEngine<T> {
           totalKeys: Object.keys(snapshot).length,
           version: this.config.currentVersion,
           config: (() => {
-            const config: any = {
+            const config: {
+              backend: StorageBackend;
+              keyPrefix: string;
+              currentVersion: number;
+              migrations: Migration<unknown>[];
+              compression?: boolean;
+              encryption?: boolean;
+              enableCorruptionRecovery?: boolean;
+              enableStaleWhileRevalidate?: boolean;
+              ttl?: number;
+              maxSize?: number;
+              backupBackend?: StorageBackend;
+            } = {
               backend: this.config.backend,
               keyPrefix: this.config.keyPrefix,
               currentVersion: this.config.currentVersion,
@@ -1153,6 +1169,7 @@ export class StorageEngine<T> {
               encryption: this.config.encryption || false,
               enableCorruptionRecovery: this.config.enableCorruptionRecovery || false,
               enableStaleWhileRevalidate: this.config.enableStaleWhileRevalidate || false,
+              backupBackend: this.config.backupBackend,
             };
 
             if (this.config.ttl !== undefined) {
@@ -1184,7 +1201,14 @@ export class StorageEngine<T> {
   async importSnapshot(
     snapshot: {
       data: Record<string, { data: T; version: number; timestamp: string }>;
-      metadata: any;
+      metadata: {
+        exportedAt: string;
+        backend: StorageBackend;
+        keyPrefix: string;
+        totalKeys: number;
+        version: number;
+        config: Omit<StorageConfig<T>, 'schema' | 'defaultValue'>;
+      };
     },
     options: {
       overwrite?: boolean;
@@ -1290,7 +1314,18 @@ export class StorageEngine<T> {
    */
   async createIncrementalSnapshot(lastSnapshotTime?: string): Promise<{
     data: Record<string, { data: T; version: number; timestamp: string }>;
-    metadata: any;
+    metadata: {
+      exportedAt: string;
+      backend: StorageBackend;
+      keyPrefix: string;
+      totalKeys: number;
+      version: number;
+      incrementalSince: string;
+      config: Omit<StorageConfig<T>, 'schema' | 'defaultValue'>;
+      type: 'incremental';
+      baseSnapshotTime?: string;
+      incrementalChanges: number;
+    };
   }> {
     const lastTime = lastSnapshotTime ? new Date(lastSnapshotTime).getTime() : 0;
     const fullSnapshot = await this.exportSnapshot();
@@ -1308,7 +1343,13 @@ export class StorageEngine<T> {
     return {
       data: incrementalData,
       metadata: {
-        ...fullSnapshot.metadata,
+        exportedAt: new Date().toISOString(),
+        backend: this.config.backend,
+        keyPrefix: this.config.keyPrefix,
+        totalKeys: Object.keys(incrementalData).length,
+        version: this.config.currentVersion,
+        incrementalSince: lastSnapshotTime || '',
+        config: fullSnapshot.metadata.config,
         type: 'incremental',
         baseSnapshotTime: lastSnapshotTime,
         incrementalChanges: Object.keys(incrementalData).length,
@@ -1355,16 +1396,25 @@ export class StorageEngine<T> {
               newestEntry = key;
             }
           }
-        } catch (error) {
+        } catch (_error) {
           // Skip invalid entries
         }
       }
 
-      const result: any = {
+      const result: {
+        totalKeys: number;
+        totalSize: number;
+        backend: StorageBackend;
+        quota: { used: number; available: number };
+        oldestEntry?: string;
+        newestEntry?: string;
+        corruptionDetected: boolean;
+      } = {
         totalKeys: storageKeys.length,
         totalSize: await this.adapter.size(),
         backend: this.config.backend,
         quota,
+        corruptionDetected: false,
       };
 
       if (oldestEntry) {

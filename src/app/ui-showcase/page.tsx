@@ -10,21 +10,20 @@ import {
   CardDescription,
   CardContent,
 } from '@/components/atoms';
-import { DraggableHabitCard } from '@/components/molecules';
 import {
   Bell,
-  Settings,
-  Download,
-  Upload,
-  Trash2,
-  Edit,
-  Copy,
-  Star,
+  Settings as _Settings,
+  Download as _Download,
+  Upload as _Upload,
+  Trash2 as _Trash2,
+  Edit as _Edit,
+  Copy as _Copy,
+  Star as _Star,
   Search,
-  Calendar,
-  Filter,
-  Grid,
-  List,
+  Calendar as _Calendar,
+  Filter as _Filter,
+  Grid as _Grid,
+  List as _List,
   Zap,
 } from 'lucide-react';
 

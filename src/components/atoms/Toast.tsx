@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -12,10 +12,16 @@ interface ToastProps {
   onClose?: () => void;
 }
 
+interface ToastItem {
+  id: string;
+  props: Omit<ToastProps, 'onClose'>;
+  timer?: NodeJS.Timeout;
+}
+
 let toastId = 0;
 
 export function Toast({ message, type = 'info', duration = 3000, onClose }: ToastProps) {
-  const [id] = useState(() => `toast-${++toastId}`);
+  const [_id] = useState(() => `toast-${++toastId}`);
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
@@ -89,12 +95,11 @@ export function Toast({ message, type = 'info', duration = 3000, onClose }: Toas
 
 // Toast container for managing multiple toasts
 export function ToastContainer() {
-  const [toasts, setToasts] = useState<
-    Array<{ id: string; props: ToastProps; timer?: NodeJS.Timeout }>
-  >([]);
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const _toastIdRef = useRef(0);
 
   const addToast = (props: Omit<ToastProps, 'onClose'>) => {
-    const id = `toast-${++toastId}`;
+    const id = `toast-${_toastIdRef.current++}`;
     const newToast = { id, props };
 
     setToasts((prev) => [...prev, newToast]);
@@ -135,7 +140,16 @@ export function ToastContainer() {
   // Expose toast methods globally
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      (window as any).toast = {
+      (
+        window as Window & {
+          toast?: {
+            success: (message: string, duration?: number) => void;
+            error: (message: string, duration?: number) => void;
+            warning: (message: string, duration?: number) => void;
+            info: (message: string, duration?: number) => void;
+          };
+        }
+      ).toast = {
         success: (message: string, duration?: number) =>
           addToast({ message, type: 'success', duration: duration ?? 3000 }),
         error: (message: string, duration?: number) =>
@@ -146,7 +160,7 @@ export function ToastContainer() {
           addToast({ message, type: 'info', duration: duration ?? 3000 }),
       };
     }
-  }, []);
+  }, [addToast]);
 
   return (
     <div className="fixed top-4 right-4 z-50 space-y-2">

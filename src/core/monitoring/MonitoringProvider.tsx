@@ -108,7 +108,7 @@ export interface MonitoringContextValue {
   /**
    * Get monitoring statistics
    */
-  getStats: () => any;
+  getStats: () => MonitoringStats;
 
   /**
    * Enable/disable monitoring
@@ -293,7 +293,7 @@ export class MonitoringProvider extends Component<
   }
 
   private initializeMonitoring(): void {
-    const { service, offlineQueue, samplingRate = 1.0 } = this.props;
+    const { service, offlineQueue, _samplingRate = 1.0 } = this.props;
 
     // Set up offline queue if provided
     if (offlineQueue) {
@@ -446,6 +446,7 @@ export class MonitoringProvider extends Component<
   }
 
   private shouldSample(): boolean {
+    const _samplingRate = Math.random();
     const { samplingRate = 1.0 } = this.props;
     return Math.random() < samplingRate;
   }

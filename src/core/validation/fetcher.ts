@@ -199,7 +199,7 @@ export async function safeFetchJson<T extends z.ZodTypeAny>(
       let data: unknown;
       try {
         data = await response.json();
-      } catch (parseError) {
+      } catch (_parseError) {
         throw ValidationErrorFactory.network({
           message: 'Failed to parse JSON response',
           url: typeof input === 'string' ? input : input.url,
@@ -365,12 +365,12 @@ export async function safeFetchJsonPartial<T extends z.ZodTypeAny>(
     }
 
     // Validate each item individually
-    const valid: any[] = [];
+    const valid: unknown[] = [];
     const invalid: ValidationError[] = [];
 
-    for (let i = 0; i < (data as any[]).length; i++) {
+    for (let i = 0; i < (data as unknown[]).length; i++) {
       try {
-        const validatedItem = schema.parse((data as any[])[i]);
+        const validatedItem = schema.parse((data as unknown[])[i]);
         valid.push(validatedItem as z.infer<T>);
       } catch (schemaError) {
         if (schemaError instanceof z.ZodError) {
@@ -390,7 +390,7 @@ export async function safeFetchJsonPartial<T extends z.ZodTypeAny>(
               code: 'SCHEMA_VALIDATION_ERROR',
               path: [i.toString()],
               expected: schema.constructor.name,
-              received: (data as any[])[i],
+              received: (data as unknown[])[i],
               schema: schema.constructor.name,
               context: {
                 schemaError:
@@ -402,7 +402,7 @@ export async function safeFetchJsonPartial<T extends z.ZodTypeAny>(
       }
     }
 
-    const total = (data as any[]).length;
+    const total = (data as unknown[]).length;
     const successRate = total > 0 ? valid.length / total : 0;
 
     return {
@@ -459,7 +459,12 @@ export async function safeFetchApiResponse<T extends z.ZodTypeAny>(
   );
 
   // Fix exactOptionalPropertyTypes error by conditionally including data
-  const result: any = {
+  const result: {
+    success: boolean;
+    data?: z.infer<T>;
+    errors?: ValidationError[];
+    metadata?: ResponseMetadata;
+  } = {
     success: response.success,
   };
 
@@ -698,7 +703,7 @@ export async function safeFetchCached<T extends z.ZodTypeAny>(
   if (cached) {
     try {
       return schema.parse(cached) as z.infer<T>;
-    } catch (error) {
+    } catch (_error) {
       // Cache validation failed, remove and fetch fresh
       responseCache.clear();
     }

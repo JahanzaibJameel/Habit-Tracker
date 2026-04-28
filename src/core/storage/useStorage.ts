@@ -9,7 +9,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { StorageEngine, StorageConfig } from './StorageEngine';
-import { StorageResult, createStorageEngine } from './StorageEngine';
+import { createStorageEngine } from './StorageEngine';
 
 /**
  * Hook options for storage
@@ -250,7 +250,7 @@ export function useStorage<T>(
 
   // Storage actions
   const actions: StorageActions<T> = {
-    set: immediate ? saveData : debouncedSave,
+    set: immediate ? (data: T) => saveData(data) : (data: T) => saveData(data),
 
     get: async (): Promise<T | null> => {
       const result = await engine.get(key);
@@ -350,7 +350,7 @@ export function useStorage<T>(
  *   user: { key: 'user', config: userConfig }
  * });
  */
-export function useMultiStorage<T extends Record<string, any>>(storageMap: {
+export function useMultiStorage<T extends Record<string, unknown>>(_storageMap: {
   [K in keyof T]: {
     key: string;
     config: StorageConfig<T[K]>;
@@ -363,20 +363,18 @@ export function useMultiStorage<T extends Record<string, any>>(storageMap: {
     engine: StorageEngine<T[K]>;
   };
 } {
-  const hooks = {} as any;
-
-  for (const [name, config] of Object.entries(storageMap)) {
-    const hook = useStorage(config.key, config.config, config.options);
-    hooks[name] = hook;
-  }
-
-  return hooks;
+  // WARNING: This function violates React Hooks Rules and should not be used
+  // Instead, call useStorage individually for each storage key
+  throw new Error(
+    'useMultiStorage violates React Hooks Rules by calling hooks conditionally. ' +
+      'Use individual useStorage calls for each storage key instead.'
+  );
 }
 
 /**
  * Hook for storage statistics and monitoring
  */
-export function useStorageStats(engine: StorageEngine<any>) {
+export function useStorageStats<T>(engine: StorageEngine<T>) {
   const [stats, setStats] = useState({
     size: { bytes: 0, entries: 0 },
     quota: { used: 0, available: 0, percentage: 0 },
@@ -396,7 +394,7 @@ export function useStorageStats(engine: StorageEngine<any>) {
         quota,
         available,
       });
-    } catch (error) {
+    } catch (_error) {
       setStats((prev) => ({
         ...prev,
         available: false,
@@ -421,10 +419,10 @@ export function useStorageStats(engine: StorageEngine<any>) {
 /**
  * Hook for storage debugging and development
  */
-export function useStorageDebug(engine: StorageEngine<any>) {
+export function useStorageDebug<T>(engine: StorageEngine<T>) {
   const [debugInfo, setDebugInfo] = useState({
     keys: [] as string[],
-    exportData: {} as Record<string, any>,
+    exportData: {} as Record<string, unknown>,
     lastOperation: null as string | null,
   });
 
@@ -454,7 +452,7 @@ export function useStorageDebug(engine: StorageEngine<any>) {
   }, [engine, refreshDebugInfo]);
 
   const importData = useCallback(
-    async (data: Record<string, any>) => {
+    async (data: Record<string, unknown>) => {
       try {
         await engine.import(data);
         await refreshDebugInfo();

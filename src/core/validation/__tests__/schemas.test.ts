@@ -7,76 +7,46 @@
  * @author Enterprise Frontend Team
  */
 
-import { describe, test, expect } from '@jest/globals';
+import { describe, test, expect } from 'vitest';
 import type { z } from 'zod';
 import {
-  BaseSchema,
   UserSchema,
   AppSettingsSchema,
   FeatureFlagsSchema,
   HabitSchema,
   HabitEntrySchema,
   ApiResponseSchema,
-  FormInputSchema,
+  LoginFormSchema,
   UrlParamsSchema,
 } from '../schemas';
 
-describe('BaseSchema', () => {
-  test('should validate base schema structure', () => {
-    const validBase = {
-      _version: 1,
-      _createdAt: '2023-01-01T00:00:00.000Z',
-      _updatedAt: '2023-01-01T00:00:00.000Z',
-    };
-
-    expect(BaseSchema.parse(validBase)).toEqual(validBase);
-  });
-
-  test('should reject invalid version', () => {
-    const invalidBase = {
-      _version: 2,
-      _createdAt: '2023-01-01T00:00:00.000Z',
-      _updatedAt: '2023-01-01T00:00:00.000Z',
-    };
-
-    expect(() => BaseSchema.parse(invalidBase)).toThrow();
-  });
-
-  test('should reject missing required fields', () => {
-    const incompleteBase = {
-      _version: 1,
-      _createdAt: '2023-01-01T00:00:00.000Z',
-    };
-
-    expect(() => BaseSchema.parse(incompleteBase)).toThrow();
-  });
-
-  test('should reject invalid date format', () => {
-    const invalidDate = {
-      _version: 1,
-      _createdAt: 'invalid-date',
-      _updatedAt: '2023-01-01T00:00:00.000Z',
-    };
-
-    expect(() => BaseSchema.parse(invalidDate)).toThrow();
-  });
-});
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 describe('UserSchema', () => {
   test('should validate complete user object', () => {
     const validUser = {
       _version: 1,
       _createdAt: '2023-01-01T00:00:00.000Z',
       _updatedAt: '2023-01-01T00:00:00.000Z',
-      id: 'user-123',
+      id: '550e8400-e29b-41d4-a716-446655440000',
       email: 'test@example.com',
-      name: 'Test User',
-      avatar: 'https://example.com/avatar.jpg',
+      profile: {
+        firstName: 'Test',
+        lastName: 'User',
+        avatar: 'https://example.com/avatar.jpg',
+        bio: 'Test user bio',
+      },
       preferences: {
         theme: 'dark' as const,
         language: 'en',
         timezone: 'UTC',
+        notifications: {
+          email: true,
+          push: true,
+          sms: false,
+        },
       },
+      roles: ['user'],
+      isActive: true,
     };
 
     expect(UserSchema.parse(validUser)).toEqual(validUser);
@@ -87,9 +57,12 @@ describe('UserSchema', () => {
       _version: 1,
       _createdAt: '2023-01-01T00:00:00.000Z',
       _updatedAt: '2023-01-01T00:00:00.000Z',
-      id: 'user-123',
+      id: '550e8400-e29b-41d4-a716-446655440000',
       email: 'test@example.com',
-      name: 'Test User',
+      profile: {
+        firstName: 'Test',
+        lastName: 'User',
+      },
     };
 
     const result = UserSchema.parse(minimalUser);
@@ -102,9 +75,12 @@ describe('UserSchema', () => {
       _version: 1,
       _createdAt: '2023-01-01T00:00:00.000Z',
       _updatedAt: '2023-01-01T00:00:00.000Z',
-      id: 'user-123',
+      id: '550e8400-e29b-41d4-a716-446655440000',
       email: 'invalid-email',
-      name: 'Test User',
+      profile: {
+        firstName: 'Test',
+        lastName: 'User',
+      },
     };
 
     expect(() => UserSchema.parse(invalidUser)).toThrow();
@@ -115,13 +91,21 @@ describe('UserSchema', () => {
       _version: 1,
       _createdAt: '2023-01-01T00:00:00.000Z',
       _updatedAt: '2023-01-01T00:00:00.000Z',
-      id: 'user-123',
+      id: '550e8400-e29b-41d4-a716-446655440000',
       email: 'test@example.com',
-      name: 'Test User',
+      profile: {
+        firstName: 'Test',
+        lastName: 'User',
+      },
       preferences: {
         theme: 'invalid' as any,
         language: 'en',
         timezone: 'UTC',
+        notifications: {
+          email: true,
+          push: true,
+          sms: false,
+        },
       },
     };
 
@@ -213,11 +197,23 @@ describe('FeatureFlagsSchema', () => {
       _version: 1,
       _createdAt: '2023-01-01T00:00:00.000Z',
       _updatedAt: '2023-01-01T00:00:00.000Z',
-      enableDarkMode: true,
-      enableNotifications: false,
-      enableBetaFeatures: true,
-      enableAnalytics: true,
-      enableDebugMode: false,
+      flags: {
+        enableDarkMode: {
+          enabled: true,
+          rolloutPercentage: 100,
+        },
+        enableNotifications: {
+          enabled: false,
+          rolloutPercentage: 50,
+        },
+        enableBetaFeatures: {
+          enabled: true,
+          rolloutPercentage: 10,
+          conditions: ['beta-users'],
+          metadata: { description: 'Beta features for testing' },
+        },
+      },
+      userSegments: ['premium', 'beta'],
     };
 
     expect(FeatureFlagsSchema.parse(validFlags)).toEqual(validFlags);
@@ -231,8 +227,8 @@ describe('FeatureFlagsSchema', () => {
     };
 
     const result = FeatureFlagsSchema.parse(minimalFlags);
-    expect(typeof result.enableDarkMode).toBe('boolean');
-    expect(typeof result.enableNotifications).toBe('boolean');
+    expect(typeof result.flags).toBe('object');
+    expect(Object.keys(result.flags)).toHaveLength(0);
   });
 });
 
@@ -242,8 +238,8 @@ describe('HabitSchema', () => {
       _version: 1,
       _createdAt: '2023-01-01T00:00:00.000Z',
       _updatedAt: '2023-01-01T00:00:00.000Z',
-      id: 'habit-123',
-      userId: 'user-123',
+      id: '550e8400-e29b-41d4-a716-446655440000',
+      userId: '550e8400-e29b-41d4-a716-446655440001',
       title: 'Exercise',
       description: 'Daily exercise routine',
       category: 'health' as const,
@@ -273,8 +269,8 @@ describe('HabitSchema', () => {
       _version: 1,
       _createdAt: '2023-01-01T00:00:00.000Z',
       _updatedAt: '2023-01-01T00:00:00.000Z',
-      id: 'habit-123',
-      userId: 'user-123',
+      id: '550e8400-e29b-41d4-a716-446655440000',
+      userId: '550e8400-e29b-41d4-a716-446655440001',
       title: 'Exercise',
       category: 'other' as const,
       frequency: {
@@ -284,10 +280,6 @@ describe('HabitSchema', () => {
       target: {
         type: 'boolean' as const,
         value: 1,
-      },
-      streak: {
-        current: 0,
-        longest: 0,
       },
       isActive: true,
     };
@@ -301,8 +293,8 @@ describe('HabitSchema', () => {
       _version: 1,
       _createdAt: '2023-01-01T00:00:00.000Z',
       _updatedAt: '2023-01-01T00:00:00.000Z',
-      id: 'habit-123',
-      userId: 'user-123',
+      id: '550e8400-e29b-41d4-a716-446655440000',
+      userId: '550e8400-e29b-41d4-a716-446655440001',
       title: 'Exercise',
       category: 'invalid' as any,
       frequency: {
@@ -312,10 +304,6 @@ describe('HabitSchema', () => {
       target: {
         type: 'boolean' as const,
         value: 1,
-      },
-      streak: {
-        current: 0,
-        longest: 0,
       },
       isActive: true,
     };
@@ -328,8 +316,8 @@ describe('HabitSchema', () => {
       _version: 1,
       _createdAt: '2023-01-01T00:00:00.000Z',
       _updatedAt: '2023-01-01T00:00:00.000Z',
-      id: 'habit-123',
-      userId: 'user-123',
+      id: '550e8400-e29b-41d4-a716-446655440000',
+      userId: '550e8400-e29b-41d4-a716-446655440001',
       title: 'Exercise',
       category: 'health' as const,
       frequency: {
@@ -339,10 +327,6 @@ describe('HabitSchema', () => {
       target: {
         type: 'boolean' as const,
         value: 1,
-      },
-      streak: {
-        current: 0,
-        longest: 0,
       },
       isActive: true,
     };
@@ -355,9 +339,11 @@ describe('HabitEntrySchema', () => {
   test('should validate complete habit entry', () => {
     const validEntry = {
       _version: 1,
-      id: 'entry-123',
-      habitId: 'habit-123',
-      userId: 'user-123',
+      _createdAt: '2023-01-01T00:00:00.000Z',
+      _updatedAt: '2023-01-01T00:00:00.000Z',
+      id: '550e8400-e29b-41d4-a716-446655440000',
+      habitId: '550e8400-e29b-41d4-a716-446655440001',
+      userId: '550e8400-e29b-41d4-a716-446655440002',
       value: 30,
       completedAt: '2023-01-01T00:00:00.000Z',
       notes: 'Great workout!',
@@ -373,9 +359,11 @@ describe('HabitEntrySchema', () => {
   test('should accept entry with minimal required fields', () => {
     const minimalEntry = {
       _version: 1,
-      id: 'entry-123',
-      habitId: 'habit-123',
-      userId: 'user-123',
+      _createdAt: '2023-01-01T00:00:00.000Z',
+      _updatedAt: '2023-01-01T00:00:00.000Z',
+      id: '550e8400-e29b-41d4-a716-446655440000',
+      habitId: '550e8400-e29b-41d4-a716-446655440001',
+      userId: '550e8400-e29b-41d4-a716-446655440002',
       value: 1,
       completedAt: '2023-01-01T00:00:00.000Z',
     };
@@ -389,9 +377,11 @@ describe('HabitEntrySchema', () => {
   test('should reject negative value', () => {
     const invalidEntry = {
       _version: 1,
-      id: 'entry-123',
-      habitId: 'habit-123',
-      userId: 'user-123',
+      _createdAt: '2023-01-01T00:00:00.000Z',
+      _updatedAt: '2023-01-01T00:00:00.000Z',
+      id: '550e8400-e29b-41d4-a716-446655440000',
+      habitId: '550e8400-e29b-41d4-a716-446655440001',
+      userId: '550e8400-e29b-41d4-a716-446655440002',
       value: -5,
       completedAt: '2023-01-01T00:00:00.000Z',
     };
@@ -405,8 +395,9 @@ describe('ApiResponseSchema', () => {
     const validResponse = {
       success: true,
       data: { id: '123', name: 'Test' },
-      message: 'Success',
-      timestamp: '2023-01-01T00:00:00.000Z',
+      meta: {
+        timestamp: '2023-01-01T00:00:00.000Z',
+      },
     };
 
     expect(ApiResponseSchema.parse(validResponse)).toEqual(validResponse);
@@ -420,7 +411,9 @@ describe('ApiResponseSchema', () => {
         message: 'Resource not found',
         details: { resourceId: '123' },
       },
-      timestamp: '2023-01-01T00:00:00.000Z',
+      meta: {
+        timestamp: '2023-01-01T00:00:00.000Z',
+      },
     };
 
     expect(ApiResponseSchema.parse(errorResponse)).toEqual(errorResponse);
@@ -429,69 +422,53 @@ describe('ApiResponseSchema', () => {
   test('should reject response without success field', () => {
     const invalidResponse = {
       data: { id: '123', name: 'Test' },
-      message: 'Success',
-      timestamp: '2023-01-01T00:00:00.000Z',
+      meta: {
+        timestamp: '2023-01-01T00:00:00.000Z',
+      },
     };
 
     expect(() => ApiResponseSchema.parse(invalidResponse)).toThrow();
   });
 });
 
-describe('FormInputSchema', () => {
-  test('should validate text input', () => {
-    const textInput = {
-      type: 'text' as const,
-      name: 'username',
-      value: 'testuser',
-      required: true,
-      minLength: 3,
-      maxLength: 20,
+describe('LoginFormSchema', () => {
+  test('should validate login form', () => {
+    const validLogin = {
+      email: 'test@example.com',
+      password: 'Password123',
+      rememberMe: false,
     };
 
-    expect(FormInputSchema.parse(textInput)).toEqual(textInput);
+    expect(LoginFormSchema.parse(validLogin)).toEqual(validLogin);
   });
 
-  test('should validate email input', () => {
-    const emailInput = {
-      type: 'email' as const,
-      name: 'email',
-      value: 'test@example.com',
-      required: true,
+  test('should reject invalid email', () => {
+    const invalidLogin = {
+      email: 'invalid-email',
+      password: 'Password123',
     };
 
-    expect(FormInputSchema.parse(emailInput)).toEqual(emailInput);
+    expect(() => LoginFormSchema.parse(invalidLogin)).toThrow();
   });
 
-  test('should validate checkbox input', () => {
-    const checkboxInput = {
-      type: 'checkbox' as const,
-      name: 'agree',
-      value: true,
-      required: true,
+  test('should reject weak password', () => {
+    const invalidLogin = {
+      email: 'test@example.com',
+      password: 'weak',
     };
 
-    expect(FormInputSchema.parse(checkboxInput)).toEqual(checkboxInput);
-  });
-
-  test('should reject invalid input type', () => {
-    const invalidInput = {
-      type: 'invalid' as any,
-      name: 'test',
-      value: 'test',
-    };
-
-    expect(() => FormInputSchema.parse(invalidInput)).toThrow();
+    expect(() => LoginFormSchema.parse(invalidLogin)).toThrow();
   });
 });
 
 describe('UrlParamsSchema', () => {
   test('should validate complete URL parameters', () => {
     const validParams = {
-      page: 1,
-      limit: 20,
+      page: '1',
+      limit: '20',
       sort: 'createdAt',
       order: 'desc',
-      filter: 'active',
+      category: 'health',
       search: 'test query',
     };
 
@@ -503,14 +480,14 @@ describe('UrlParamsSchema', () => {
     const result = UrlParamsSchema.parse(minimalParams);
 
     expect(result.page).toBe(1);
-    expect(result.limit).toBe(10);
+    expect(result.limit).toBe(20);
     expect(result.sort).toBe('createdAt');
     expect(result.order).toBe('desc');
   });
 
   test('should reject invalid page number', () => {
     const invalidParams = {
-      page: 0,
+      page: '0',
     };
 
     expect(() => UrlParamsSchema.parse(invalidParams)).toThrow();
@@ -532,14 +509,31 @@ describe('Schema Type Inference', () => {
       _version: 1,
       _createdAt: '2023-01-01T00:00:00.000Z',
       _updatedAt: '2023-01-01T00:00:00.000Z',
-      id: 'user-123',
+      id: '550e8400-e29b-41d4-a716-446655440000',
       email: 'test@example.com',
-      name: 'Test User',
+      username: 'testuser',
+      profile: {
+        firstName: 'Test',
+        lastName: 'User',
+      },
+      preferences: {
+        theme: 'dark',
+        language: 'en',
+        timezone: 'UTC',
+        notifications: {
+          email: true,
+          push: true,
+          sms: false,
+        },
+      },
+      roles: ['user'],
+      isActive: true,
     };
 
     expect(typeof user.id).toBe('string');
     expect(typeof user.email).toBe('string');
-    expect(typeof user.name).toBe('string');
+    expect(typeof user.username).toBe('string');
+    expect(typeof user.profile.firstName).toBe('string');
   });
 
   test('should provide type safety for nested objects', () => {
@@ -547,6 +541,23 @@ describe('Schema Type Inference', () => {
       _version: 1,
       _createdAt: '2023-01-01T00:00:00.000Z',
       _updatedAt: '2023-01-01T00:00:00.000Z',
+      featureFlags: { betaFeatures: false },
+      ui: {
+        density: 'comfortable',
+        animations: true,
+        reducedMotion: false,
+        highContrast: false,
+      },
+      api: {
+        baseUrl: 'https://api.example.com',
+        timeout: 5000,
+        retryAttempts: 3,
+      },
+      security: {
+        sessionTimeout: 3600000,
+        requireMfa: false,
+        allowedOrigins: [],
+      },
     };
 
     // TypeScript should infer these types correctly

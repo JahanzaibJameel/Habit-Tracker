@@ -7,7 +7,8 @@
  * @author Enterprise Frontend Team
  */
 
-import { describe, test, expect, jest, beforeEach, afterEach } from '@jest/globals';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -17,7 +18,7 @@ import { MonitoringService } from '../MonitoringService';
 import type { OfflineQueue } from '../OfflineQueue';
 import { createOfflineQueue } from '../OfflineQueue';
 import { MonitoringProvider, useMonitoring, withMonitoring } from '../MonitoringProvider';
-import { DataRedactor, redactSensitiveData, DEFAULT_REDACTION_RULES } from '../DataRedaction';
+import { DataRedactor, DEFAULT_REDACTION_RULES } from '../DataRedaction';
 import type { MonitoringEvent } from '../types';
 import { MonitoringSeverity, MonitoringCategory } from '../types';
 
@@ -26,17 +27,17 @@ const localStorageMock = (() => {
   let store: Record<string, string> = {};
 
   return {
-    getItem: jest.fn((key: string) => store[key] || null),
-    setItem: jest.fn((key: string, value: string) => {
+    getItem: vi.fn((key: string) => store[key] || null),
+    setItem: vi.fn((key: string, value: string) => {
       store[key] = value;
     }),
-    removeItem: jest.fn((key: string) => {
+    removeItem: vi.fn((key: string) => {
       delete store[key];
     }),
-    clear: jest.fn(() => {
+    clear: vi.fn(() => {
       store = {};
     }),
-    key: jest.fn((index: number) => {
+    key: vi.fn((index: number) => {
       const keys = Object.keys(store);
       return keys[index] || null;
     }),
@@ -55,7 +56,7 @@ beforeEach(() => {
 
 afterEach(() => {
   localStorageMock.clear();
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe('MonitoringService', () => {
@@ -228,7 +229,7 @@ describe('OfflineQueue', () => {
 
     queue.addEvent(event);
 
-    const mockProcessor = jest.fn().mockResolvedValue({
+    const mockProcessor = vi.fn().mockResolvedValue({
       success: true,
       processed: 1,
       failed: 0,
@@ -254,7 +255,7 @@ describe('OfflineQueue', () => {
 
     queue.addEvent(event);
 
-    const mockProcessor = jest.fn().mockImplementation(
+    const mockProcessor = vi.fn().mockImplementation(
       () =>
         new Promise((resolve) =>
           setTimeout(
@@ -582,7 +583,7 @@ describe('MonitoringProvider', () => {
       throw new Error('Test error from component');
     };
 
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation();
 
     render(
       <MonitoringProvider
@@ -835,7 +836,7 @@ describe('Integration Tests', () => {
     });
 
     const offlineQueue = createOfflineQueue();
-    const redactor = new DataRedactor();
+    const _redactor = new DataRedactor();
 
     const TestComponent = () => {
       const { trackEvent, trackError, trackPerformance, trackUserAction } = useMonitoring();
@@ -921,7 +922,7 @@ describe('Error Handling and Edge Cases', () => {
   test('should handle offline queue storage errors', () => {
     // Mock localStorage to throw errors
     const originalSetItem = localStorageMock.setItem;
-    localStorageMock.setItem = jest.fn(() => {
+    localStorageMock.setItem = vi.fn(() => {
       throw new Error('Storage quota exceeded');
     });
 

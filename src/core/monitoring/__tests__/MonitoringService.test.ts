@@ -7,11 +7,12 @@
  * @author Enterprise Frontend Team
  */
 
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { MonitoringServiceConfig } from '../MonitoringService';
 import { MonitoringService } from '../MonitoringService';
 import type { MonitoringAdapter, MonitoringEvent, ErrorEvent } from '../types';
-import { PerformanceEvent, MonitoringEventFactory } from '../types';
+import { MonitoringCategory } from '../types';
 
 // Mock adapter for testing
 class MockAdapter implements MonitoringAdapter {
@@ -90,8 +91,8 @@ describe('MonitoringService', () => {
   let config: MonitoringServiceConfig;
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.useFakeTimers();
+    vi.clearAllMocks();
+    vi.useFakeTimers();
 
     mockAdapter = new MockAdapter();
     config = {
@@ -123,7 +124,7 @@ describe('MonitoringService', () => {
 
   afterEach(() => {
     service.cleanup();
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe('Initialization', () => {
@@ -141,14 +142,14 @@ describe('MonitoringService', () => {
     });
 
     test('should handle initialization errors', async () => {
-      mockAdapter.initialize = jest.fn().mockRejectedValue(new Error('Init failed'));
+      mockAdapter.initialize = vi.fn().mockRejectedValue(new Error('Init failed'));
 
       await expect(service.initialize()).rejects.toThrow('Init failed');
     });
 
     test('should not initialize twice', async () => {
       await service.initialize();
-      const consoleSpy = jest.spyOn(console, 'warn');
+      const consoleSpy = vi.spyOn(console, 'warn');
 
       await service.initialize();
       expect(consoleSpy).toHaveBeenCalledWith('Monitoring service already initialized');
@@ -199,7 +200,7 @@ describe('MonitoringService', () => {
     });
 
     test('should capture performance metrics', async () => {
-      await service.capturePerformance('load-time', 1500, 'ms', 1000);
+      await service.capturePerformance('load-time', 1500, 'ms', { threshold: 1000 });
 
       const events = mockAdapter.getEvents();
       expect(events[1].type).toBe('event');
@@ -451,7 +452,7 @@ describe('MonitoringService', () => {
       const exportData = await service.exportData({
         format: 'json',
         filter: {
-          categories: ['error'],
+          categories: [MonitoringCategory.ERROR],
         },
       });
 
@@ -499,7 +500,7 @@ describe('MonitoringService', () => {
     test('should enrich context with enrichers', async () => {
       const enricher = {
         name: 'device-enricher',
-        enrich: async (context: any) => ({
+        enrich: async (_context: any) => ({
           deviceType: 'mobile',
           screenSize: '375x667',
         }),
@@ -557,7 +558,7 @@ describe('MonitoringService', () => {
       await sessionService.initialize();
 
       // Advance time beyond session timeout
-      jest.advanceTimersByTime(70000);
+      vi.advanceTimersByTime(70000);
 
       await sessionService.captureError(new Error('Test error'));
 

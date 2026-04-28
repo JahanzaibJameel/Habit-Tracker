@@ -17,8 +17,8 @@ interface HabitFormProps {
   isLoading?: boolean;
 }
 
-const validateHabitForm = (data: any) => {
-  const errors: any = {};
+const validateHabitForm = (data: CreateHabit) => {
+  const errors: Record<string, string> = {};
 
   if (!data.name || data.name.trim().length === 0) {
     errors.name = 'Name is required';
@@ -71,7 +71,7 @@ const HabitForm: React.FC<HabitFormProps> = ({
     tags: [] as string[],
   });
 
-  const [errors, setErrors] = useState<any>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [newTag, setNewTag] = useState('');
 
   useEffect(() => {
@@ -115,16 +115,16 @@ const HabitForm: React.FC<HabitFormProps> = ({
     onSubmit(formData);
   };
 
-  const handleInputChange = (field: string, value: any) => {
-    setFormData((prev: any) => ({ ...prev, [field]: value }));
+  const handleInputChange = (field: string, value: string | number | string[]) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors((prev: any) => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: '' }));
     }
   };
 
   const addTag = () => {
     if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
-      setFormData((prev: any) => ({
+      setFormData((prev) => ({
         ...prev,
         tags: [...prev.tags, newTag.trim()],
       }));
@@ -133,9 +133,9 @@ const HabitForm: React.FC<HabitFormProps> = ({
   };
 
   const removeTag = (tagToRemove: string) => {
-    setFormData((prev: any) => ({
+    setFormData((prev) => ({
       ...prev,
-      tags: prev.tags.filter((tag: string) => tag !== tagToRemove),
+      tags: prev.tags.filter((tag) => tag !== tagToRemove),
     }));
   };
 
@@ -191,7 +191,7 @@ const HabitForm: React.FC<HabitFormProps> = ({
             error={errors.name}
             data-testid="habit-name-input"
             value={formData.name}
-            onChange={(e) => handleInputChange('name', e.target.value)}
+            onChange={(e) => handleInputChange('name', e.target.value || '')}
           />
 
           <div className="space-y-2">
@@ -204,10 +204,10 @@ const HabitForm: React.FC<HabitFormProps> = ({
               className={cn(
                 'flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
-                errors.category && 'border-red-500 focus-visible:ring-red-500'
+                errors.category ? 'border-red-500 focus-visible:ring-red-500' : ''
               )}
               value={formData.category}
-              onChange={(e) => handleInputChange('category', e.target.value)}
+              onChange={(e) => handleInputChange('category', e.target.value || '')}
             >
               <option value="">Select category</option>
               {categories.map((category) => (
@@ -225,7 +225,7 @@ const HabitForm: React.FC<HabitFormProps> = ({
           placeholder="What do you want to achieve?"
           error={errors.description}
           value={formData.description}
-          onChange={(e) => handleInputChange('description', e.target.value)}
+          onChange={(e) => handleInputChange('description', e.target.value || '')}
         />
 
         <div className="space-y-4">
@@ -283,7 +283,7 @@ const HabitForm: React.FC<HabitFormProps> = ({
             leftIcon={<Target className="h-4 w-4" />}
             data-testid="habit-target-input"
             value={formData.target}
-            onChange={(e) => handleInputChange('target', parseInt(e.target.value) || 1)}
+            onChange={(e) => handleInputChange('target', parseInt(e.target.value || '1') || 1)}
           />
 
           <Input
@@ -291,7 +291,7 @@ const HabitForm: React.FC<HabitFormProps> = ({
             placeholder="e.g., minutes, pages, glasses"
             error={errors.unit}
             value={formData.unit}
-            onChange={(e) => handleInputChange('unit', e.target.value)}
+            onChange={(e) => handleInputChange('unit', e.target.value || '')}
           />
         </div>
 
@@ -338,7 +338,7 @@ const HabitForm: React.FC<HabitFormProps> = ({
             <Input
               placeholder="Add a tag..."
               value={newTag}
-              onChange={(event) => setNewTag(event.target.value)}
+              onChange={(event) => setNewTag(event.target.value || '')}
               onKeyDown={(event) => {
                 if (event.key === 'Enter') {
                   event.preventDefault();
@@ -363,7 +363,11 @@ const HabitForm: React.FC<HabitFormProps> = ({
               label="Make this habit public"
               description="Others can see your progress on this habit"
               checked={false}
-              onChange={(checked) => console.log('Public setting:', checked)}
+              onCheckedChange={(checked: boolean) => {
+                if (process.env.NODE_ENV === 'development') {
+                  console.log('Public setting:', checked);
+                }
+              }}
             />
           </div>
         </div>

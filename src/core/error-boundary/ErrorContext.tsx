@@ -295,8 +295,13 @@ export function ErrorContextProvider({
   }, []);
 
   // Add error to context
-  const addError = useCallback(
-    (error: Error, boundaryId: string, severity: ErrorEntry['severity'] = 'medium') => {
+  const reportError = useCallback(
+    (
+      error: Error,
+      errorInfo?: Record<string, unknown>,
+      boundaryId?: string,
+      severity: ErrorEntry['severity'] = 'medium'
+    ) => {
       if (!state.isMonitoring) {
         return;
       }
@@ -310,7 +315,7 @@ export function ErrorContextProvider({
         id: generateErrorId(),
         timestamp: Date.now(),
         error,
-        boundaryId,
+        boundaryId: boundaryId || 'unknown',
         severity,
         resolved: false,
         userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown',
@@ -402,7 +407,7 @@ export function ErrorContextProvider({
       const importData = JSON.parse(data);
       if (importData.state) {
         // Restore state (for debugging purposes)
-        console.log('Importing error state for debugging');
+        console.warn('Importing error state for debugging');
       }
     } catch (error) {
       console.error('Failed to import error data:', error);
@@ -447,7 +452,8 @@ export function ErrorContextProvider({
   const contextValue: ErrorContextValue = {
     state,
     actions: {
-      addError,
+      addError: (error: Error, boundaryId: string, severity?: ErrorEntry['severity']) =>
+        reportError(error, undefined, boundaryId, severity),
       resolveError,
       resolveAllErrors,
       clearErrors,
@@ -505,7 +511,7 @@ export class ErrorRecoverySuggestions {
    */
   static getSuggestions(
     error: Error,
-    boundaryId: string
+    _boundaryId: string
   ): Array<{
     strategy: ErrorRecoveryStrategy;
     reason: string;

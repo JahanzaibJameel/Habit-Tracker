@@ -7,9 +7,9 @@
  * @author Enterprise Frontend Team
  */
 
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import { z } from 'zod';
-import type { StorageEngine, StorageConfig, StorageBackend } from '../StorageEngine';
+import type { StorageConfig, StorageBackend, StorageEngine } from '../StorageEngine';
 import { createStorageEngine } from '../StorageEngine';
 
 // Mock localStorage
@@ -17,17 +17,17 @@ const localStorageMock = (() => {
   let store: Record<string, string> = {};
 
   return {
-    getItem: jest.fn((key: string) => store[key] || null),
-    setItem: jest.fn((key: string, value: string) => {
+    getItem: vi.fn((key: string) => store[key] || null),
+    setItem: vi.fn((key: string, value: string) => {
       store[key] = value;
     }),
-    removeItem: jest.fn((key: string) => {
+    removeItem: vi.fn((key: string) => {
       delete store[key];
     }),
-    clear: jest.fn(() => {
+    clear: vi.fn(() => {
       store = {};
     }),
-    key: jest.fn((index: number) => {
+    key: vi.fn((index: number) => {
       const keys = Object.keys(store);
       return keys[index] || null;
     }),
@@ -42,17 +42,17 @@ const sessionStorageMock = (() => {
   let store: Record<string, string> = {};
 
   return {
-    getItem: jest.fn((key: string) => store[key] || null),
-    setItem: jest.fn((key: string, value: string) => {
+    getItem: vi.fn((key: string) => store[key] || null),
+    setItem: vi.fn((key: string, value: string) => {
       store[key] = value;
     }),
-    removeItem: jest.fn((key: string) => {
+    removeItem: vi.fn((key: string) => {
       delete store[key];
     }),
-    clear: jest.fn(() => {
+    clear: vi.fn(() => {
       store = {};
     }),
-    key: jest.fn((index: number) => {
+    key: vi.fn((index: number) => {
       const keys = Object.keys(store);
       return keys[index] || null;
     }),
@@ -71,8 +71,9 @@ Object.defineProperty(window, 'sessionStorage', {
   value: sessionStorageMock,
 });
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 describe('StorageEngine', () => {
-  let storageEngine: StorageEngine;
+  let storageEngine: StorageEngine<any>;
   let testSchema: z.ZodSchema;
   let testConfig: StorageConfig<any>;
 
@@ -80,7 +81,7 @@ describe('StorageEngine', () => {
     // Clear all mocks
     localStorageMock.clear();
     sessionStorageMock.clear();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Create test schema
     testSchema = z.object({
@@ -440,7 +441,7 @@ describe('StorageEngine', () => {
       const storedData = localStorageMock.getItem('test:test-key');
       expect(storedData).toBeDefined();
 
-      const parsed = JSON.parse(storedData!);
+      const parsed = JSON.parse(storedData as string);
       expect(parsed).toHaveProperty('data');
       expect(parsed).toHaveProperty('version');
       expect(parsed).toHaveProperty('timestamp');
@@ -476,7 +477,7 @@ describe('StorageEngine', () => {
       }
 
       const results = await Promise.all(promises);
-      expect(results.every((r) => r.success)).toBe(true);
+      expect(results.every((r: { success: boolean }) => r.success)).toBe(true);
 
       // Verify all data was stored
       for (let i = 0; i < 10; i++) {
@@ -496,8 +497,8 @@ describe('StorageEngine', () => {
       }
 
       const results = await Promise.all(promises);
-      expect(results.every((r) => r.success)).toBe(true);
-      expect(results.every((r) => r.data?.id === 'shared')).toBe(true);
+      expect(results.every((r: { success: boolean }) => r.success)).toBe(true);
+      expect(results.every((r: { data?: { id: string } }) => r.data?.id === 'shared')).toBe(true);
     });
   });
 });

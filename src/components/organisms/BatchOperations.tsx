@@ -180,7 +180,7 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                     </h3>
                     <Switch
                       checked={showRecurrenceOptions}
-                      onChange={(checked) => setShowRecurrenceOptions(checked)}
+                      onCheckedChange={(checked) => setShowRecurrenceOptions(checked)}
                       label="Enable recurrence"
                     />
                   </div>
@@ -195,7 +195,7 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                             onChange={(e) =>
                               setRecurrencePattern((prev) => ({
                                 ...prev,
-                                type: e.target.value as any,
+                                type: e.target.value as 'daily' | 'weekly' | 'monthly' | 'custom',
                               }))
                             }
                             className="w-full p-2 border rounded-md bg-background"

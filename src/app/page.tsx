@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import {
   BarChart3,
   Calendar,
@@ -22,10 +23,45 @@ import { Input } from '../components/atoms/Input';
 import { ToastContainer } from '../components/atoms/Toast';
 import { useClipboard, useShare } from '../components/atoms/useSafeClientAPI';
 import { DraggableHabitCard } from '../components/molecules/DraggableHabitCard';
-import { BadgesModal } from '../components/organisms/BadgesModal';
-import { BatchOperations } from '../components/organisms/BatchOperations';
-import { HabitDependencies } from '../components/organisms/HabitDependencies';
-import { HabitForm } from '../components/organisms/HabitForm';
+
+// Dynamic imports for heavy components
+const BadgesModal = dynamic(
+  () => import('../components/organisms/BadgesModal').then((mod) => ({ default: mod.BadgesModal })),
+  {
+    loading: () => <div className="animate-pulse bg-gray-200 h-64 rounded-lg" />,
+    ssr: false,
+  }
+);
+
+const BatchOperations = dynamic(
+  () =>
+    import('../components/organisms/BatchOperations').then((mod) => ({
+      default: mod.BatchOperations,
+    })),
+  {
+    loading: () => <div className="animate-pulse bg-gray-200 h-64 rounded-lg" />,
+    ssr: false,
+  }
+);
+
+const HabitDependencies = dynamic(
+  () =>
+    import('../components/organisms/HabitDependencies').then((mod) => ({
+      default: mod.HabitDependencies,
+    })),
+  {
+    loading: () => <div className="animate-pulse bg-gray-200 h-64 rounded-lg" />,
+    ssr: false,
+  }
+);
+
+const HabitForm = dynamic(
+  () => import('../components/organisms/HabitForm').then((mod) => ({ default: mod.HabitForm })),
+  {
+    loading: () => <div className="animate-pulse bg-gray-200 h-64 rounded-lg" />,
+    ssr: false,
+  }
+);
 import type { CreateHabit } from '../contracts/habit-types';
 import { calculateStreak } from '../lib/dateUtils';
 import { cn } from '../lib/utils';
@@ -68,7 +104,6 @@ export default function HomePage() {
     setViewMode,
     preferences,
     updatePreferences,
-    reorderHabits,
     selectedHabitIds,
     toggleHabitSelection,
     selectAllHabits,
@@ -174,7 +209,7 @@ export default function HomePage() {
   }, [setError, setOnlineStatus]);
 
   const handleCreateHabit = useCallback(
-    async (data: CreateHabit | any) => {
+    async (data: CreateHabit | Record<string, unknown>) => {
       setIsLoading(true);
       try {
         addHabit(data);
@@ -185,8 +220,13 @@ export default function HomePage() {
           console.error('Failed to create habit:', error);
         }
 
-        if (typeof window !== 'undefined' && (window as any).toast) {
-          (window as any).toast.error('Failed to create habit. Please try again.');
+        if (
+          typeof window !== 'undefined' &&
+          (window as Window & { toast?: { error: (message: string) => void } }).toast
+        ) {
+          (window as Window & { toast?: { error: (message: string) => void } }).toast.error(
+            'Failed to create habit. Please try again.'
+          );
         }
       } finally {
         setIsLoading(false);
@@ -196,7 +236,7 @@ export default function HomePage() {
   );
 
   const handleUpdateHabit = useCallback(
-    async (data: CreateHabit | any) => {
+    async (data: CreateHabit | Record<string, unknown>) => {
       if (!editingHabit) {
         return;
       }
@@ -212,8 +252,13 @@ export default function HomePage() {
           console.error('Failed to update habit:', error);
         }
 
-        if (typeof window !== 'undefined' && (window as any).toast) {
-          (window as any).toast.error('Failed to update habit. Please try again.');
+        if (
+          typeof window !== 'undefined' &&
+          (window as Window & { toast?: { error: (message: string) => void } }).toast
+        ) {
+          (window as Window & { toast?: { error: (message: string) => void } }).toast.error(
+            'Failed to update habit. Please try again.'
+          );
         }
       } finally {
         setIsLoading(false);
@@ -246,13 +291,23 @@ export default function HomePage() {
     setIsLoading(true);
     try {
       deleteHabit(deleteConfirm.habitId);
-      if (typeof window !== 'undefined' && (window as any).toast) {
-        (window as any).toast.success('Habit deleted successfully');
+      if (
+        typeof window !== 'undefined' &&
+        (window as Window & { toast?: { success: (message: string) => void } }).toast
+      ) {
+        (window as Window & { toast?: { success: (message: string) => void } }).toast.success(
+          'Habit deleted successfully'
+        );
       }
     } catch (error) {
       console.error('Failed to delete habit:', error);
-      if (typeof window !== 'undefined' && (window as any).toast) {
-        (window as any).toast.error('Failed to delete habit');
+      if (
+        typeof window !== 'undefined' &&
+        (window as Window & { toast?: { error: (message: string) => void } }).toast
+      ) {
+        (window as Window & { toast?: { error: (message: string) => void } }).toast.error(
+          'Failed to delete habit'
+        );
       }
     } finally {
       setIsLoading(false);
@@ -296,17 +351,34 @@ export default function HomePage() {
 
       if (shareSupported) {
         const success = await shareNative(shareData);
-        if (!success && typeof window !== 'undefined' && (window as any).toast) {
-          (window as any).toast.error('Failed to share habit');
+        if (
+          !success &&
+          typeof window !== 'undefined' &&
+          (window as Window & { toast?: { error: (message: string) => void } }).toast
+        ) {
+          (window as Window & { toast?: { error: (message: string) => void } }).toast.error(
+            'Failed to share habit'
+          );
         }
         return;
       }
 
       const success = await copyToClipboard(shareData.text);
-      if (success && typeof window !== 'undefined' && (window as any).toast) {
-        (window as any).toast.success('Habit details copied to clipboard!');
-      } else if (typeof window !== 'undefined' && (window as any).toast) {
-        (window as any).toast.error('Failed to copy to clipboard');
+      if (
+        success &&
+        typeof window !== 'undefined' &&
+        (window as Window & { toast?: { success: (message: string) => void } }).toast
+      ) {
+        (window as Window & { toast?: { success: (message: string) => void } }).toast.success(
+          'Habit details copied to clipboard!'
+        );
+      } else if (
+        typeof window !== 'undefined' &&
+        (window as Window & { toast?: { error: (message: string) => void } }).toast
+      ) {
+        (window as Window & { toast?: { error: (message: string) => void } }).toast.error(
+          'Failed to copy to clipboard'
+        );
       }
     },
     [completions, copyToClipboard, shareNative, shareSupported]

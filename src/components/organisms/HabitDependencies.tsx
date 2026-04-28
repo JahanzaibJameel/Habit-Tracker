@@ -41,9 +41,9 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
   habits,
   dependencies,
   onAddDependency,
+  onUpdateDependency: _onUpdateDependency,
   onRemoveDependency,
   onToggleDependency,
-  onUpdateDependency,
   isOpen,
   onClose,
 }) => {
@@ -55,7 +55,7 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
   });
   const [showAddForm, setShowAddForm] = useState(false);
 
-  const getHabitById = (id: string) => habits.find((h) => h.id === id);
+  const getHabitById = (id: string) => habits.find((h: Habit) => h.id === id);
   const getDependencyDescription = (dependency: DependencyRule) => {
     const sourceHabit = getHabitById(dependency.sourceHabitId);
     const targetHabit = getHabitById(dependency.targetHabitId);
@@ -101,10 +101,10 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
 
     // Only add value and timeValue if they exist
     if (newDependency.value !== undefined) {
-      (dependencyData as any).value = newDependency.value;
+      (dependencyData as { value?: number }).value = newDependency.value;
     }
     if (newDependency.timeValue !== undefined) {
-      (dependencyData as any).timeValue = newDependency.timeValue;
+      (dependencyData as { timeValue?: number }).timeValue = newDependency.timeValue;
     }
 
     onAddDependency(dependencyData);
@@ -118,7 +118,11 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
     setShowAddForm(false);
   };
 
-  const availableHabits = habits.filter((h) => !h.archivedAt);
+  const handleToggleDependency = (dependencyId: string, _checked: boolean) => {
+    onToggleDependency(dependencyId);
+  };
+
+  const availableHabits = habits.filter((h: Habit) => !h.archivedAt);
 
   return (
     <>
@@ -187,7 +191,7 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                             className="w-full p-2 border rounded-md bg-background"
                           >
                             <option value="">Select source habit</option>
-                            {availableHabits.map((habit) => (
+                            {availableHabits.map((habit: Habit) => (
                               <option key={habit.id} value={habit.id}>
                                 {habit.name} ({habit.category})
                               </option>
@@ -212,8 +216,8 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                           >
                             <option value="">Select target habit</option>
                             {availableHabits
-                              .filter((h) => h.id !== newDependency.sourceHabitId)
-                              .map((habit) => (
+                              .filter((h: Habit) => h.id !== newDependency.sourceHabitId)
+                              .map((habit: Habit) => (
                                 <option key={habit.id} value={habit.id}>
                                   {habit.name} ({habit.category})
                                 </option>
@@ -231,11 +235,11 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                               setNewDependency((prev) => {
                                 const updated = {
                                   ...prev,
-                                  type: e.target.value as any,
+                                  type: e.target.value as 'completion' | 'time' | 'streak',
                                 };
                                 // Reset condition when type changes to completion
                                 if (e.target.value === 'completion') {
-                                  (updated as any).condition = 'must_complete';
+                                  (updated as { condition?: string }).condition = 'must_complete';
                                 }
                                 return updated;
                               })
@@ -301,7 +305,7 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                             onChange={(e) =>
                               setNewDependency((prev) => ({
                                 ...prev,
-                                value: parseInt(e.target.value) || (undefined as any),
+                                value: parseInt(e.target.value) || undefined,
                               }))
                             }
                             placeholder="Number of days"
@@ -345,7 +349,7 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                       <div className="flex items-center space-x-2">
                         <Switch
                           checked={newDependency.isActive !== false}
-                          onChange={(checked) =>
+                          onCheckedChange={(checked: boolean) =>
                             setNewDependency((prev) => ({
                               ...prev,
                               isActive: checked,
@@ -425,7 +429,9 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                               <div className="flex items-center space-x-2">
                                 <Switch
                                   checked={dependency.isActive}
-                                  onChange={(checked) => onToggleDependency(dependency.id)}
+                                  onCheckedChange={(checked: boolean) =>
+                                    handleToggleDependency(dependency.id, checked)
+                                  }
                                   size="sm"
                                 />
                                 <Button

@@ -1,0 +1,1 @@
+/* Partytown stub for performance optimization */

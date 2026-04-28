@@ -64,7 +64,7 @@ export interface HabitCompletion {
   value: number;
   completedAt: Date;
   notes?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface CreateHabitCompletion {
@@ -72,14 +72,14 @@ export interface CreateHabitCompletion {
   value: number;
   completedAt: Date;
   notes?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface UpdateHabitCompletion {
   value?: number;
   completedAt?: Date;
   notes?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface Badge {

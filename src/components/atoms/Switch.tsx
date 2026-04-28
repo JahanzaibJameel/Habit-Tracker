@@ -10,10 +10,10 @@ export interface SwitchProps extends Omit<
   description?: string;
   size?: 'sm' | 'md' | 'lg';
   checked?: boolean | undefined;
-  onChange?: (checked: boolean) => void;
+  onCheckedChange?: (checked: boolean) => void;
 }
 
-const Switch = forwardRef<HTMLInputElement, SwitchProps>(
+const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
   (
     {
       className,
@@ -22,12 +22,12 @@ const Switch = forwardRef<HTMLInputElement, SwitchProps>(
       size = 'md',
       disabled,
       checked,
-      onChange,
+      onCheckedChange,
       id,
-      onClick,
+      onClick: _onClick,
       ...props
     },
-    ref
+    _ref
   ) => {
     const switchId = id || `switch-${label?.replace(/\s+/g, '-').toLowerCase() || 'toggle'}`;
 
@@ -56,12 +56,13 @@ const Switch = forwardRef<HTMLInputElement, SwitchProps>(
             className || ''
           )}
           onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-            if (!disabled && onChange) {
+            if (!disabled && onCheckedChange) {
               e.preventDefault();
-              onChange(!checked);
+              onCheckedChange(!checked);
             }
           }}
           data-state={checked ? 'checked' : 'unchecked'}
+          ref={_ref}
           {...props}
         >
           <span

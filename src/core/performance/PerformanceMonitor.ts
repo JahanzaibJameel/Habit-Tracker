@@ -82,7 +82,7 @@ export interface WebhookConfig {
   /**
    * Custom webhook payload template
    */
-  payloadTemplate?: (breach: PerformanceBreach) => any;
+  payloadTemplate?: (breach: PerformanceBreach) => Record<string, unknown>;
 
   /**
    * Custom headers for webhook requests
@@ -172,12 +172,12 @@ export class PerformanceMonitor {
     }
 
     if (!this.shouldMonitor()) {
-      console.log('Performance monitoring skipped (sampling rate)');
+      console.warn('Performance monitoring skipped (sampling rate)');
       return;
     }
 
     this.isMonitoring = true;
-    console.log('Starting performance monitoring');
+    console.warn('Starting performance monitoring');
 
     // Setup Core Web Vitals monitoring
     this.setupWebVitalsMonitoring();
@@ -216,7 +216,7 @@ export class PerformanceMonitor {
     }
 
     this.isMonitoring = false;
-    console.log('Stopping performance monitoring');
+    console.warn('Stopping performance monitoring');
 
     // Disconnect all observers
     this.observers.forEach((observer) => observer.disconnect());
@@ -259,8 +259,8 @@ export class PerformanceMonitor {
       });
       lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
       this.observers.push(lcpObserver);
-    } catch (error) {
-      console.warn('Failed to setup LCP monitoring:', error);
+    } catch (_error) {
+      console.warn('Failed to setup LCP monitoring:', _error);
     }
 
     // Monitor First Input Delay
@@ -271,7 +271,8 @@ export class PerformanceMonitor {
           if (entry.name === 'first-input') {
             this.recordMetric(
               'fid',
-              (entry as any).processingStart - entry.startTime,
+              ((entry as PerformanceEventTiming & { processingStart?: number }).processingStart ||
+                0) - entry.startTime,
               BudgetCategories.RUNTIME_PERFORMANCE
             );
           }
@@ -279,8 +280,8 @@ export class PerformanceMonitor {
       });
       fidObserver.observe({ entryTypes: ['first-input'] });
       this.observers.push(fidObserver);
-    } catch (error) {
-      console.warn('Failed to setup FID monitoring:', error);
+    } catch (_error) {
+      console.warn('Failed to setup FID monitoring:', _error);
     }
 
     // Monitor Cumulative Layout Shift
@@ -289,16 +290,16 @@ export class PerformanceMonitor {
       const clsObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
         entries.forEach((entry) => {
-          if (!(entry as any).hadRecentInput) {
-            clsValue += (entry as any).value;
+          if (!(entry as PerformancePaintTiming & { hadRecentInput?: boolean }).hadRecentInput) {
+            clsValue += (entry as PerformancePaintTiming & { value?: number }).value || 0;
             this.recordMetric('cls', clsValue, BudgetCategories.RUNTIME_PERFORMANCE);
           }
         });
       });
       clsObserver.observe({ entryTypes: ['layout-shift'] });
       this.observers.push(clsObserver);
-    } catch (error) {
-      console.warn('Failed to setup CLS monitoring:', error);
+    } catch (_error) {
+      console.warn('Failed to setup CLS monitoring:', _error);
     }
 
     // Monitor Interaction to Next Paint
@@ -311,8 +312,8 @@ export class PerformanceMonitor {
       });
       inpObserver.observe({ entryTypes: ['event'] });
       this.observers.push(inpObserver);
-    } catch (error) {
-      console.warn('Failed to setup INP monitoring:', error);
+    } catch (_error) {
+      console.warn('Failed to setup INP monitoring:', _error);
     }
   }
 
@@ -334,7 +335,8 @@ export class PerformanceMonitor {
             this.recordMetric('resourceCount', currentCount + 1, BudgetCategories.RESOURCES);
 
             // Track resource sizes
-            const size = (entry as any).transferSize || 0;
+            const size =
+              (entry as PerformanceResourceTiming & { transferSize?: number }).transferSize || 0;
             const currentTotalSize = this.getMetricValue('totalResourceSize') || 0;
             this.recordMetric(
               'totalResourceSize',
@@ -346,8 +348,8 @@ export class PerformanceMonitor {
       });
       resourceObserver.observe({ entryTypes: ['resource'] });
       this.observers.push(resourceObserver);
-    } catch (error) {
-      console.warn('Failed to setup resource monitoring:', error);
+    } catch (_error) {
+      console.warn('Failed to setup resource monitoring:', _error);
     }
   }
 
@@ -394,7 +396,15 @@ export class PerformanceMonitor {
     }
 
     const checkMemory = () => {
-      const memory = (performance as any).memory;
+      const memory = (
+        performance as Performance & {
+          memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number };
+        }
+      ).memory;
+
+      if (!memory) {
+        return;
+      }
 
       this.recordMetric(
         'usedHeapSize',
@@ -430,7 +440,11 @@ export class PerformanceMonitor {
     }
 
     const checkNetwork = () => {
-      const connection = (navigator as any).connection;
+      const connection = (
+        navigator as Navigator & {
+          connection?: { effectiveType: string; downlink: number; rtt: number };
+        }
+      ).connection;
 
       if (connection) {
         this.recordMetric(
@@ -563,7 +577,7 @@ export class PerformanceMonitor {
       category: metric.category,
       actual: metric.value,
       budget,
-      severity: metric.severity!,
+      severity: metric.severity || 'medium',
       timestamp: metric.timestamp,
       url: typeof window !== 'undefined' ? window.location.href : 'unknown',
       userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
@@ -612,8 +626,8 @@ export class PerformanceMonitor {
         },
         body: JSON.stringify(breach),
       });
-    } catch (error) {
-      console.warn('Failed to report performance breach:', error);
+    } catch (_error) {
+      console.warn('Failed to report performance breach:', _error);
     }
   }
 
@@ -682,7 +696,8 @@ export class PerformanceMonitor {
     }
 
     // Return the latest value
-    return metrics[metrics.length - 1]!.value;
+    const latestMetric = metrics[metrics.length - 1];
+    return latestMetric?.value;
   }
 
   /**
@@ -765,7 +780,7 @@ export class PerformanceMonitor {
       stats: this.getBreachStats(),
     };
 
-    console.log('Performance Report:', report);
+    console.warn('Performance Report:', report);
   }
 
   /**
@@ -797,7 +812,10 @@ export class PerformanceMonitor {
    * Send webhook notification for performance breach
    */
   private async sendWebhookNotification(breach: PerformanceBreach): Promise<void> {
-    const webhookConfig = this.config.webhookConfig!;
+    const webhookConfig = this.config.webhookConfig;
+    if (!webhookConfig) {
+      return;
+    }
 
     // Check minimum severity requirement
     if (webhookConfig.minSeverity && breach.severity < webhookConfig.minSeverity) {
@@ -822,8 +840,8 @@ export class PerformanceMonitor {
 
     try {
       await this.executeWebhook(breach, webhookConfig);
-    } catch (error) {
-      console.error('Webhook notification failed:', error);
+    } catch (_error) {
+      console.error('Webhook notification failed:', _error);
 
       // Add to queue for retry
       this.webhookQueue.push(breach);
@@ -873,9 +891,9 @@ export class PerformanceMonitor {
         );
 
         return;
-      } catch (error) {
+      } catch (_error) {
         if (attempt === maxAttempts) {
-          throw error;
+          throw _error;
         }
 
         // Exponential backoff
@@ -887,7 +905,7 @@ export class PerformanceMonitor {
   /**
    * Create default webhook payload
    */
-  private createDefaultWebhookPayload(breach: PerformanceBreach): any {
+  private createDefaultWebhookPayload(breach: PerformanceBreach): Record<string, unknown> {
     return {
       timestamp: new Date(breach.timestamp).toISOString(),
       severity: breach.severity,
@@ -912,9 +930,14 @@ export class PerformanceMonitor {
   /**
    * Generate webhook signature for authentication
    */
-  private async generateWebhookSignature(payload: any, secret: string): Promise<string> {
+  private async generateWebhookSignature(
+    payload: Record<string, unknown>,
+    secret: string
+  ): Promise<string> {
     const crypto =
-      typeof window !== 'undefined' && window.crypto ? window.crypto : (globalThis as any).crypto;
+      typeof window !== 'undefined' && window.crypto
+        ? window.crypto
+        : (globalThis as { crypto?: Crypto }).crypto;
 
     if (!crypto) {
       console.warn('Crypto API not available, webhook signature omitted');
@@ -960,8 +983,8 @@ export class PerformanceMonitor {
     for (const breach of queue) {
       try {
         await this.sendWebhookNotification(breach);
-      } catch (error) {
-        console.error('Failed to process queued webhook notification:', error);
+      } catch (_error) {
+        console.error('Failed to process queued webhook notification:', _error);
         // Re-add to queue for next attempt
         this.webhookQueue.push(breach);
       }

@@ -7,16 +7,9 @@
  * @author Enterprise Frontend Team
  */
 
-import { describe, test, expect, jest, beforeEach, afterEach } from '@jest/globals';
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { z } from 'zod';
-import {
-  safeFetchJson,
-  safeFetchApiResponse,
-  safeFetchBatch,
-  safeFetchCached,
-  SafeFetchOptions,
-} from '../fetcher';
-import { useSafeForm, useSafeField, FormValidationRules } from '../useSafeForm';
+import { safeFetchJson, safeFetchApiResponse, safeFetchBatch, safeFetchCached } from '../fetcher';
 import {
   ValidationError,
   NetworkValidationError,
@@ -26,14 +19,15 @@ import {
   RecoverableValidationError,
   ErrorRecoveryStrategy,
 } from '../errors';
-import { UserSchema, AppSettingsSchema, FeatureFlagsSchema } from '../schemas';
+import { UserSchema } from '../schemas';
+import { FormValidationRules, useSafeField, useSafeForm } from '../useSafeForm';
 
 // Mock fetch for testing
-const mockFetch = jest.fn();
+const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 // Mock console to prevent noise in tests
-const mockConsoleError = jest.spyOn(console, 'error').mockImplementation();
+const mockConsoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
 
 describe('ValidationError', () => {
   test('should create validation error with all properties', () => {
@@ -371,30 +365,78 @@ describe('safeFetchApiResponse', () => {
 });
 
 describe('safeFetchBatch', () => {
-  test('should fetch multiple requests in parallel', async () => {
-    const mockUser = { id: '123', email: 'test@example.com' };
-    const mockSettings = { _version: 1, featureFlags: { darkMode: true } };
+  test('should fetch multiple requests with same schema type', async () => {
+    const mockUsers = [
+      {
+        _version: 1,
+        _createdAt: '2023-01-01T00:00:00.000Z',
+        _updatedAt: '2023-01-01T00:00:00.000Z',
+        id: '550e8400-e29b-41d4-a716-446655440000',
+        email: 'test1@example.com',
+        username: 'testuser1',
+        profile: {
+          firstName: 'Test',
+          lastName: 'User1',
+        },
+        preferences: {
+          theme: 'dark',
+          language: 'en',
+          timezone: 'UTC',
+          notifications: {
+            email: true,
+            push: true,
+            sms: false,
+          },
+        },
+        roles: ['user'],
+        isActive: true,
+      },
+      {
+        _version: 1,
+        _createdAt: '2023-01-01T00:00:00.000Z',
+        _updatedAt: '2023-01-01T00:00:00.000Z',
+        id: '550e8400-e29b-41d4-a716-446655440001',
+        email: 'test2@example.com',
+        username: 'testuser2',
+        profile: {
+          firstName: 'Test',
+          lastName: 'User2',
+        },
+        preferences: {
+          theme: 'light',
+          language: 'en',
+          timezone: 'UTC',
+          notifications: {
+            email: false,
+            push: true,
+            sms: false,
+          },
+        },
+        roles: ['user'],
+        isActive: true,
+      },
+    ];
 
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: async () => mockUser,
+        json: async () => mockUsers[0],
       })
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: async () => mockSettings,
+        json: async () => mockUsers[1],
       });
 
     const requests = [
       { input: 'https://api.example.com/user/123', schema: UserSchema },
-      { input: 'https://api.example.com/settings', schema: AppSettingsSchema },
+      { input: 'https://api.example.com/user/456', schema: UserSchema },
     ];
 
     const results = await safeFetchBatch(requests);
 
-    expect(results).toEqual([mockUser, mockSettings]);
+    expect(results).toEqual(mockUsers);
     expect(mockFetch).toHaveBeenCalledTimes(2);
   });
 

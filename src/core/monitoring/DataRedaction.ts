@@ -261,7 +261,7 @@ export class DataRedactor {
     }
 
     let result = value;
-    let redactionCount = 0;
+    let _redactionCount = 0;
     const appliedRules: string[] = [];
 
     // Apply each rule
@@ -273,7 +273,7 @@ export class DataRedactor {
         result = result.replace(rule.pattern, rule.replacement);
 
         if (result !== before) {
-          redactionCount++;
+          _redactionCount++;
           appliedRules.push(rule.description);
         }
       }
