@@ -296,7 +296,8 @@ export const DefaultBudgetConfig: BudgetConfig = {
  * Get effective budget for current environment
  */
 export function getEffectiveBudget(config: BudgetConfig): PerformanceBudget {
-  const baseBudget = DefaultBudgets[config.environment] || DefaultBudgets.production;
+  const baseBudget: PerformanceBudget =
+    DefaultBudgets[config.environment] ?? DefaultBudgets.production;
 
   if (config.customBudget) {
     return mergeBudgets(baseBudget, config.customBudget as Partial<PerformanceBudget>);

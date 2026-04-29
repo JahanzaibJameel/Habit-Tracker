@@ -8,9 +8,8 @@
  */
 
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render } from '@/test-utils/render';
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@/test-utils/render';
 import '@testing-library/jest-dom';
 
 // Mock performance APIs
@@ -194,8 +193,12 @@ describe('PerformanceMonitor', () => {
 describe('usePerformanceBudget Hook', () => {
   test('should provide performance reporting interface', () => {
     const TestComponent = () => {
-      const { state, actions } = usePerformanceBudget();
-      const { recordMetric: reportMetric, getBreaches: getViolations, clearData: clearViolations } = actions;
+      const { actions } = usePerformanceBudget();
+      const {
+        recordMetric: reportMetric,
+        getBreaches: getViolations,
+        clearData: clearViolations,
+      } = actions;
 
       return (
         <div>

@@ -8,6 +8,7 @@
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { PerformanceMonitorConfig } from '../PerformanceMonitor';
 import { PerformanceMonitor } from '../PerformanceMonitor';

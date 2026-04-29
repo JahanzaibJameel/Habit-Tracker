@@ -7,8 +7,13 @@
  * @author Enterprise Frontend Team
  */
 
-import type { BudgetConfig, BudgetBreachSeverity, PerformanceBudget } from './budget.config';
-import { getEffectiveBudget, getBreachSeverity, BudgetCategories } from './budget.config';
+import type { BudgetConfig, PerformanceBudget } from './budget.config';
+import {
+  BudgetBreachSeverity,
+  getEffectiveBudget,
+  getBreachSeverity,
+  BudgetCategories,
+} from './budget.config';
 
 /**
  * Performance metric entry
@@ -577,7 +582,7 @@ export class PerformanceMonitor {
       category: metric.category,
       actual: metric.value,
       budget,
-      severity: metric.severity || 'medium',
+      severity: metric.severity || BudgetBreachSeverity.MEDIUM,
       timestamp: metric.timestamp,
       url: typeof window !== 'undefined' ? window.location.href : 'unknown',
       userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',

@@ -454,7 +454,9 @@ export function useStorageDebug<T>(engine: StorageEngine<T>) {
   const importData = useCallback(
     async (data: Record<string, unknown>) => {
       try {
-        await engine.import(data);
+        await engine.import(
+          data as Record<string, { data: T; version: number; timestamp: string }>
+        );
         await refreshDebugInfo();
         setDebugInfo((prev) => ({ ...prev, lastOperation: 'import_success' }));
       } catch (error) {

@@ -1,33 +1,68 @@
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/vitest';
 import { vi } from 'vitest';
 
-// Mock localStorage
-const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-  length: 0,
-  key: vi.fn(),
-};
-
-Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock,
+// Mock PerformanceObserver (used by monitoring)
+class MockPerformanceObserver {
+  static supportedEntryTypes: string[] = [];
+  constructor(_callback: PerformanceObserverCallback) {}
+  observe(_options?: PerformanceObserverInit) {}
+  disconnect() {}
+  takeRecords(): PerformanceEntryList {
+    return [];
+  }
+}
+Object.defineProperty(window, 'PerformanceObserver', {
+  value: MockPerformanceObserver,
+  writable: true,
 });
+
+// Mock performance methods
+window.performance.getEntriesByType = vi.fn(() => []);
+window.performance.now = vi.fn(() => Date.now());
+
+// Mock LocalStorage fully (if not already)
+const localStorageMock = (() => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: vi.fn((key: string) => store[key] || null),
+    setItem: vi.fn((key: string, value: string) => {
+      store[key] = value.toString();
+    }),
+    removeItem: vi.fn((key: string) => {
+      delete store[key];
+    }),
+    clear: vi.fn(() => {
+      store = {};
+    }),
+    key: vi.fn((index: number) => Object.keys(store)[index] || null),
+    get length() {
+      return Object.keys(store).length;
+    },
+  };
+})();
+Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
 // Mock sessionStorage
-const sessionStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-  length: 0,
-  key: vi.fn(),
-};
-
-Object.defineProperty(window, 'sessionStorage', {
-  value: sessionStorageMock,
-});
+const sessionStorageMock = (() => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: vi.fn((key: string) => store[key] || null),
+    setItem: vi.fn((key: string, value: string) => {
+      store[key] = value.toString();
+    }),
+    removeItem: vi.fn((key: string) => {
+      delete store[key];
+    }),
+    clear: vi.fn(() => {
+      store = {};
+    }),
+    key: vi.fn((index: number) => Object.keys(store)[index] || null),
+    get length() {
+      return Object.keys(store).length;
+    },
+  };
+})();
+Object.defineProperty(window, 'sessionStorage', { value: sessionStorageMock });
 
 // Mock fetch
 global.fetch = vi.fn();
@@ -61,35 +96,7 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
-// Mock PerformanceObserver for performance monitoring tests
-global.PerformanceObserver = class {
-  observe() {}
-  disconnect() {}
-  takeRecords() { return []; }
-} as any;
-
-// Mock performance.now()
-Object.defineProperty(global, 'performance', {
-  value: {
-    ...global.performance,
-    now: vi.fn(() => Date.now()),
-  },
-  writable: true,
-});
-
 // Mock PerformanceEntry
-global.PerformanceEntry = class {} as any;
-
-// Mock PerformanceObserver
-class MockPerformanceObserver implements PerformanceObserver {
-  static supportedEntryTypes: string[] = [];
-  constructor(callback: PerformanceObserverCallback) {}
-  observe(options?: PerformanceObserverInit) {}
-  disconnect() {}
-  takeRecords(): PerformanceEntryList { return []; }
-}
-
-Object.defineProperty(window, 'PerformanceObserver', {
-  value: MockPerformanceObserver,
-  writable: true,
-});
+global.PerformanceEntry = class {
+  constructor() {}
+} as unknown as typeof PerformanceEntry;

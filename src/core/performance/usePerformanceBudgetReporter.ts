@@ -302,9 +302,12 @@ export function usePerformanceBudget(options: UsePerformanceBudgetOptions = {}):
   // Auto-start monitoring if enabled
   useEffect(() => {
     if (enableRealTimeMonitoring && !state.isMonitoring) {
-      actions.startMonitoring();
+      if (monitorRef.current) {
+        monitorRef.current.start();
+        setState((prev) => ({ ...prev, isMonitoring: true }));
+      }
     }
-  }, [enableRealTimeMonitoring, state.isMonitoring, actions]);
+  }, [enableRealTimeMonitoring, state.isMonitoring]);
 
   return { state, actions };
 }

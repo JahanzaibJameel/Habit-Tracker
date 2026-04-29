@@ -16,6 +16,17 @@ import {
 } from './errors';
 
 /**
+ * Response metadata interface
+ */
+export interface ResponseMetadata {
+  requestId?: string;
+  timestamp?: number;
+  duration?: number;
+  cached?: boolean;
+  headers?: Record<string, string>;
+}
+
+/**
  * Configuration options for safe fetch operations
  */
 export interface SafeFetchOptions extends RequestInit {
@@ -406,7 +417,7 @@ export async function safeFetchJsonPartial<T extends z.ZodTypeAny>(
     const successRate = total > 0 ? valid.length / total : 0;
 
     return {
-      valid,
+      valid: valid as z.infer<T>[],
       invalid,
       total,
       successRate,
@@ -473,7 +484,7 @@ export async function safeFetchApiResponse<T extends z.ZodTypeAny>(
   }
 
   if (response.error) {
-    result.error = response.error;
+    result.errors = [response.error as ValidationError];
   }
 
   return result;

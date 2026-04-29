@@ -1,5 +1,4 @@
 import { Inter } from 'next/font/google';
-import Image from 'next/image';
 import { ErrorBoundary } from '@/components/atoms/ErrorBoundary';
 
 import { Providers } from './providers';
@@ -45,4 +44,3 @@ export const viewport = {
     { media: '(prefers-color-scheme: dark)', color: 'black' },
   ],
 };
-

@@ -16,7 +16,8 @@ const BadgesModal = dynamic(
   {
     loading: () => <div className="animate-pulse bg-gray-200 h-64 rounded-lg" />,
     ssr: false,
-  });
+  }
+);
 
 const BatchOperations = dynamic(
   () =>
@@ -26,7 +27,8 @@ const BatchOperations = dynamic(
   {
     loading: () => <div className="animate-pulse bg-gray-200 h-64 rounded-lg" />,
     ssr: false,
-  });
+  }
+);
 
 const HabitDependencies = dynamic(
   () =>
@@ -36,23 +38,23 @@ const HabitDependencies = dynamic(
   {
     loading: () => <div className="animate-pulse bg-gray-200 h-64 rounded-lg" />,
     ssr: false,
-  });
+  }
+);
 
-import { 
-  BarChart3, 
-  Calendar, 
-  Filter, 
-  Grid, 
-  Link, 
-  List, 
-  Moon, 
-  Plus, 
-  Search, 
-  Sun, 
-  Trophy, 
-  WifiOff 
+import {
+  BarChart3,
+  Calendar,
+  Filter,
+  Grid,
+  Link,
+  List,
+  Moon,
+  Plus,
+  Search,
+  Sun,
+  Trophy,
+  WifiOff,
 } from 'lucide-react';
-
 
 const HabitForm = dynamic(
   () => import('../components/organisms/HabitForm').then((mod) => ({ default: mod.HabitForm })),
@@ -211,7 +213,7 @@ export default function HomePage() {
     (data: CreateHabit | UpdateHabit) => {
       setIsLoading(true);
       try {
-        addHabit(data as Omit<Habit, "id" | "createdAt" | "updatedAt">);
+        addHabit(data as Omit<Habit, 'id' | 'createdAt' | 'updatedAt'>);
         setActivePanel('habits');
         setShowHabitForm(false);
       } catch (error) {
@@ -220,7 +222,9 @@ export default function HomePage() {
         }
 
         if (typeof window !== 'undefined') {
-          const windowWithToast = window as Window & { toast?: { error: (message: string) => void } };
+          const windowWithToast = window as Window & {
+            toast?: { error: (message: string) => void };
+          };
           if (windowWithToast.toast) {
             windowWithToast.toast.error('Failed to create habit. Please try again.');
           }
@@ -250,7 +254,9 @@ export default function HomePage() {
         }
 
         if (typeof window !== 'undefined') {
-          const windowWithToast = window as Window & { toast?: { error: (message: string) => void } };
+          const windowWithToast = window as Window & {
+            toast?: { error: (message: string) => void };
+          };
           if (windowWithToast.toast) {
             windowWithToast.toast.error('Failed to update habit. Please try again.');
           }
@@ -287,7 +293,9 @@ export default function HomePage() {
     try {
       deleteHabit(deleteConfirm.habitId);
       if (typeof window !== 'undefined') {
-        const windowWithToast = window as Window & { toast?: { success: (message: string) => void } };
+        const windowWithToast = window as Window & {
+          toast?: { success: (message: string) => void };
+        };
         if (windowWithToast.toast) {
           windowWithToast.toast.success('Habit deleted successfully');
         }
@@ -343,7 +351,9 @@ export default function HomePage() {
       if (shareSupported) {
         const success = await shareNative(shareData);
         if (!success && typeof window !== 'undefined') {
-          const windowWithToast = window as Window & { toast?: { error: (message: string) => void } };
+          const windowWithToast = window as Window & {
+            toast?: { error: (message: string) => void };
+          };
           if (windowWithToast.toast) {
             windowWithToast.toast.error('Failed to share habit');
           }
@@ -353,7 +363,9 @@ export default function HomePage() {
 
       const success = await copyToClipboard(shareData.text);
       if (success && typeof window !== 'undefined') {
-        const windowWithToast = window as Window & { toast?: { success: (message: string) => void } };
+        const windowWithToast = window as Window & {
+          toast?: { success: (message: string) => void };
+        };
         if (windowWithToast.toast) {
           windowWithToast.toast.success('Habit details copied to clipboard!');
         }

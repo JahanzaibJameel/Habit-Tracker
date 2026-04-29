@@ -11,7 +11,7 @@ import React, { Component, createContext, useContext } from 'react';
 import type { ComponentType, ReactNode, ErrorInfo } from 'react';
 import type { MonitoringService } from './MonitoringService';
 import type { OfflineQueue } from './OfflineQueue';
-import { MonitoringSeverity } from './types';
+import { MonitoringSeverity, MonitoringCategory } from './types';
 import type { MonitoringContext, MonitoringEvent } from './types';
 
 /**
@@ -47,6 +47,11 @@ export interface MonitoringProviderConfig {
    * Custom error boundary fallback component
    */
   errorFallback?: ComponentType<ErrorBoundaryFallbackProps>;
+
+  /**
+   * Sampling rate for monitoring events (0.0 to 1.0)
+   */
+  _samplingRate?: number;
 
   /**
    * Sampling rate for events (0-1)
@@ -108,7 +113,11 @@ export interface MonitoringContextValue {
   /**
    * Get monitoring statistics
    */
-  getStats: () => MonitoringStats;
+  getStats: () => {
+    service: unknown;
+    offlineQueue?: unknown;
+    enabled: boolean;
+  };
 
   /**
    * Enable/disable monitoring
@@ -461,7 +470,7 @@ export class MonitoringProvider extends Component<
       id: this.generateEventId(),
       timestamp: Date.now(),
       severity: MonitoringSeverity.INFO,
-      category: 'system' as any,
+      category: MonitoringCategory.SYSTEM,
       message: 'Custom event',
       ...eventData,
     };
@@ -478,7 +487,7 @@ export class MonitoringProvider extends Component<
       id: this.generateEventId(),
       timestamp: Date.now(),
       severity: MonitoringSeverity.ERROR,
-      category: 'error' as any,
+      category: MonitoringCategory.ERROR,
       message: error.message,
       data: {
         error: {
@@ -506,7 +515,7 @@ export class MonitoringProvider extends Component<
       id: this.generateEventId(),
       timestamp: Date.now(),
       severity: MonitoringSeverity.INFO,
-      category: 'performance' as any,
+      category: MonitoringCategory.PERFORMANCE,
       message: `Performance: ${name}`,
       data: {
         metric: name,
@@ -527,7 +536,7 @@ export class MonitoringProvider extends Component<
       id: this.generateEventId(),
       timestamp: Date.now(),
       severity: MonitoringSeverity.INFO,
-      category: 'user_action' as any,
+      category: MonitoringCategory.USER_ACTION,
       message: `User action: ${action}`,
       data: {
         action,
@@ -567,8 +576,8 @@ export class MonitoringProvider extends Component<
       // Log consent change for audit purposes
       this.trackEvent({
         message: `User consent ${consent ? 'granted' : 'revoked'}`,
-        category: 'privacy' as any,
-        severity: 'info' as any,
+        category: MonitoringCategory.SECURITY,
+        severity: MonitoringSeverity.INFO,
         data: { consent, timestamp: Date.now() },
       });
     } catch (error) {
@@ -640,8 +649,8 @@ export class MonitoringProvider extends Component<
       // Log the DSR completion for audit
       this.trackEvent({
         message: 'User data purged (DSR request)',
-        category: 'privacy' as any,
-        severity: 'info' as any,
+        category: MonitoringCategory.SECURITY,
+        severity: MonitoringSeverity.INFO,
         data: {
           userId,
           purgedEvents: result.purgedEvents,
@@ -872,28 +881,34 @@ export function withMonitoring<P extends object>(
     const mountTimeRef = React.useRef(Date.now());
 
     React.useEffect(() => {
+      const mountTime = mountTimeRef.current;
+      const renderCount = renderCountRef.current;
+
       if (trackMount) {
         trackEvent({
           message: `Component ${Component.name} mounted`,
-          category: 'system' as any,
+          category: MonitoringCategory.SYSTEM,
           data: {
-            props: trackProps.length > 0 ? pick(props, trackProps as (keyof P)[]) : undefined,
+            props:
+              trackProps.length > 0
+                ? pick(props as Record<string, unknown>, trackProps as string[])
+                : undefined,
           },
         });
       }
 
       return () => {
         if (trackUnmount) {
-          const mountDuration = Date.now() - mountTimeRef.current;
+          const mountDuration = Date.now() - mountTime;
           trackPerformance(`${Component.name}_mount_duration`, mountDuration);
           trackEvent({
             message: `Component ${Component.name} unmounted`,
-            category: 'system' as any,
-            data: { mountDuration, renderCount: renderCountRef.current },
+            category: MonitoringCategory.SYSTEM,
+            data: { mountDuration, renderCount },
           });
         }
       };
-    }, []);
+    }, [props, trackEvent, trackPerformance]);
 
     if (trackRender) {
       renderCountRef.current++;
@@ -907,7 +922,7 @@ export function withMonitoring<P extends object>(
 /**
  * Utility function to pick properties from an object
  */
-function pick<T extends Record<string, any>, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
+function pick<T extends Record<string, unknown>, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
   const result = {} as Pick<T, K>;
   keys.forEach((key) => {
     if (key in obj) {
@@ -933,7 +948,7 @@ export function usePerformanceTracking(name: string) {
         trackPerformance(`${name}_duration`, duration);
       }
     };
-  }, [name]);
+  }, [name, trackPerformance]);
 }
 
 /**

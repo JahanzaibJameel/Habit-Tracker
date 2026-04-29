@@ -9,7 +9,7 @@ const prettier = require('eslint-plugin-prettier');
 module.exports = [
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
-    ignores: ['tailwind.config.js', 'eslint.config.js', 'lint-staged.config.js', 'next.config.js', 'scripts/**/*.js'],
+    ignores: ['tailwind.config.js', 'eslint.config.js', 'lint-staged.config.js', 'next.config.js', 'commitlint.config.js', 'scripts/**/*.js'],
     languageOptions: {
       parser: typescriptParser,
       parserOptions: {

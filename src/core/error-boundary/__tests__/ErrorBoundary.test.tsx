@@ -10,7 +10,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ReactNode } from 'react';
 import React, { Component } from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@/test-utils/render';
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { ErrorBoundaryConfig } from '../ErrorBoundary';
 import { ErrorBoundary, ErrorRecoveryStrategy } from '../ErrorBoundary';

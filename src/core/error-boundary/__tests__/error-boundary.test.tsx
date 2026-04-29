@@ -9,7 +9,7 @@
 
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@/test-utils/render';
 import '@testing-library/jest-dom/vitest';
 
 // Import components (adjust paths as needed based on actual exports)

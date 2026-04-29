@@ -278,7 +278,7 @@ export class MonitoringService {
     if (!this.shouldCapture()) {
       return;
     }
-    await this.processEvent(event as MonitoringEvent);
+    await this.processEvent(event);
   }
 
   /**
@@ -482,7 +482,7 @@ export class MonitoringService {
     this.stats.queueSize = 0;
 
     for (const event of events) {
-      await this.sendEvent(event);
+      await this.sendEvent(event as AnyMonitoringEvent);
     }
   }
 
@@ -793,7 +793,7 @@ export class MonitoringService {
    */
   async trackEvent(event: Partial<MonitoringEvent>): Promise<{ success: boolean; error?: string }> {
     try {
-      const fullEvent: MonitoringEvent = {
+      const fullEvent = {
         id: this.generateId(),
         timestamp: Date.now(),
         severity: event.severity || MonitoringSeverity.INFO,
@@ -804,7 +804,7 @@ export class MonitoringService {
         context: event.context,
       };
 
-      await this.captureEvent(fullEvent);
+      await this.captureEvent(fullEvent as AnyMonitoringEvent);
       return { success: true };
     } catch (error) {
       return {

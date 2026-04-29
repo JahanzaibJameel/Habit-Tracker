@@ -19,12 +19,12 @@ export interface WithErrorBoundaryOptions extends Partial<ErrorBoundaryConfig> {
   /**
    * Component to wrap
    */
-  component?: ComponentType<any>;
+  component?: ComponentType<Record<string, unknown>>;
 
   /**
    * Props to pass to the wrapped component
    */
-  props?: Record<string, any>;
+  props?: Record<string, unknown>;
 
   /**
    * Custom error message for this component
@@ -181,14 +181,18 @@ export const withErrorBoundary = <P extends object>(
  * @param defaultOptions - Default options for all boundaries
  * @returns Object with wrapped components
  */
-export function createErrorBoundaries<T extends Record<string, ComponentType<any>>>(
+export function createErrorBoundaries<
+  T extends Record<string, ComponentType<Record<string, unknown>>>,
+>(
   components: T,
   defaultOptions: WithErrorBoundaryOptions = {}
 ): { [K in keyof T]: ComponentType<T[K] extends ComponentType<infer P> ? P : never> } {
-  const wrapped = {} as any;
+  const wrapped = {} as {
+    [K in keyof T]: ComponentType<T[K] extends ComponentType<infer P> ? P : never>;
+  };
 
   for (const [name, component] of Object.entries(components)) {
-    wrapped[name] = withErrorBoundary(component, {
+    (wrapped as Record<string, unknown>)[name] = withErrorBoundary(component, {
       ...defaultOptions,
       id: defaultOptions.id ? `${defaultOptions.id}-${name}` : name,
     });
@@ -307,7 +311,7 @@ export class ErrorBoundaryFactory {
  * }
  */
 export function withErrorBoundaryDecorator(options: WithErrorBoundaryOptions = {}) {
-  return function <T extends ComponentType<any>>(Constructor: T): T {
+  return function <T extends ComponentType<Record<string, unknown>>>(Constructor: T): T {
     return withErrorBoundary(Constructor, options) as T;
   };
 }

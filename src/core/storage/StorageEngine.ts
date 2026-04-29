@@ -1147,45 +1147,19 @@ export class StorageEngine<T> {
           keyPrefix: this.config.keyPrefix,
           totalKeys: Object.keys(snapshot).length,
           version: this.config.currentVersion,
-          config: (() => {
-            const config: {
-              backend: StorageBackend;
-              keyPrefix: string;
-              currentVersion: number;
-              migrations: Migration<unknown>[];
-              compression?: boolean;
-              encryption?: boolean;
-              enableCorruptionRecovery?: boolean;
-              enableStaleWhileRevalidate?: boolean;
-              ttl?: number;
-              maxSize?: number;
-              backupBackend?: StorageBackend;
-            } = {
-              backend: this.config.backend,
-              keyPrefix: this.config.keyPrefix,
-              currentVersion: this.config.currentVersion,
-              migrations: this.config.migrations,
-              compression: this.config.compression || false,
-              encryption: this.config.encryption || false,
-              enableCorruptionRecovery: this.config.enableCorruptionRecovery || false,
-              enableStaleWhileRevalidate: this.config.enableStaleWhileRevalidate || false,
-              backupBackend: this.config.backupBackend,
-            };
-
-            if (this.config.ttl !== undefined) {
-              config.ttl = this.config.ttl;
-            }
-
-            if (this.config.maxSize !== undefined) {
-              config.maxSize = this.config.maxSize;
-            }
-
-            if (this.config.backupBackend) {
-              config.backupBackend = this.config.backupBackend;
-            }
-
-            return config;
-          })(),
+          config: {
+            backend: this.config.backend,
+            keyPrefix: this.config.keyPrefix,
+            currentVersion: this.config.currentVersion,
+            migrations: this.config.migrations,
+            compression: this.config.compression || false,
+            encryption: this.config.encryption || false,
+            enableCorruptionRecovery: this.config.enableCorruptionRecovery || false,
+            enableStaleWhileRevalidate: this.config.enableStaleWhileRevalidate || false,
+            backupBackend: this.config.backupBackend,
+            ttl: this.config.ttl,
+            maxSize: this.config.maxSize,
+          },
         },
       };
     } catch (error) {
