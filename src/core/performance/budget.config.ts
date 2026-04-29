@@ -297,7 +297,8 @@ export const DefaultBudgetConfig: BudgetConfig = {
  */
 export function getEffectiveBudget(config: BudgetConfig): PerformanceBudget {
   const baseBudget: PerformanceBudget =
-    DefaultBudgets[config.environment] ?? DefaultBudgets.production;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    DefaultBudgets[config.environment] ?? DefaultBudgets.production!;
 
   if (config.customBudget) {
     return mergeBudgets(baseBudget, config.customBudget as Partial<PerformanceBudget>);
