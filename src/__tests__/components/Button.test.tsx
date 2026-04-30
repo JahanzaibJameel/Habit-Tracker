@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from '@/test-utils/render';
 import { Button } from '@/components/atoms/Button';
+import { vi } from 'vitest';
 
 describe('Button Component', () => {
   it('renders with correct text', () => {
@@ -8,7 +9,7 @@ describe('Button Component', () => {
   });
 
   it('handles click events', () => {
-    const handleClick = jest.fn();
+    const handleClick = vi.fn();
     render(<Button onClick={handleClick}>Click me</Button>);
 
     fireEvent.click(screen.getByText('Click me'));

@@ -22,9 +22,12 @@ const originalConsoleWarn = console.warn;
 beforeEach(() => {
   console.error = vi.fn();
   console.warn = vi.fn();
+  vi.useFakeTimers();
 });
 
 afterEach(() => {
+  vi.runOnlyPendingTimers();
+  vi.useRealTimers();
   console.error = originalConsoleError;
   console.warn = originalConsoleWarn;
 });
@@ -299,13 +302,11 @@ describe('ErrorBoundary', () => {
     // Initially shows loading
     expect(screen.getByText('Loading...')).toBeInTheDocument();
 
-    // Wait for async error
-    await waitFor(
-      () => {
-        expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
-      },
-      { timeout: 200 }
-    );
+    // Advance timers to trigger async error
+    vi.runAllTimers();
+
+    // Check for async error
+    expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
   });
 
   test('should preserve component stack trace', () => {

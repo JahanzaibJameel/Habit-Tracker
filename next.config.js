@@ -9,7 +9,7 @@ const nextConfig = {
   pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
   // Disable the pages directory since we're using App Router
   trailingSlash: false,
-  
+
   // Performance optimizations
   experimental: {
     webpackBuildWorker: true,
@@ -18,7 +18,7 @@ const nextConfig = {
     optimizePackageImports: ['lucide-react'],
   },
   productionBrowserSourceMaps: false,
-  
+
   // Enhanced image optimization
   images: {
     formats: ['image/avif', 'image/webp'], // AVIF first for better compression
@@ -27,7 +27,7 @@ const nextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
     dangerouslyAllowSVG: true,
   },
-  
+
   // Compiler optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',

@@ -43,25 +43,15 @@
       "version": "detect"
     },
     "import/parsers": {
-      "@typescript-eslint/parser": [
-        ".ts",
-        ".tsx"
-      ]
+      "@typescript-eslint/parser": [".ts", ".tsx"]
     },
     "import/resolver": {
       "typescript": {
         "alwaysTryTypes": true
       },
       "node": {
-        "paths": [
-          "src"
-        ],
-        "extensions": [
-          ".js",
-          ".jsx",
-          ".ts",
-          ".tsx"
-        ]
+        "paths": ["src"],
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
       }
     }
   },
@@ -103,24 +93,11 @@
       "error",
       {
         "groups": [
-          [
-            "^react",
-            "^next",
-            "^@?\\w"
-          ],
-          [
-            "^@/"
-          ],
-          [
-            "^\\.\\./",
-            "^\\./"
-          ],
-          [
-            "^\\u0000"
-          ],
-          [
-            "^.+\\.s?css$"
-          ]
+          ["^react", "^next", "^@?\\w"],
+          ["^@/"],
+          ["^\\.\\./", "^\\./"],
+          ["^\\u0000"],
+          ["^.+\\.s?css$"]
         ]
       }
     ],
@@ -129,27 +106,16 @@
     "jsx-a11y/anchor-is-valid": [
       "error",
       {
-        "components": [
-          "Link"
-        ],
-        "specialLink": [
-          "hrefLeft",
-          "hrefRight"
-        ],
-        "aspects": [
-          "invalidHref",
-          "preferButton"
-        ]
+        "components": ["Link"],
+        "specialLink": ["hrefLeft", "hrefRight"],
+        "aspects": ["invalidHref", "preferButton"]
       }
     ],
     // Best Practices
     "no-console": [
       "warn",
       {
-        "allow": [
-          "warn",
-          "error"
-        ]
+        "allow": ["warn", "error"]
       }
     ],
     "no-debugger": "warn",
@@ -157,14 +123,8 @@
     "no-var": "error",
     "prefer-const": "error",
     "prefer-template": "error",
-    "eqeqeq": [
-      "error",
-      "always"
-    ],
-    "curly": [
-      "error",
-      "all"
-    ],
+    "eqeqeq": ["error", "always"],
+    "curly": ["error", "all"],
     "dot-notation": "error",
     // Tailwind CSS
     "tailwindcss/classnames-order": "warn",
@@ -180,10 +140,7 @@
   },
   "overrides": [
     {
-      "files": [
-        "*.ts",
-        "*.tsx"
-      ],
+      "files": ["*.ts", "*.tsx"],
       "rules": {
         "@typescript-eslint/explicit-function-return-type": [
           "error",
@@ -195,12 +152,7 @@
       }
     },
     {
-      "files": [
-        "*.test.ts",
-        "*.test.tsx",
-        "*.spec.ts",
-        "*.spec.tsx"
-      ],
+      "files": ["*.test.ts", "*.test.tsx", "*.spec.ts", "*.spec.tsx"],
       "env": {
         "jest": true
       },
@@ -210,10 +162,7 @@
       }
     },
     {
-      "files": [
-        "**/__tests__/**/*",
-        "**/*.{test,spec}.*"
-      ],
+      "files": ["**/__tests__/**/*", "**/*.{test,spec}.*"],
       "env": {
         "jest": true
       }

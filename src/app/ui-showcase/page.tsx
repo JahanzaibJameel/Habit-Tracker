@@ -10,6 +10,7 @@ import {
   CardDescription,
   CardContent,
 } from '@/components/atoms';
+import { ThemeToggle } from '@/components/atoms/ThemeToggle';
 import {
   Bell,
   Settings as _Settings,
@@ -51,13 +52,26 @@ function ComponentShowcase() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            UI Component Showcase
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Available components in the habit tracker application
-          </p>
+        <div className="mb-8 flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              UI Component Showcase
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
+              Available components in the habit tracker application
+            </p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <ThemeToggle />
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              Theme:{' '}
+              {typeof window !== 'undefined'
+                ? document.documentElement.classList.contains('dark')
+                  ? 'dark'
+                  : 'light'
+                : 'system'}
+            </span>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

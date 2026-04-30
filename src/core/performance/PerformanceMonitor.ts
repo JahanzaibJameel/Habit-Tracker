@@ -640,41 +640,30 @@ export class PerformanceMonitor {
    * Show breach warning in UI
    */
   private showBreachWarning(breach: PerformanceBreach): void {
-    // Create a non-intrusive warning banner
-    if (typeof document !== 'undefined') {
-      const existingWarning = document.getElementById('performance-warning');
-      if (existingWarning) {
-        existingWarning.remove();
-      }
+    // Use console warning instead of DOM manipulation to avoid React script tag warnings
+    if (typeof console !== 'undefined') {
+      console.warn(
+        `Performance Warning: ${breach.metric} (${Math.round(breach.actual)}) exceeds budget (${Math.round(breach.budget)})`,
+        breach
+      );
 
-      const warning = document.createElement('div');
-      warning.id = 'performance-warning';
-      warning.style.cssText = `
-        position: fixed;
-        top: 10px;
-        right: 10px;
-        background: #ff6b6b;
-        color: white;
-        padding: 10px;
-        border-radius: 4px;
-        font-size: 12px;
-        z-index: 9999;
-        max-width: 300px;
-      `;
-      warning.innerHTML = `
-        <strong>Performance Warning</strong><br>
-        ${breach.metric}: ${Math.round(breach.actual)} exceeds budget of ${Math.round(breach.budget)}
-        <button onclick="this.parentElement.remove()" style="margin-left: 10px; border: none; background: white; color: #ff6b6b; padding: 2px 6px; border-radius: 2px; cursor: pointer;">×</button>
-      `;
+      // Store breach info for React components to display if needed
+      if (typeof window !== 'undefined') {
+        (window as any).__PERFORMANCE_WARNINGS__ = (window as any).__PERFORMANCE_WARNINGS__ || [];
+        (window as any).__PERFORMANCE_WARNINGS__.push({
+          id: Date.now(),
+          metric: breach.metric,
+          actual: breach.actual,
+          budget: breach.budget,
+          severity: breach.severity,
+          timestamp: new Date().toISOString(),
+        });
 
-      document.body.appendChild(warning);
-
-      // Auto-remove after 10 seconds
-      setTimeout(() => {
-        if (warning.parentElement) {
-          warning.remove();
+        // Keep only last 10 warnings
+        if ((window as any).__PERFORMANCE_WARNINGS__.length > 10) {
+          (window as any).__PERFORMANCE_WARNINGS__.shift();
         }
-      }, 10000);
+      }
     }
   }
 

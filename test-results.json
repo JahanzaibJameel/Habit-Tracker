@@ -26,9 +26,7 @@
         "name": "chromium",
         "testDir": "D:/NEXT,js/habit-tracker/src/__tests__/e2e",
         "testIgnore": [],
-        "testMatch": [
-          "**/*.e2e.{js,ts}"
-        ],
+        "testMatch": ["**/*.e2e.{js,ts}"],
         "timeout": 30000
       },
       {
@@ -42,9 +40,7 @@
         "name": "firefox",
         "testDir": "D:/NEXT,js/habit-tracker/src/__tests__/e2e",
         "testIgnore": [],
-        "testMatch": [
-          "**/*.e2e.{js,ts}"
-        ],
+        "testMatch": ["**/*.e2e.{js,ts}"],
         "timeout": 30000
       },
       {
@@ -58,9 +54,7 @@
         "name": "webkit",
         "testDir": "D:/NEXT,js/habit-tracker/src/__tests__/e2e",
         "testIgnore": [],
-        "testMatch": [
-          "**/*.e2e.{js,ts}"
-        ],
+        "testMatch": ["**/*.e2e.{js,ts}"],
         "timeout": 30000
       },
       {
@@ -74,9 +68,7 @@
         "name": "Mobile Chrome",
         "testDir": "D:/NEXT,js/habit-tracker/src/__tests__/e2e",
         "testIgnore": [],
-        "testMatch": [
-          "**/*.e2e.{js,ts}"
-        ],
+        "testMatch": ["**/*.e2e.{js,ts}"],
         "timeout": 30000
       },
       {
@@ -90,9 +82,7 @@
         "name": "Mobile Safari",
         "testDir": "D:/NEXT,js/habit-tracker/src/__tests__/e2e",
         "testIgnore": [],
-        "testMatch": [
-          "**/*.e2e.{js,ts}"
-        ],
+        "testMatch": ["**/*.e2e.{js,ts}"],
         "timeout": 30000
       }
     ],

@@ -9,7 +9,14 @@ const prettier = require('eslint-plugin-prettier');
 module.exports = [
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
-    ignores: ['tailwind.config.js', 'eslint.config.js', 'lint-staged.config.js', 'next.config.js', 'commitlint.config.js', 'scripts/**/*.js'],
+    ignores: [
+      'tailwind.config.js',
+      'eslint.config.js',
+      'lint-staged.config.js',
+      'next.config.js',
+      'commitlint.config.js',
+      'scripts/**/*.js',
+    ],
     languageOptions: {
       parser: typescriptParser,
       parserOptions: {
@@ -36,11 +43,11 @@ module.exports = [
     },
     plugins: {
       '@typescript-eslint': typescript,
-      'react': react,
+      react: react,
       'react-hooks': reactHooks,
       'jsx-a11y': jsxA11y,
-      'import': importPlugin,
-      'prettier': prettier,
+      import: importPlugin,
+      prettier: prettier,
     },
     rules: {
       // TypeScript
@@ -96,8 +103,8 @@ module.exports = [
       'no-var': 'error',
       'prefer-const': 'error',
       'prefer-template': 'error',
-      'eqeqeq': ['error', 'always'],
-      'curly': ['error', 'all'],
+      eqeqeq: ['error', 'always'],
+      curly: ['error', 'all'],
       'dot-notation': 'error',
       // Prettier
       'prettier/prettier': [

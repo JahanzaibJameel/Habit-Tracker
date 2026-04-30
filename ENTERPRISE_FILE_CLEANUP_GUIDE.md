@@ -43,6 +43,7 @@ PRODUCTION_AUDIT_REPORT.md  # Audit documentation
 ### 1. Knip Configuration (`knip.json`)
 
 Enterprise-grade configuration that respects:
+
 - Next.js App Router patterns
 - Storybook files
 - Test files
@@ -53,6 +54,7 @@ Enterprise-grade configuration that respects:
 ### 2. Analysis Script (`scripts/analyze-unused-files.js`)
 
 Comprehensive analysis tool that:
+
 - Runs knip with enterprise configuration
 - Performs deep dependency analysis
 - Identifies special pattern files
@@ -62,6 +64,7 @@ Comprehensive analysis tool that:
 ### 3. CI/CD Integration
 
 Automatic dead file detection in the security-scan job:
+
 ```yaml
 - name: Check for unused code (knip)
   run: npx knip --production
@@ -85,6 +88,7 @@ npm run knip:production
 ### CI/CD Pipeline
 
 The pipeline automatically checks for unused files and will:
+
 - Warn about unused files
 - Block deletion of protected files
 - Flag special pattern files for manual review
@@ -95,6 +99,7 @@ The pipeline automatically checks for unused files and will:
 ### 🗑️ Unused Files (Safe to Delete)
 
 Files that:
+
 - Have no imports or exports
 - Are not referenced by any other files
 - Are not protected or special pattern files
@@ -105,6 +110,7 @@ Files that:
 ### ⚠️ Special Files (Manual Review Required)
 
 Files that match special patterns:
+
 - **Storybook files** (`*.stories.*`) - Check design system docs
 - **Test files** (`*.test.*`, `*.spec.*`) - Verify test coverage
 - **Migration files** - Check rollback strategy needs
@@ -116,6 +122,7 @@ Files that match special patterns:
 ### 🛡️ Protected Files (Never Delete)
 
 Critical system files essential for:
+
 - Application entry points
 - Configuration and build tools
 - CI/CD pipeline
@@ -127,6 +134,7 @@ Critical system files essential for:
 ## 🎯 Cleanup Workflow
 
 ### Phase 1: Analysis
+
 ```bash
 # Run comprehensive analysis
 npm run analyze:unused
@@ -136,6 +144,7 @@ cat unused-files-analysis.json
 ```
 
 ### Phase 2: Preparation
+
 ```bash
 # Create feature branch
 git checkout -b cleanup/remove-unused-files
@@ -145,6 +154,7 @@ git checkout -b backup/pre-cleanup-state
 ```
 
 ### Phase 3: Gradual Cleanup
+
 ```bash
 # For each unused file:
 git rm src/components/unused-component.tsx
@@ -160,6 +170,7 @@ npm run size-limit
 ```
 
 ### Phase 4: Validation
+
 ```bash
 # Run full test suite
 npm run test:unit
@@ -174,6 +185,7 @@ npm run size-limit
 ```
 
 ### Phase 5: Deployment
+
 ```bash
 # Submit for review
 git push origin cleanup/remove-unused-files
@@ -187,18 +199,21 @@ git pull origin main
 ## 📈 Success Metrics
 
 ### Before Cleanup
+
 - Record current bundle size
 - Document performance metrics
 - Note test coverage percentage
 - Count total files
 
 ### After Cleanup
+
 - Bundle size reduction
 - Improved build times
 - Maintained test coverage
 - Reduced file count
 
 ### Monitoring
+
 - Watch for any performance regressions
 - Monitor error rates in production
 - Check bundle size trends
@@ -207,14 +222,18 @@ git pull origin main
 ## 🔍 Advanced Scenarios
 
 ### Dynamic Imports
+
 Files with dynamic imports may appear unused but are loaded at runtime:
+
 ```typescript
 // These files won't be detected by static analysis
 const Component = lazy(() => import('./heavy-component'));
 ```
 
 ### Next.js Special Files
+
 Next.js has special file conventions:
+
 - `layout.tsx` - Route layouts
 - `page.tsx` - Route pages
 - `loading.tsx` - Loading states
@@ -222,18 +241,23 @@ Next.js has special file conventions:
 - `not-found.tsx` - 404 pages
 
 ### Storybook Integration
+
 Storybook files may not be imported in the main app:
+
 - `*.stories.tsx` - Story definitions
 - `*.story.tsx` - Alternative story format
 
 ### Monitoring and Instrumentation
+
 Files may be loaded by monitoring systems:
+
 - `instrumentation.ts` - Sentry configuration
 - Monitoring adapters - Error tracking setup
 
 ## 🚨 Emergency Procedures
 
 ### If Breakage Occurs
+
 1. **Immediate rollback**: `git revert HEAD`
 2. **Investigate**: Check what broke and why
 3. **Fix**: Address the root cause
@@ -241,6 +265,7 @@ Files may be loaded by monitoring systems:
 5. **Retry**: Continue with remaining files
 
 ### Recovery from Bad Deletion
+
 ```bash
 # Restore from backup branch
 git checkout backup/pre-cleanup-state
@@ -252,6 +277,7 @@ git merge backup/pre-cleanup-state
 ## 📋 Checklist
 
 ### Before Starting Cleanup
+
 - [ ] Full backup of current state
 - [ ] All tests passing
 - [ ] Performance benchmarks recorded
@@ -259,6 +285,7 @@ git merge backup/pre-cleanup-state
 - [ ] CI/CD pipeline stable
 
 ### During Cleanup
+
 - [ ] Each file deleted in separate commit
 - [ ] Tests run after each deletion
 - [ ] Build successful after each deletion
@@ -266,6 +293,7 @@ git merge backup/pre-cleanup-state
 - [ ] Bundle size monitored
 
 ### After Cleanup
+
 - [ ] All tests passing
 - [ ] Performance maintained or improved
 - [ ] Bundle size reduced
@@ -275,6 +303,7 @@ git merge backup/pre-cleanup-state
 ## 🎓 Best Practices
 
 ### General Principles
+
 1. **Safety first** - Never rush file deletion
 2. **Gradual approach** - One file at a time
 3. **Comprehensive testing** - Test everything
@@ -282,12 +311,14 @@ git merge backup/pre-cleanup-state
 5. **Documentation** - Keep records of changes
 
 ### Team Collaboration
+
 1. **Code review** - All deletions reviewed
 2. **Communication** - Notify team of changes
 3. **Documentation** - Update relevant docs
 4. **Training** - Educate team on process
 
 ### Continuous Improvement
+
 1. **Automation** - Improve detection tools
 2. **Monitoring** - Track cleanup effectiveness
 3. **Process refinement** - Learn from mistakes

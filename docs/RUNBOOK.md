@@ -25,13 +25,16 @@ This runbook provides step-by-step procedures for on-call engineers to diagnose,
 **Impact**: System may be in degraded state, automatic recovery attempts in progress
 
 #### Immediate Actions
+
 1. **Check System Status**
+
    ```bash
    # Verify circuit breaker status
    curl -X GET https://api.yourapp.com/health/circuit-breaker
    ```
 
 2. **Review Recent Errors**
+
    ```bash
    # Check error logs for pattern
    grep "CIRCUIT_BREAKER" /var/log/app.log | tail -20
@@ -43,12 +46,14 @@ This runbook provides step-by-step procedures for on-call engineers to diagnose,
    - Verify critical functionality
 
 #### Resolution Steps
+
 1. **Identify Root Cause**
    - Review recent deployments
    - Check external service status
    - Analyze error patterns
 
 2. **Manual Recovery (if needed)**
+
    ```javascript
    // Force circuit breaker reset
    await monitoringService.resetCircuitBreaker('service-name');
@@ -60,6 +65,7 @@ This runbook provides step-by-step procedures for on-call engineers to diagnose,
    - Document incident
 
 #### Prevention
+
 - Review circuit breaker thresholds
 - Consider adjusting timeout values
 - Implement better error handling
@@ -70,7 +76,9 @@ This runbook provides step-by-step procedures for on-call engineers to diagnose,
 **Impact**: User experience degradation, potential performance issues
 
 #### Immediate Actions
+
 1. **Identify Violated Metric**
+
    ```bash
    # Check specific performance metric
    curl -X GET https://api.yourapp.com/metrics/performance
@@ -82,12 +90,14 @@ This runbook provides step-by-step procedures for on-call engineers to diagnose,
    - Verify active degradation features
 
 #### Resolution Steps
+
 1. **Analyze Performance Data**
+
    ```javascript
    // Get performance breach details
    const breaches = performanceMonitor.getBreaches();
-   const recentBreaches = breaches.filter(b => 
-     Date.now() - b.timestamp < 3600000 // Last hour
+   const recentBreaches = breaches.filter(
+     (b) => Date.now() - b.timestamp < 3600000 // Last hour
    );
    ```
 
@@ -112,7 +122,9 @@ This runbook provides step-by-step procedures for on-call engineers to diagnose,
 **Impact**: Data loss risk, user data inaccessibility
 
 #### Immediate Actions
+
 1. **Check Migration Status**
+
    ```bash
    # Verify migration progress
    curl -X GET https://api.yourapp.com/storage/migration/status
@@ -124,23 +136,25 @@ This runbook provides step-by-step procedures for on-call engineers to diagnose,
    const snapshot = await storageEngine.exportSnapshot();
    await fetch('/api/storage/emergency-backup', {
      method: 'POST',
-     body: JSON.stringify(snapshot)
+     body: JSON.stringify(snapshot),
    });
    ```
 
 #### Resolution Steps
+
 1. **Identify Failure Point**
    - Review migration logs
    - Check data validation errors
    - Verify schema compatibility
 
 2. **Manual Data Recovery**
+
    ```javascript
    // Restore from backup
-   const backup = await fetch('/api/storage/latest-backup').then(r => r.json());
+   const backup = await fetch('/api/storage/latest-backup').then((r) => r.json());
    const result = await storageEngine.importSnapshot(backup, {
      overwrite: true,
-     validateSchema: false
+     validateSchema: false,
    });
    ```
 
@@ -161,7 +175,9 @@ This runbook provides step-by-step procedures for on-call engineers to diagnose,
 **Impact**: Reduced observability, potential missed errors
 
 #### Immediate Actions
+
 1. **Check Service Health**
+
    ```bash
    # Verify monitoring service status
    curl -X GET https://api.yourapp.com/monitoring/health
@@ -174,12 +190,14 @@ This runbook provides step-by-step procedures for on-call engineers to diagnose,
    ```
 
 #### Resolution Steps
+
 1. **Restart Monitoring Service**
    - Check service logs
    - Verify configuration
    - Restart if needed
 
 2. **Clear Queued Events**
+
    ```javascript
    // Process offline queue
    await offlineQueue.processAll();
@@ -197,6 +215,7 @@ This runbook provides step-by-step procedures for on-call engineers to diagnose,
 ### Key Metrics to Monitor
 
 #### Performance Metrics
+
 - **LCP (Largest Contentful Paint)**: Target < 2.5s
 - **FID (First Input Delay)**: Target < 100ms
 - **CLS (Cumulative Layout Shift)**: Target < 0.1
@@ -204,18 +223,21 @@ This runbook provides step-by-step procedures for on-call engineers to diagnose,
 - **Memory Usage**: Target < 50MB
 
 #### Error Metrics
+
 - **Error Rate**: Target < 1%
 - **Circuit Breaker Trips**: Target < 5/hour
 - **Unhandled Rejections**: Target = 0
 - **Component Crashes**: Target < 10/hour
 
 #### Storage Metrics
+
 - **Storage Usage**: Monitor quota usage
 - **Migration Success Rate**: Target > 99%
 - **Backup Success Rate**: Target > 99%
 - **IndexedDB Health**: Monitor corruption events
 
 #### Monitoring Metrics
+
 - **Event Delivery Rate**: Target > 95%
 - **Queue Size**: Target < 1000 events
 - **Webhook Success Rate**: Target > 98%
@@ -275,7 +297,9 @@ Set up dashboards for:
 **Symptoms**: Forms not submitting, data validation errors
 
 **Troubleshooting Steps**:
+
 1. Check schema definitions
+
    ```javascript
    // Verify schema is valid
    const result = schema.safeParse(data);
@@ -287,6 +311,7 @@ Set up dashboards for:
 4. Validate API response structure
 
 **Common Fixes**:
+
 - Update schema to match new data format
 - Add optional fields to schema
 - Implement custom validation logic
@@ -296,7 +321,9 @@ Set up dashboards for:
 **Symptoms**: Version mismatch warnings, API call failures
 
 **Troubleshooting Steps**:
+
 1. Check API version headers
+
    ```javascript
    // Verify API version
    const response = await fetch('/api/data');
@@ -307,6 +334,7 @@ Set up dashboards for:
 3. Review recent deployments
 
 **Common Fixes**:
+
 - Update frontend to match backend version
 - Implement version compatibility layer
 - Coordinate backend/frontend deployments
@@ -318,17 +346,19 @@ Set up dashboards for:
 **Symptoms**: Data loss, storage errors, recovery failures
 
 **Troubleshooting Steps**:
+
 1. Check corruption detection logs
 2. Verify backup availability
 3. Test storage engine fallback
 
 **Recovery Procedure**:
+
 ```javascript
 // Force recovery
 await storageEngine.recoverFromCorruption();
 
 // Restore from backup
-const backup = await fetch('/api/storage/backup').then(r => r.json());
+const backup = await fetch('/api/storage/backup').then((r) => r.json());
 await storageEngine.importSnapshot(backup);
 ```
 
@@ -337,7 +367,9 @@ await storageEngine.importSnapshot(backup);
 **Symptoms**: Storage failures, quota errors
 
 **Troubleshooting Steps**:
+
 1. Check storage usage
+
    ```javascript
    const stats = await storageEngine.getStorageStats();
    console.log(`Used: ${stats.quota.used}, Available: ${stats.quota.available}`);
@@ -347,6 +379,7 @@ await storageEngine.importSnapshot(backup);
 3. Implement data cleanup
 
 **Solutions**:
+
 - Clear old data
 - Implement data compression
 - Use server-side storage
@@ -358,7 +391,9 @@ await storageEngine.importSnapshot(backup);
 **Symptoms**: Service unavailable, high error rates
 
 **Troubleshooting Steps**:
+
 1. Check circuit breaker state
+
    ```javascript
    const status = circuitBreaker.getStatus();
    console.log('State:', status.state, 'Failures:', status.failures);
@@ -368,6 +403,7 @@ await storageEngine.importSnapshot(backup);
 3. Check external service health
 
 **Recovery**:
+
 ```javascript
 // Manual reset
 circuitBreaker.reset();
@@ -375,7 +411,7 @@ circuitBreaker.reset();
 // Adjust thresholds
 circuitBreaker.updateThresholds({
   failureThreshold: 10,
-  recoveryTimeout: 30000
+  recoveryTimeout: 30000,
 });
 ```
 
@@ -384,11 +420,13 @@ circuitBreaker.updateThresholds({
 **Symptoms**: UI errors, component failures
 
 **Troubleshooting Steps**:
+
 1. Check error boundary logs
 2. Review component stack traces
 3. Identify problematic components
 
 **Debug Tools**:
+
 - Use development error overlay
 - Check React DevTools
 - Review component props
@@ -400,7 +438,9 @@ circuitBreaker.updateThresholds({
 **Symptoms**: Slow initial load, large bundle size
 
 **Troubleshooting Steps**:
+
 1. Analyze bundle composition
+
    ```bash
    npm run analyze-bundle
    ```
@@ -409,6 +449,7 @@ circuitBreaker.updateThresholds({
 3. Check for unused code
 
 **Optimization Strategies**:
+
 - Implement code splitting
 - Use dynamic imports
 - Remove unused dependencies
@@ -419,7 +460,9 @@ circuitBreaker.updateThresholds({
 **Symptoms**: Increasing memory usage, browser crashes
 
 **Troubleshooting Steps**:
+
 1. Monitor memory usage
+
    ```javascript
    // Check memory usage
    const memory = performance.memory;
@@ -430,6 +473,7 @@ circuitBreaker.updateThresholds({
 3. Review event listeners and timers
 
 **Fixes**:
+
 - Clean up event listeners
 - Use WeakMap/WeakSet
 - Implement proper cleanup
@@ -441,7 +485,9 @@ circuitBreaker.updateThresholds({
 **Symptoms**: Missing monitoring data, queue buildup
 
 **Troubleshooting Steps**:
+
 1. Check queue size
+
    ```javascript
    const stats = offlineQueue.getStats();
    console.log('Queue size:', stats.total);
@@ -451,6 +497,7 @@ circuitBreaker.updateThresholds({
 3. Check monitoring service health
 
 **Recovery**:
+
 ```javascript
 // Process queue manually
 await offlineQueue.processAll();
@@ -464,11 +511,13 @@ await offlineQueue.clear();
 **Symptoms**: Missing alerts, webhook errors
 
 **Troubleshooting Steps**:
+
 1. Check webhook configuration
 2. Verify endpoint accessibility
 3. Review authentication
 
 **Debug**:
+
 ```javascript
 // Test webhook manually
 await monitoringService.testWebhook();
@@ -484,6 +533,7 @@ await monitoringService.testWebhook();
 **Response Time**: < 5 minutes
 
 #### Immediate Actions
+
 1. **Assess Impact**
    - Check all health endpoints
    - Verify user impact
@@ -495,10 +545,11 @@ await monitoringService.testWebhook();
    - Assign incident commander
 
 3. **Start Recovery**
+
    ```bash
    # Restart services if needed
    kubectl rollout restart deployment/frontend
-   
+
    # Check logs
    kubectl logs -f deployment/frontend
    ```
@@ -514,7 +565,9 @@ await monitoringService.testWebhook();
 **Response Time**: < 2 minutes
 
 #### Immediate Actions
+
 1. **Stop Further Damage**
+
    ```bash
    # Stop writes to storage
    curl -X POST https://api.yourapp.com/storage/freeze
@@ -526,6 +579,7 @@ await monitoringService.testWebhook();
    - Estimate loss scope
 
 3. **Begin Recovery**
+
    ```javascript
    // Restore from latest backup
    const backup = await getLatestBackup();
@@ -543,7 +597,9 @@ await monitoringService.testWebhook();
 **Response Time**: < 1 minute
 
 #### Immediate Actions
+
 1. **Isolate Systems**
+
    ```bash
    # Block suspicious IPs
    iptables -A INPUT -s <suspicious-ip> -j DROP
@@ -571,7 +627,9 @@ await monitoringService.testWebhook();
 ### Scheduled Maintenance
 
 #### Database Maintenance
+
 1. **Backup Creation**
+
    ```javascript
    // Create maintenance backup
    const backup = await storageEngine.exportSnapshot();
@@ -589,7 +647,9 @@ await monitoringService.testWebhook();
    - Validate functionality
 
 #### Performance Tuning
+
 1. **Bundle Optimization**
+
    ```bash
    # Analyze and optimize bundle
    npm run build:analyze
@@ -609,23 +669,26 @@ await monitoringService.testWebhook();
 ### Version Updates
 
 #### Frontend Updates
+
 1. **Pre-deployment Checks**
+
    ```bash
    # Run all tests
    npm run test:all
-   
+
    # Check bundle size
    npm run build:check-size
-   
+
    # Run chaos tests
    npm run test:chaos
    ```
 
 2. **Deployment**
+
    ```bash
    # Deploy with zero downtime
    npm run deploy:blue-green
-   
+
    # Monitor health
    npm run health:monitor
    ```
@@ -636,7 +699,9 @@ await monitoringService.testWebhook();
    - Check error rates
 
 #### Schema Updates
+
 1. **Compatibility Check**
+
    ```javascript
    // Test schema compatibility
    const testResult = newSchema.safeParse(oldData);
@@ -662,7 +727,9 @@ await monitoringService.testWebhook();
 ### Emergency Data Recovery
 
 #### Complete Storage Recovery
+
 1. **Assess Situation**
+
    ```javascript
    // Check storage health
    const health = await storageEngine.getStorageStats();
@@ -675,24 +742,27 @@ await monitoringService.testWebhook();
    - Manual data reconstruction
 
 3. **Execute Recovery**
+
    ```javascript
    // Restore from backup
    const backup = await selectBestBackup();
    const result = await storageEngine.importSnapshot(backup, {
      overwrite: true,
-     validateSchema: true
+     validateSchema: true,
    });
-   
+
    console.log('Recovery result:', result);
    ```
 
 #### Partial Data Recovery
+
 1. **Identify Recoverable Data**
+
    ```javascript
    // Check what data is available
    const availableKeys = await storageEngine.adapter.keys();
    const corruptedKeys = [];
-   
+
    for (const key of availableKeys) {
      try {
        await storageEngine.get(key);
@@ -703,6 +773,7 @@ await monitoringService.testWebhook();
    ```
 
 2. **Recover Valid Data**
+
    ```javascript
    // Export valid data
    const validData = {};
@@ -711,7 +782,7 @@ await monitoringService.testWebhook();
        validData[key] = await storageEngine.get(key);
      }
    }
-   
+
    // Save valid data
    await saveEmergencyBackup(validData);
    ```
@@ -724,13 +795,18 @@ await monitoringService.testWebhook();
 ### Backup Management
 
 #### Automated Backups
+
 1. **Schedule Regular Backups**
+
    ```javascript
    // Daily backup schedule
-   setInterval(async () => {
-     const backup = await storageEngine.exportSnapshot();
-     await saveBackup(backup, `daily_${Date.now()}`);
-   }, 24 * 60 * 60 * 1000);
+   setInterval(
+     async () => {
+       const backup = await storageEngine.exportSnapshot();
+       await saveBackup(backup, `daily_${Date.now()}`);
+     },
+     24 * 60 * 60 * 1000
+   );
    ```
 
 2. **Backup Verification**
@@ -744,7 +820,9 @@ await monitoringService.testWebhook();
    - Keep monthly backups for 1 year
 
 #### Manual Backups
+
 1. **Pre-maintenance Backup**
+
    ```javascript
    // Create pre-maintenance backup
    const backup = await storageEngine.exportSnapshot();
@@ -763,11 +841,13 @@ await monitoringService.testWebhook();
 ### Performance Degradation
 
 #### Diagnosis
+
 1. **Identify Bottlenecks**
+
    ```javascript
    // Check performance metrics
    const metrics = performanceMonitor.getMetrics();
-   const slowOperations = metrics.filter(m => m.value > m.budget);
+   const slowOperations = metrics.filter((m) => m.value > m.budget);
    ```
 
 2. **Profile Application**
@@ -781,16 +861,18 @@ await monitoringService.testWebhook();
    - Check user complaints
 
 #### Resolution Strategies
+
 1. **Code Optimization**
    - Optimize critical rendering path
    - Implement lazy loading
    - Use Web Workers for heavy tasks
 
 2. **Bundle Optimization**
+
    ```bash
    # Analyze bundle
    npm run analyze
-   
+
    # Optimize bundle
    npm run optimize
    ```
@@ -803,7 +885,9 @@ await monitoringService.testWebhook();
 ### Memory Issues
 
 #### Memory Leak Detection
+
 1. **Monitor Memory Usage**
+
    ```javascript
    // Track memory usage
    setInterval(() => {
@@ -811,7 +895,7 @@ await monitoringService.testWebhook();
      console.log('Memory usage:', {
        used: memory.usedJSHeapSize,
        total: memory.totalJSHeapSize,
-       limit: memory.jsHeapSizeLimit
+       limit: memory.jsHeapSizeLimit,
      });
    }, 30000);
    ```
@@ -827,6 +911,7 @@ await monitoringService.testWebhook();
    - Implement proper disposal
 
 #### Memory Optimization
+
 1. **Reduce Memory Footprint**
    - Implement object pooling
    - Use efficient data structures
@@ -844,7 +929,9 @@ await monitoringService.testWebhook();
 ### Data Privacy
 
 #### DSR Request Handling
+
 1. **Data Subject Requests**
+
    ```javascript
    // Handle data deletion request
    const result = await monitoringService.purgeUserData(userId);
@@ -852,6 +939,7 @@ await monitoringService.testWebhook();
    ```
 
 2. **Data Export**
+
    ```javascript
    // Export user data
    const userData = await monitoringService.exportUserData(userId);
@@ -864,12 +952,14 @@ await monitoringService.testWebhook();
    - Implement consent withdrawal
 
 #### PII Protection
+
 1. **Data Redaction**
+
    ```javascript
    // Configure PII redaction
    const redaction = new DataRedaction({
      fields: ['email', 'phone', 'ssn'],
-     strategy: 'mask'
+     strategy: 'mask',
    });
    ```
 
@@ -881,6 +971,7 @@ await monitoringService.testWebhook();
 ### Security Monitoring
 
 #### Security Events
+
 1. **Monitor Suspicious Activity**
    - Track failed login attempts
    - Monitor unusual API usage
@@ -892,6 +983,7 @@ await monitoringService.testWebhook();
    - Document security incidents
 
 #### Compliance
+
 1. **GDPR Compliance**
    - Implement right to be forgotten
    - Provide data portability
@@ -907,16 +999,19 @@ await monitoringService.testWebhook();
 ## Contact Information
 
 ### Emergency Contacts
+
 - **On-call Engineer**: +1-555-0123
 - **Engineering Manager**: +1-555-0124
 - **DevOps Lead**: +1-555-0125
 
 ### Service Providers
+
 - **Monitoring Service**: monitoring@yourcompany.com
 - **Cloud Provider**: support@cloudprovider.com
 - **Security Team**: security@yourcompany.com
 
 ### Documentation
+
 - **Architecture Docs**: /docs/architecture
 - **API Documentation**: /docs/api
 - **Deployment Guide**: /docs/deployment
