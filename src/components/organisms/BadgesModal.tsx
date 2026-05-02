@@ -78,15 +78,15 @@ const BadgesModal: React.FC<BadgesModalProps> = ({
           onClick={onClose}
         >
           <div
-            className="bg-background rounded-lg shadow-xl max-w-4xl w-full max-h-[80vh] overflow-hidden"
+            className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <Card>
-              <CardHeader className="border-b">
+              <CardHeader className="border-b border-slate-200 dark:border-slate-700">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center space-x-2">
-                    <Trophy className="h-5 w-5" />
-                    Achievements & Badges
+                    <Trophy className="h-5 w-5 text-amber-500 dark:text-amber-400" />
+                    <span className="text-slate-900 dark:text-slate-100">Achievements & Badges</span>
                   </CardTitle>
                   <Button variant="ghost" size="sm" onClick={onClose}>
                     ×
@@ -104,7 +104,7 @@ const BadgesModal: React.FC<BadgesModalProps> = ({
                         placeholder="Search badges..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full p-2 border rounded-md bg-background"
+                        className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400"
                       />
                     </div>
                     <div className="flex gap-2">
@@ -124,22 +124,22 @@ const BadgesModal: React.FC<BadgesModalProps> = ({
                 </div>
 
                 {/* Stats Overview */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{unlockedBadges.length}</div>
-                    <div className="text-sm text-muted-foreground">Unlocked</div>
+                    <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{unlockedBadges.length}</div>
+                    <div className="text-sm text-slate-600 dark:text-slate-400">Unlocked</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-amber-600">
+                    <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
                       {badges.length - unlockedBadges.length}
                     </div>
-                    <div className="text-sm text-muted-foreground">Locked</div>
+                    <div className="text-sm text-slate-600 dark:text-slate-400">Locked</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">
+                    <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                       {Math.round((unlockedBadges.length / badges.length) * 100)}%
                     </div>
-                    <div className="text-sm text-muted-foreground">Progress</div>
+                    <div className="text-sm text-slate-600 dark:text-slate-400">Progress</div>
                   </div>
                 </div>
 
@@ -152,7 +152,7 @@ const BadgesModal: React.FC<BadgesModalProps> = ({
                     return (
                       <div
                         key={badge.id}
-                        className="relative bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                        className="relative bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 hover:shadow-lg transition-all cursor-pointer"
                         onClick={() => !isUnlocked && onUnlockBadge(badge.id)}
                       >
                         {/* Badge Icon */}
@@ -161,8 +161,8 @@ const BadgesModal: React.FC<BadgesModalProps> = ({
                             className={cn(
                               'p-3 rounded-full',
                               isUnlocked
-                                ? 'bg-gradient-to-br from-yellow-400 to-amber-400 text-white'
-                                : 'bg-muted text-muted-foreground'
+                                ? 'bg-gradient-to-br from-amber-400 to-amber-500 text-white'
+                                : 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500'
                             )}
                           >
                             {getBadgeIcon(badge)}
@@ -173,7 +173,7 @@ const BadgesModal: React.FC<BadgesModalProps> = ({
                         <h3
                           className={cn(
                             'font-semibold text-center mb-2',
-                            isUnlocked ? 'text-foreground' : 'text-muted-foreground'
+                            isUnlocked ? 'text-slate-900 dark:text-slate-100' : 'text-slate-600 dark:text-slate-400'
                           )}
                         >
                           {badge.name}
@@ -183,7 +183,7 @@ const BadgesModal: React.FC<BadgesModalProps> = ({
                         <p
                           className={cn(
                             'text-sm text-center mb-3',
-                            isUnlocked ? 'text-muted-foreground' : 'text-muted-foreground/70'
+                            isUnlocked ? 'text-slate-600 dark:text-slate-400' : 'text-slate-500 dark:text-slate-500'
                           )}
                         >
                           {badge.description}
@@ -219,7 +219,7 @@ const BadgesModal: React.FC<BadgesModalProps> = ({
 
                         {/* Unlocked Date */}
                         {isUnlocked && badge.unlockedAt && (
-                          <div className="flex items-center justify-center text-xs text-muted-foreground mt-2">
+                          <div className="flex items-center justify-center text-xs text-slate-600 dark:text-slate-400 mt-2">
                             <Calendar className="h-3 w-3 mr-1" />
                             Unlocked {new Date(badge.unlockedAt).toLocaleDateString()}
                           </div>
@@ -239,7 +239,7 @@ const BadgesModal: React.FC<BadgesModalProps> = ({
                               badge.rarity === 'rare'
                                 ? 'bg-gradient-to-r from-blue-400 to-cyan-400 text-white'
                                 : '',
-                              badge.rarity === 'common' ? 'bg-gray-400 text-white' : ''
+                              badge.rarity === 'common' ? 'bg-slate-400 text-white' : ''
                             )}
                           >
                             {badge.rarity}
@@ -259,7 +259,7 @@ const BadgesModal: React.FC<BadgesModalProps> = ({
 
                 {/* Empty State */}
                 {filteredBadges.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
+                  <div className="text-center py-8 text-slate-600 dark:text-slate-400">
                     <Trophy className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <h3 className="text-lg font-medium mb-2">No badges found</h3>
                     <p>Try adjusting your search or filter criteria.</p>

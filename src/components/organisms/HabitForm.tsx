@@ -178,7 +178,7 @@ const HabitForm: React.FC<HabitFormProps> = ({
         {firstError && (
           <div
             data-testid="validation-error"
-            className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-600"
+            className="rounded-xl border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-900/20 px-4 py-3 text-sm text-rose-600 dark:text-rose-400"
           >
             {firstError}
           </div>
@@ -195,16 +195,16 @@ const HabitForm: React.FC<HabitFormProps> = ({
           />
 
           <div className="space-y-2">
-            <label htmlFor="habit-category-select" className="text-sm font-medium">
+            <label htmlFor="habit-category-select" className="text-sm font-medium text-slate-700 dark:text-slate-300">
               Category
             </label>
             <select
               id="habit-category-select"
               data-testid="habit-category-select"
               className={cn(
-                'flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
-                errors.category ? 'border-red-500 focus-visible:ring-red-500' : ''
+                'flex h-10 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2',
+                errors.category ? 'border-rose-500 focus-visible:ring-rose-500' : ''
               )}
               value={formData.category}
               onChange={(e) => handleInputChange('category', e.target.value || '')}
@@ -216,7 +216,7 @@ const HabitForm: React.FC<HabitFormProps> = ({
                 </option>
               ))}
             </select>
-            {errors.category && <p className="text-sm text-red-500">{errors.category}</p>}
+            {errors.category && <p className="text-sm text-rose-500 dark:text-rose-400">{errors.category}</p>}
           </div>
         </div>
 
@@ -229,20 +229,20 @@ const HabitForm: React.FC<HabitFormProps> = ({
         />
 
         <div className="space-y-4">
-          <label className="text-sm font-medium">Icon & Color</label>
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Icon & Color</label>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
             <div className="flex-1">
-              <label className="mb-2 block text-xs text-gray-500">Choose Icon</label>
+              <label className="mb-2 block text-xs text-slate-500 dark:text-slate-400">Choose Icon</label>
               <div className="grid grid-cols-5 gap-2 sm:grid-cols-10">
                 {icons.map((icon) => (
                   <button
                     key={icon}
                     type="button"
                     className={cn(
-                      'flex h-8 w-8 items-center justify-center rounded-md border-2 text-lg transition-colors',
+                      'flex h-8 w-8 items-center justify-center rounded-lg border-2 text-lg transition-colors',
                       formData.icon === icon
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-300 hover:border-gray-400'
+                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30'
+                        : 'border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500'
                     )}
                     onClick={() => handleInputChange('icon', icon)}
                   >
@@ -253,17 +253,17 @@ const HabitForm: React.FC<HabitFormProps> = ({
             </div>
 
             <div className="flex-1">
-              <label className="mb-2 block text-xs text-gray-500">Choose Color</label>
+              <label className="mb-2 block text-xs text-slate-500 dark:text-slate-400">Choose Color</label>
               <div className="grid grid-cols-5 gap-2">
                 {colors.map((color) => (
                   <button
                     key={color}
                     type="button"
                     className={cn(
-                      'h-8 w-8 rounded-md border-2 transition-all',
+                      'h-8 w-8 rounded-lg border-2 transition-all',
                       formData.color === color
-                        ? 'scale-110 border-gray-800'
-                        : 'border-gray-300 hover:scale-105'
+                        ? 'scale-110 border-slate-800 dark:border-slate-200'
+                        : 'border-slate-300 dark:border-slate-600 hover:scale-105'
                     )}
                     style={{ backgroundColor: color }}
                     onClick={() => handleInputChange('color', color)}
@@ -296,7 +296,7 @@ const HabitForm: React.FC<HabitFormProps> = ({
         </div>
 
         <div className="space-y-4">
-          <label className="text-sm font-medium">Frequency</label>
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Frequency</label>
           <div className="grid grid-cols-3 gap-2">
             {(['daily', 'weekly', 'monthly'] as const).map((frequency) => (
               <Button
@@ -321,13 +321,13 @@ const HabitForm: React.FC<HabitFormProps> = ({
             {formData.tags.map((tag) => (
               <div
                 key={tag}
-                className="flex items-center space-x-1 rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700"
+                className="flex items-center space-x-1 rounded-full bg-slate-100 dark:bg-slate-700 px-3 py-1 text-sm text-slate-700 dark:text-slate-300"
               >
                 <span>{tag}</span>
                 <button
                   type="button"
                   onClick={() => removeTag(tag)}
-                  className="text-gray-500 hover:text-gray-700"
+                  className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -358,7 +358,7 @@ const HabitForm: React.FC<HabitFormProps> = ({
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-lg bg-gray-50 p-4">
+          <div className="rounded-lg bg-slate-50 dark:bg-slate-900/50 p-4">
             <Switch
               label="Make this habit public"
               description="Others can see your progress on this habit"

@@ -132,15 +132,15 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
           onClick={onClose}
         >
           <div
-            className="bg-background rounded-lg shadow-xl max-w-4xl w-full max-h-[80vh] overflow-hidden"
+            className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <Card>
-              <CardHeader className="border-b">
+              <CardHeader className="border-b border-slate-200 dark:border-slate-700">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center space-x-2">
-                    <Link className="h-5 w-5" />
-                    Habit Dependencies
+                    <Link className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                    <span className="text-slate-900 dark:text-slate-100">Habit Dependencies</span>
                   </CardTitle>
                   <Button variant="ghost" size="sm" onClick={onClose}>
                     <X className="h-4 w-4" />
@@ -152,7 +152,7 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                 {/* Add New Dependency */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">Create Dependency Rule</h3>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Create Dependency Rule</h3>
                     <Button
                       variant="outline"
                       size="sm"
@@ -177,18 +177,18 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                     <div className="border-t pt-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium mb-2">
-                            Source Habit (Prerequisite)
+                          <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">
+                            Condition
                           </label>
                           <select
-                            value={newDependency.sourceHabitId || ''}
+                            value={newDependency.condition || 'must_complete'}
                             onChange={(e) =>
                               setNewDependency((prev) => ({
                                 ...prev,
-                                sourceHabitId: e.target.value,
+                                condition: e.target.value as DependencyRule['condition'],
                               }))
                             }
-                            className="w-full p-2 border rounded-md bg-background"
+                            className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                           >
                             <option value="">Select source habit</option>
                             {availableHabits.map((habit: Habit) => (
@@ -200,7 +200,30 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium mb-2">
+                          <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">
+                            Source Habit (Prerequisite)
+                          </label>
+                          <select
+                            value={newDependency.sourceHabitId || ''}
+                            onChange={(e) =>
+                              setNewDependency((prev) => ({
+                                ...prev,
+                                sourceHabitId: e.target.value,
+                              }))
+                            }
+                            className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                          >
+                            <option value="">Select source habit</option>
+                            {availableHabits.map((habit: Habit) => (
+                              <option key={habit.id} value={habit.id}>
+                                {habit.name} ({habit.category})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">
                             Target Habit (Dependent)
                           </label>
                           <select
@@ -211,7 +234,7 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                                 targetHabitId: e.target.value,
                               }))
                             }
-                            className="w-full p-2 border rounded-md bg-background"
+                            className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                             disabled={!newDependency.sourceHabitId}
                           >
                             <option value="">Select target habit</option>
@@ -228,7 +251,7 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium mb-2">Rule Type</label>
+                          <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Rule Type</label>
                           <select
                             value={newDependency.type || 'completion'}
                             onChange={(e) =>
@@ -244,7 +267,7 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                                 return updated;
                               })
                             }
-                            className="w-full p-2 border rounded-md bg-background"
+                            className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                           >
                             <option value="completion">Completion Based</option>
                             <option value="streak">Streak Based</option>
@@ -254,19 +277,18 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium mb-2">Condition</label>
+                          <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Condition</label>
                           <select
                             value={newDependency.condition || 'must_complete'}
                             onChange={(e) =>
                               setNewDependency(
-                                (prev) =>
-                                  ({
-                                    ...prev,
-                                    condition: e.target.value as DependencyRule['condition'],
-                                  }) as Partial<DependencyRule>
+                                (prev) => ({
+                                  ...prev,
+                                  condition: e.target.value as DependencyRule['condition'],
+                                })
                               )
                             }
-                            className="w-full p-2 border rounded-md bg-background"
+                            className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                           >
                             {newDependency.type === 'completion' && (
                               <>
@@ -296,7 +318,7 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                       {(newDependency.condition === 'streak_greater' ||
                         newDependency.condition === 'streak_equal') && (
                         <div>
-                          <label className="block text-sm font-medium mb-2">Streak Value</label>
+                          <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Streak Value</label>
                           <Input
                             type="number"
                             min="1"
@@ -316,7 +338,7 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                       {(newDependency.condition === 'time_before' ||
                         newDependency.condition === 'time_after') && (
                         <div>
-                          <label className="block text-sm font-medium mb-2">Time</label>
+                          <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Time</label>
                           <Input
                             type="time"
                             value={newDependency.timeValue || ''}
@@ -331,7 +353,7 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                       )}
 
                       <div>
-                        <label className="block text-sm font-medium mb-2">
+                        <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">
                           Description (Optional)
                         </label>
                         <Input
@@ -389,8 +411,8 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                             className={cn(
                               'p-4 rounded-lg border transition-colors',
                               dependency.isActive
-                                ? 'bg-background border-border'
-                                : 'bg-muted/50 border-muted opacity-60'
+                                ? 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+                                : 'bg-slate-100 dark:bg-slate-900/50 border-slate-300 dark:border-slate-600 opacity-60'
                             )}
                           >
                             <div className="flex items-start justify-between">
@@ -399,7 +421,7 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                                   <div
                                     className={cn(
                                       'w-2 h-2 rounded-full',
-                                      dependency.isActive ? 'bg-green-500' : 'bg-gray-400'
+                                      dependency.isActive ? 'bg-emerald-500' : 'bg-slate-400'
                                     )}
                                   />
                                   <span className="font-medium">
@@ -407,7 +429,7 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                                   </span>
                                 </div>
 
-                                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                                <div className="flex items-center space-x-4 text-sm text-slate-600 dark:text-slate-400">
                                   <div className="flex items-center space-x-1">
                                     <span>From:</span>
                                     <span className="font-medium">{sourceHabit?.name}</span>
@@ -420,7 +442,7 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                                 </div>
 
                                 {dependency.description && (
-                                  <p className="text-sm text-muted-foreground italic">
+                                  <p className="text-sm text-slate-600 dark:text-slate-400 italic">
                                     {dependency.description}
                                   </p>
                                 )}
@@ -452,8 +474,8 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                 )}
 
                 {dependencies.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Link className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <div className="text-center py-8 text-slate-600 dark:text-slate-400">
+                    <Link className="h-12 w-12 mx-auto mb-4 text-slate-400 dark:text-slate-500" />
                     <h3 className="text-lg font-medium mb-2">No dependencies yet</h3>
                     <p>
                       Create dependency rules to link habits together and build chains of positive

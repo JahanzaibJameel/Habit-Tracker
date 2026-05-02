@@ -118,14 +118,14 @@ export class ErrorBoundary extends Component<Props, State> {
                 </svg>
               </div>
             </div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">Something went wrong</h2>
-            <p className="text-gray-600 mb-4">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">Something went wrong</h2>
+            <p className="text-slate-600 dark:text-slate-400 mb-4">
               {process.env.NODE_ENV === 'development'
                 ? this.state.error?.message
                 : 'An unexpected error occurred. Please try again.'}
             </p>
             {process.env.NODE_ENV === 'development' && this.state.error?.digest && (
-              <p className="text-xs text-gray-500 mb-4">Error ID: {this.state.error.digest}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Error ID: {this.state.error.digest}</p>
             )}
             <div className="flex flex-col sm:flex-row gap-2 justify-center">
               <Button onClick={this.handleReset} variant="outline">

@@ -78,15 +78,15 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
           onClick={onClose}
         >
           <div
-            className="bg-background rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden"
+            className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <Card>
-              <CardHeader className="border-b">
+              <CardHeader className="border-b border-slate-200 dark:border-slate-700">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center space-x-2">
-                    <Tag className="h-5 w-5" />
-                    Batch Operations ({selectedHabitIds.length} selected)
+                    <Tag className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                    <span className="text-slate-900 dark:text-slate-100">Batch Operations ({selectedHabitIds.length} selected)</span>
                   </CardTitle>
                   <Button variant="ghost" size="sm" onClick={onClose}>
                     <X className="h-4 w-4" />
@@ -96,7 +96,7 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
 
               <CardContent className="p-6 space-y-6">
                 {/* Selection Controls */}
-                <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl">
                   <div className="flex items-center space-x-4">
                     <Button
                       variant="outline"
@@ -106,8 +106,8 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                     >
                       {allSelected ? 'Deselect All' : 'Select All'}
                     </Button>
-                    <span className="text-sm text-muted-foreground">
-                      {selectedHabitIds.length} of {habits.length} selected
+                    <span className="text-sm text-slate-600 dark:text-slate-400">
+                      {selectedHabitIds.length} of {habits.length} habits selected
                     </span>
                   </div>
                 </div>
@@ -115,7 +115,7 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                 {/* Batch Actions */}
                 {selectedHabitIds.length > 0 && (
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Batch Actions</h3>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Batch Actions</h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       <Button
@@ -147,8 +147,8 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                     </div>
 
                     {batchAction && (
-                      <div className="mt-4 p-4 bg-muted/50 rounded-lg">
-                        <p className="text-sm text-muted-foreground mb-4">
+                      <div className="mt-4 p-4 bg-slate-100 dark:bg-slate-900/50 rounded-lg">
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
                           Are you sure you want to {batchAction} {selectedHabitIds.length} habit(s)?
                         </p>
                         <div className="flex space-x-3">
@@ -198,7 +198,7 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                                 type: e.target.value as 'daily' | 'weekly' | 'monthly' | 'custom',
                               }))
                             }
-                            className="w-full p-2 border rounded-md bg-background"
+                            className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                           >
                             <option value="daily">Daily</option>
                             <option value="weekly">Weekly</option>
@@ -303,7 +303,7 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                       {selectedHabits.map((habit) => (
                         <div
                           key={habit.id}
-                          className="flex items-center justify-between p-2 bg-background rounded border"
+                          className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700"
                         >
                           <div className="flex items-center space-x-3">
                             <input
@@ -313,11 +313,11 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                               className="rounded"
                             />
                             <span className="text-sm font-medium">{habit.name}</span>
-                            <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                            <span className="text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">
                               {habit.category}
                             </span>
                           </div>
-                          <span className="text-xs text-muted-foreground">{habit.frequency}</span>
+                          <span className="text-xs text-slate-600 dark:text-slate-400">{habit.frequency}</span>
                         </div>
                       ))}
                     </div>
