@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { useTheme } from 'next-themes';
 
 import { Button } from '../components/atoms/Button';
 import { ConfirmDialog } from '../components/atoms/ConfirmDialog';
@@ -14,7 +15,7 @@ import { DraggableHabitCard } from '../components/molecules/DraggableHabitCard';
 const BadgesModal = dynamic(
   () => import('../components/organisms/BadgesModal').then((mod) => ({ default: mod.BadgesModal })),
   {
-    loading: () => <div className="animate-pulse bg-gray-200 h-64 rounded-lg" />,
+    loading: () => <div className="animate-pulse bg-slate-200 dark:bg-slate-700 h-64 rounded-lg" />,
     ssr: false,
   }
 );
@@ -25,7 +26,7 @@ const BatchOperations = dynamic(
       default: mod.BatchOperations,
     })),
   {
-    loading: () => <div className="animate-pulse bg-gray-200 h-64 rounded-lg" />,
+    loading: () => <div className="animate-pulse bg-slate-200 dark:bg-slate-700 h-64 rounded-lg" />,
     ssr: false,
   }
 );
@@ -36,7 +37,7 @@ const HabitDependencies = dynamic(
       default: mod.HabitDependencies,
     })),
   {
-    loading: () => <div className="animate-pulse bg-gray-200 h-64 rounded-lg" />,
+    loading: () => <div className="animate-pulse bg-slate-200 dark:bg-slate-700 h-64 rounded-lg" />,
     ssr: false,
   }
 );
@@ -44,6 +45,7 @@ const HabitDependencies = dynamic(
 import {
   BarChart3,
   Calendar,
+  Check,
   Filter,
   Grid,
   Link,
@@ -53,13 +55,14 @@ import {
   Search,
   Sun,
   Trophy,
+  TrendingUp,
   WifiOff,
 } from 'lucide-react';
 
 const HabitForm = dynamic(
   () => import('../components/organisms/HabitForm').then((mod) => ({ default: mod.HabitForm })),
   {
-    loading: () => <div className="animate-pulse bg-gray-200 h-64 rounded-lg" />,
+    loading: () => <div className="animate-pulse bg-slate-200 dark:bg-slate-700 h-64 rounded-lg" />,
     ssr: false,
   }
 );
@@ -379,10 +382,13 @@ export default function HomePage() {
     [completions, copyToClipboard, shareNative, shareSupported]
   );
 
+  const { theme, setTheme } = useTheme();
+  
   const toggleTheme = useCallback(() => {
-    const newTheme = preferences.theme === 'dark' ? 'light' : 'dark';
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
     updatePreferences({ theme: newTheme });
-  }, [preferences.theme, updatePreferences]);
+  }, [theme, setTheme, updatePreferences]);
 
   const isHabitCompletedToday = useCallback(
     (habitId: string) => todayCompletions.some((completion) => completion.habitId === habitId),
@@ -390,27 +396,28 @@ export default function HomePage() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+      {/* Modern Header */}
+      <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl supports-[backdrop-filter]:bg-white/90 dark:supports-[backdrop-filter]:bg-slate-800/90">
         <div className="container flex h-16 items-center justify-between px-4">
           <div className="flex items-center space-x-4">
             <div>
-              <h1 className="text-xl font-bold">Habit Tracker</h1>
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <span>{filteredHabits.length} habits</span>
-                <span aria-hidden="true">&middot;</span>
-                <span>{todayCompletions.length} completed today</span>
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Habit Tracker</h1>
+              <div className="flex items-center space-x-3 text-sm text-slate-600 dark:text-slate-400">
+                <span className="font-medium">{filteredHabits.length} habits</span>
+                <span className="text-slate-400 dark:text-slate-500">•</span>
+                <span className="font-medium">{todayCompletions.length} completed today</span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3">
             {selectedHabitIds.length > 0 && (
               <div className="mr-4 hidden items-center space-x-2 lg:flex">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                   {selectedHabitIds.length} selected
                 </span>
-                <Button variant="outline" size="sm" onClick={() => setShowBatchOperations(true)}>
+                <Button variant="secondary" size="sm" onClick={() => setShowBatchOperations(true)}>
                   Batch Actions
                 </Button>
                 <Button variant="ghost" size="sm" onClick={deselectAllHabits}>
@@ -422,10 +429,10 @@ export default function HomePage() {
               variant="ghost"
               size="icon"
               onClick={toggleTheme}
-              className="h-9 w-9"
+              className="h-9 w-9 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
               aria-label="Toggle theme"
             >
-              {preferences.theme === 'dark' ? (
+              {theme === 'dark' ? (
                 <Sun className="h-4 w-4" />
               ) : (
                 <Moon className="h-4 w-4" />
@@ -435,38 +442,45 @@ export default function HomePage() {
         </div>
       </header>
 
-      <div className="container px-4 py-8 sm:grid sm:grid-cols-[240px_minmax(0,1fr)] sm:gap-8">
+      <div className="container px-4 py-8 sm:grid sm:grid-cols-[280px_minmax(0,1fr)] sm:gap-8">
+        {/* Modern Sidebar */}
         <aside data-testid="sidebar" className="mb-6 sm:mb-0">
-          <div className="sticky top-24 space-y-4 rounded-2xl border bg-card p-4 shadow-sm">
+          <div className="sticky top-24 space-y-6 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 shadow-lg">
             <div>
-              <p className="text-sm font-semibold">Workspace</p>
-              <p className="text-sm text-muted-foreground">
+              <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Workspace</h3>
+              <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400 mt-1">
                 Switch between planning and progress views.
               </p>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Button
                 type="button"
-                variant={activePanel === 'habits' ? 'default' : 'outline'}
+                variant={activePanel === 'habits' ? 'default' : 'secondary'}
                 className="w-full justify-start"
                 onClick={() => setActivePanel('habits')}
               >
-                <Calendar className="mr-2 h-4 w-4" />
+                <Calendar className="mr-3 h-4 w-4" />
                 Habits
               </Button>
               <Button
                 type="button"
-                variant={activePanel === 'analytics' ? 'default' : 'outline'}
+                variant={activePanel === 'analytics' ? 'default' : 'secondary'}
                 className="w-full justify-start"
                 onClick={() => setActivePanel('analytics')}
               >
-                <BarChart3 className="mr-2 h-4 w-4" />
+                <BarChart3 className="mr-3 h-4 w-4" />
                 Analytics
               </Button>
             </div>
-            <div className="rounded-xl bg-muted/50 p-4 text-sm text-muted-foreground">
-              <p>{analyticsSummary.activeHabits.length} active habits</p>
-              <p>{analyticsSummary.completedTodayIds.size} completed today</p>
+            <div className="rounded-xl bg-slate-50 dark:bg-slate-900/50 p-4 text-sm">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-medium text-slate-700 dark:text-slate-300">Active Habits</span>
+                <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{analyticsSummary.activeHabits.length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-slate-700 dark:text-slate-300">Completed Today</span>
+                <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{analyticsSummary.completedTodayIds.size}</span>
+              </div>
             </div>
           </div>
         </aside>
@@ -475,20 +489,20 @@ export default function HomePage() {
           {!appState.isOnline && (
             <div
               data-testid="error-message"
-              className="flex flex-col gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-amber-900 sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-4 rounded-2xl border border-amber-300 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800/30 p-6 text-amber-900 dark:text-amber-200 sm:flex-row sm:items-center sm:justify-between"
             >
-              <div className="flex items-start gap-3">
-                <WifiOff className="mt-0.5 h-5 w-5 shrink-0" />
+              <div className="flex items-start gap-4">
+                <WifiOff className="mt-1 h-6 w-6 shrink-0 text-amber-600 dark:text-amber-400" />
                 <div>
-                  <p className="font-semibold">Connection lost</p>
-                  <p className="text-sm">
+                  <p className="font-semibold text-amber-900 dark:text-amber-100">Connection lost</p>
+                  <p className="text-sm leading-relaxed text-amber-800 dark:text-amber-300">
                     {appState.error ?? 'You are offline. Your local data is still available.'}
                   </p>
                 </div>
               </div>
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 data-testid="retry-button"
                 onClick={() => {
                   if (typeof window === 'undefined') {
@@ -502,21 +516,14 @@ export default function HomePage() {
             </div>
           )}
 
+          {/* Action Bar */}
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-3">
               <Button
                 type="button"
-                variant="outline"
-                className="sm:hidden"
-                data-testid="mobile-menu"
-              >
-                <List className="mr-2 h-4 w-4" />
-                Menu
-              </Button>
-              <Button
-                type="button"
-                variant={activePanel === 'habits' ? 'default' : 'outline'}
+                variant={activePanel === 'habits' ? 'default' : 'secondary'}
                 onClick={() => setActivePanel('habits')}
+                className="px-6"
               >
                 Habits
               </Button>
@@ -524,20 +531,21 @@ export default function HomePage() {
                 type="button"
                 id="analytics-tab"
                 data-testid="analytics-tab"
-                variant={activePanel === 'analytics' ? 'default' : 'outline'}
+                variant={activePanel === 'analytics' ? 'default' : 'secondary'}
                 onClick={() => setActivePanel('analytics')}
+                className="px-6"
               >
                 Analytics
               </Button>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-3">
               <Button
                 onClick={() => {
                   setEditingHabit(null);
                   setShowHabitForm(true);
                 }}
-                className="flex items-center space-x-2"
+                className="flex items-center gap-2"
                 data-testid="add-habit-button"
               >
                 <Plus className="h-4 w-4" />
@@ -546,7 +554,7 @@ export default function HomePage() {
               <Button
                 variant="outline"
                 onClick={() => setShowDependencies(true)}
-                className="flex items-center space-x-2"
+                className="flex items-center gap-2"
               >
                 <Link className="h-4 w-4" />
                 <span>Dependencies</span>
@@ -554,7 +562,7 @@ export default function HomePage() {
               <Button
                 variant="outline"
                 onClick={() => setShowBadges(true)}
-                className="flex items-center space-x-2"
+                className="flex items-center gap-2"
               >
                 <Trophy className="h-4 w-4" />
                 <span>Badges</span>
@@ -564,30 +572,31 @@ export default function HomePage() {
 
           {activePanel === 'habits' ? (
             <>
+              {/* Search and Filter Bar */}
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex flex-1 items-center space-x-2">
+                <div className="flex flex-1 items-center gap-3">
                   <div className="relative max-w-md flex-1">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                     <Input
                       placeholder="Search habits..."
                       value={searchQuery}
                       onChange={(event) => setSearchQuery(event.target.value)}
-                      className="pl-10"
+                      className="pl-11"
                     />
                   </div>
-                  <Button variant="outline" size="icon" type="button" aria-label="Filter habits">
+                  <Button variant="outline" size="icon" type="button" aria-label="Filter habits" className="text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200">
                     <Filter className="h-4 w-4" />
                   </Button>
                 </div>
 
-                <div className="flex items-center space-x-2">
-                  <div className="flex items-center rounded-md border">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center overflow-hidden rounded-lg border border-slate-300 dark:border-slate-600">
                     <Button
                       type="button"
                       variant={viewMode === 'grid' ? 'default' : 'ghost'}
                       size="sm"
                       onClick={() => setViewMode('grid')}
-                      className="rounded-r-none"
+                      className="rounded-r-none border-r border-slate-300 dark:border-slate-600"
                     >
                       <Grid className="h-4 w-4" />
                     </Button>
@@ -606,12 +615,12 @@ export default function HomePage() {
 
               <div data-testid="habit-list">
                 {filteredHabits.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed py-16 text-center">
-                    <div className="mb-4 rounded-full bg-muted p-6">
-                      <Calendar className="h-12 w-12 text-muted-foreground" />
+                  <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50 py-20 text-center">
+                    <div className="mb-6 rounded-2xl bg-white dark:bg-slate-800 p-6 shadow-sm">
+                      <Calendar className="h-16 w-16 text-slate-400 dark:text-slate-500" />
                     </div>
-                    <h2 className="mb-2 text-xl font-semibold">No habits found</h2>
-                    <p className="mb-6 max-w-md text-muted-foreground">
+                    <h2 className="mb-3 text-2xl font-bold text-slate-900 dark:text-slate-100">No habits found</h2>
+                    <p className="mb-8 max-w-md text-lg leading-relaxed text-slate-600 dark:text-slate-400">
                       {searchQuery
                         ? 'No habits match your search. Try different keywords.'
                         : 'Start building better habits by creating your first habit.'}
@@ -622,9 +631,10 @@ export default function HomePage() {
                           setEditingHabit(null);
                           setShowHabitForm(true);
                         }}
-                        className="flex items-center space-x-2"
+                        className="flex items-center gap-3 px-8 py-3"
+                        size="lg"
                       >
-                        <Plus className="h-4 w-4" />
+                        <Plus className="h-5 w-5" />
                         <span>Create Your First Habit</span>
                       </Button>
                     )}
@@ -667,66 +677,93 @@ export default function HomePage() {
               </div>
             </>
           ) : (
-            <section className="space-y-6">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="rounded-2xl border bg-card p-5 shadow-sm">
-                  <p className="text-sm text-muted-foreground">Active Habits</p>
-                  <p className="mt-3 text-3xl font-bold">{analyticsSummary.activeHabits.length}</p>
-                  <p className="mt-2 text-sm text-muted-foreground">being tracked</p>
+            <section className="space-y-8">
+              {/* Stats Grid */}
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 shadow-lg hover:shadow-xl transition-shadow">
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Active Habits</p>
+                    <div className="h-8 w-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+                      <Calendar className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                  </div>
+                  <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{analyticsSummary.activeHabits.length}</p>
+                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">being tracked</p>
                 </div>
 
-                <div className="rounded-2xl border bg-card p-5 shadow-sm">
-                  <p className="text-sm text-muted-foreground">Current Streak</p>
-                  <p className="mt-3 text-3xl font-bold">{analyticsSummary.longestStreak}</p>
-                  <p className="mt-2 text-sm text-muted-foreground">days in a row</p>
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 shadow-lg hover:shadow-xl transition-shadow">
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Current Streak</p>
+                    <div className="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                      <TrendingUp className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                    </div>
+                  </div>
+                  <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{analyticsSummary.longestStreak}</p>
+                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">days in a row</p>
                 </div>
 
-                <div className="rounded-2xl border bg-card p-5 shadow-sm">
-                  <p className="text-sm text-muted-foreground">Completion Rate</p>
-                  <p className="mt-3 text-3xl font-bold">{analyticsSummary.completionRate}%</p>
-                  <p className="mt-2 text-sm text-muted-foreground">today</p>
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 shadow-lg hover:shadow-xl transition-shadow">
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Completion Rate</p>
+                    <div className="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                      <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                  </div>
+                  <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{analyticsSummary.completionRate}%</p>
+                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">today</p>
                 </div>
 
-                <div className="rounded-2xl border bg-card p-5 shadow-sm">
-                  <p className="text-sm text-muted-foreground">Total Completions</p>
-                  <p className="mt-3 text-3xl font-bold">
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 shadow-lg hover:shadow-xl transition-shadow">
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Completions</p>
+                    <div className="h-8 w-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                      <BarChart3 className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                    </div>
+                  </div>
+                  <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">
                     {analytics?.totalCompletions ?? completions.length}
                   </p>
-                  <p className="mt-2 text-sm text-muted-foreground">tracked in this workspace</p>
+                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">tracked in this workspace</p>
                 </div>
               </div>
 
+              {/* Category Breakdown */}
               <div
                 data-testid="category-breakdown"
-                className="rounded-2xl border bg-card p-5 shadow-sm"
+                className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 shadow-lg"
               >
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 className="text-lg font-semibold">Category Breakdown</h2>
-                    <p className="text-sm text-muted-foreground">
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Category Breakdown</h2>
+                    <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400 mt-1">
                       Where your consistency is stacking up.
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-4 space-y-3">
+                <div className="space-y-4">
                   {analyticsSummary.categoryBreakdown.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                      Create a habit to start seeing analytics.
-                    </p>
+                    <div className="text-center py-8">
+                      <p className="text-slate-600 dark:text-slate-400">
+                        Create a habit to start seeing analytics.
+                      </p>
+                    </div>
                   ) : (
                     analyticsSummary.categoryBreakdown.map((category) => (
                       <div
                         key={category.category}
-                        className="flex items-center justify-between rounded-xl bg-muted/40 px-4 py-3"
+                        className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-900/50 px-6 py-4 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
                       >
                         <div>
-                          <p className="font-medium capitalize">{category.category}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {category.habits} habit(s)
+                          <p className="font-semibold capitalize text-slate-900 dark:text-slate-100">{category.category}</p>
+                          <p className="text-sm text-slate-600 dark:text-slate-400">
+                            {category.habits} habit{category.habits !== 1 ? 's' : ''}
                           </p>
                         </div>
-                        <p className="text-sm font-semibold">{category.completions} completions</p>
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{category.completions}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">completion{category.completions !== 1 ? 's' : ''}</p>
+                        </div>
                       </div>
                     ))
                   )}
