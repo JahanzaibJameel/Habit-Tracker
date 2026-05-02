@@ -141,6 +141,21 @@ function getSeverityColor(severity: BudgetViolation['severity']): string {
   }
 }
 
+function getSeverityColorClass(severity: BudgetViolation['severity']): string {
+  switch (severity) {
+    case 'low':
+      return 'bg-amber-500 text-white';
+    case 'medium':
+      return 'bg-rose-500 text-white';
+    case 'high':
+      return 'bg-rose-600 text-white';
+    case 'critical':
+      return 'bg-rose-700 text-white';
+    default:
+      return 'bg-slate-500 text-white';
+  }
+}
+
 /**
  * Get severity icon
  */
@@ -257,82 +272,35 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
 
   return (
     <div
-      className={`budget-violation-banner ${className || ''}`}
-      style={{
-        position: 'fixed',
-        top: '20px',
-        right: '20px',
-        maxWidth: '500px',
-        width: '100%',
-        backgroundColor: '#fef2f2',
-        border: '2px solid #ef4444',
-        borderRadius: '8px',
-        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
-        zIndex: 9999,
-        ...style,
-      }}
+      className={`budget-violation-banner fixed top-5 right-5 max-w-md w-full bg-rose-50 dark:bg-rose-900/20 border-2 border-rose-500 dark:border-rose-400 rounded-xl shadow-2xl z-50 ${className || ''}`}
+      style={style}
     >
       {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '16px',
-          borderBottom: '1px solid #fecaca',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div
-            style={{
-              width: '24px',
-              height: '24px',
-              borderRadius: '50%',
-              backgroundColor: '#ef4444',
-              color: 'white',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '14px',
-              fontWeight: 'bold',
-            }}
-          >
+      <div className="flex items-center justify-between p-4 border-b border-rose-200 dark:border-rose-700">
+        <div className="flex items-center gap-3">
+          <div className="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-sm font-bold">
             !
           </div>
           <div>
-            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#991b1b' }}>
+            <h3 className="m-0 text-base font-semibold text-rose-900 dark:text-rose-100">
               Performance Budget Violations
             </h3>
-            <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#7f1d1d' }}>
+            <p className="m-1 mt-1 text-sm text-rose-700 dark:text-rose-200">
               {violations.length} violation{violations.length !== 1 ? 's' : ''} detected
             </p>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div className="flex gap-2">
           <button
             onClick={() => setShowAllDetails(!showAllDetails)}
-            style={{
-              padding: '6px 12px',
-              border: '1px solid #d1d5db',
-              borderRadius: '4px',
-              backgroundColor: 'white',
-              fontSize: '12px',
-              cursor: 'pointer',
-            }}
+            className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-800 text-xs cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
           >
             {showAllDetails ? 'Hide' : 'Show'} Details
           </button>
           <button
             onClick={handleDismiss}
-            style={{
-              padding: '6px 12px',
-              border: '1px solid #d1d5db',
-              borderRadius: '4px',
-              backgroundColor: 'white',
-              fontSize: '12px',
-              cursor: 'pointer',
-            }}
+            className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-800 text-xs cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
           >
             Dismiss
           </button>
@@ -340,96 +308,67 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
       </div>
 
       {/* Violations List */}
-      <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+      <div className="max-h-96 overflow-y-auto">
         {displayViolations.map((violation) => {
           const violationId = getViolationId(violation);
           const isSelected = selectedViolations.has(violationId);
           const isExpanded = expandedViolation === violationId;
-          const severityColor = getSeverityColor(violation.severity);
+          const severityColorClass = getSeverityColorClass(violation.severity);
 
           return (
             <div
               key={violationId}
-              style={{
-                padding: '12px 16px',
-                borderBottom: '1px solid #fecaca',
-                backgroundColor: isSelected ? '#fee2e2' : 'transparent',
-                cursor: 'pointer',
-                transition: 'background-color 0.2s',
-              }}
+              className={`p-3 border-b border-rose-200 dark:border-rose-700 cursor-pointer transition-colors ${
+                isSelected ? 'bg-rose-100 dark:bg-rose-900/30' : 'bg-transparent'
+              }`}
               onClick={() => handleToggleSelection(violationId)}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div className="flex items-center gap-3">
                 <input
                   type="checkbox"
                   checked={isSelected}
                   onChange={() => handleToggleSelection(violationId)}
                   onClick={(e) => e.stopPropagation()}
-                  style={{ cursor: 'pointer' }}
+                  className="cursor-pointer"
                 />
 
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span
-                      style={{
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        backgroundColor: severityColor,
-                        color: 'white',
-                        fontSize: '10px',
-                        fontWeight: '600',
-                      }}
-                    >
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className={`px-1.5 py-0.5 rounded text-xs font-semibold ${severityColorClass}`}>
                       {violation.severity.toUpperCase()}
                     </span>
-                    <span style={{ fontWeight: '600', fontSize: '14px' }}>{violation.metric}</span>
-                    <span style={{ color: '#7f1d1d', fontSize: '14px' }}>
+                    <span className="font-semibold text-sm">{violation.metric}</span>
+                    <span className="text-rose-700 dark:text-rose-300 text-sm">
                       {formatMetricValue(violation.metric, violation.actual)} /{' '}
                       {formatMetricValue(violation.metric, violation.threshold)}
                     </span>
                   </div>
 
-                  <div style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>
+                  <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     Violated {violation.count} time{violation.count !== 1 ? 's' : ''}
                     {violation.url && (
-                      <span style={{ marginLeft: '8px' }}>
+                      <span className="ml-2">
                         on {new URL(violation.url).pathname}
                       </span>
                     )}
                   </div>
 
                   {(showAllDetails || isExpanded) && violation.context && (
-                    <div style={{ marginTop: '8px' }}>
+                    <div className="mt-2">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleToggleExpand(violationId);
                         }}
-                        style={{
-                          padding: '4px 8px',
-                          border: '1px solid #d1d5db',
-                          borderRadius: '4px',
-                          backgroundColor: 'white',
-                          fontSize: '11px',
-                          cursor: 'pointer',
-                        }}
+                        className="px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-800 text-xs cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                       >
                         {isExpanded ? 'Hide' : 'Show'} Context
                       </button>
 
                       {isExpanded && (
-                        <div
-                          style={{
-                            marginTop: '8px',
-                            padding: '8px',
-                            backgroundColor: '#f9fafb',
-                            borderRadius: '4px',
-                            fontSize: '11px',
-                            fontFamily: 'monospace',
-                          }}
-                        >
+                        <div className="mt-2 p-2 bg-slate-50 dark:bg-slate-900/50 rounded text-xs font-mono">
                           {Object.entries(violation.context).map(([key, value]) => (
-                            <div key={key} style={{ marginBottom: '4px' }}>
+                            <div key={key} className="mb-1">
                               <strong>{key}:</strong> {JSON.stringify(value)}
                             </div>
                           ))}
@@ -439,20 +378,7 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
                   )}
                 </div>
 
-                <div
-                  style={{
-                    width: '16px',
-                    height: '16px',
-                    borderRadius: '50%',
-                    backgroundColor: severityColor,
-                    color: 'white',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '10px',
-                    fontWeight: 'bold',
-                  }}
-                >
+                <div className={`w-4 h-4 rounded-full ${severityColorClass} flex items-center justify-center text-xs font-bold`}>
                   {getSeverityIcon(violation.severity)}
                 </div>
               </div>
@@ -461,31 +387,15 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
         })}
 
         {hasMoreViolations && (
-          <div
-            style={{
-              padding: '12px 16px',
-              textAlign: 'center',
-              fontSize: '12px',
-              color: '#6b7280',
-            }}
-          >
+          <div className="p-3 text-center text-xs text-slate-500 dark:text-slate-400">
             ... and {violations.length - maxViolations} more violations
           </div>
         )}
       </div>
 
       {/* Footer Actions */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '12px 16px',
-          backgroundColor: '#fef2f2',
-          borderTop: '1px solid #fecaca',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div className="flex items-center justify-between p-3 bg-rose-50 dark:bg-rose-900/20 border-t border-rose-200 dark:border-rose-700">
+        <div className="flex items-center gap-2">
           <input
             type="checkbox"
             checked={allSelected}
@@ -501,9 +411,9 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
                 setSelectedViolations(new Set(displayViolations.map(getViolationId)));
               }
             }}
-            style={{ cursor: 'pointer' }}
+            className="cursor-pointer"
           />
-          <span style={{ fontSize: '14px' }}>
+          <span className="text-sm">
             {allSelected
               ? 'All selected'
               : someSelected
@@ -512,34 +422,18 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
           </span>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div className="flex gap-2">
           {someSelected && (
             <button
               onClick={handleAcknowledge}
-              style={{
-                padding: '6px 12px',
-                border: '1px solid #10b981',
-                borderRadius: '4px',
-                backgroundColor: '#10b981',
-                color: 'white',
-                fontSize: '12px',
-                cursor: 'pointer',
-              }}
+              className="px-3 py-1.5 border border-emerald-600 rounded bg-emerald-600 text-white text-xs cursor-pointer hover:bg-emerald-700 transition-colors"
             >
               Acknowledge Selected
             </button>
           )}
           <button
             onClick={() => window.location.reload()}
-            style={{
-              padding: '6px 12px',
-              border: '1px solid #3b82f6',
-              borderRadius: '4px',
-              backgroundColor: '#3b82f6',
-              color: 'white',
-              fontSize: '12px',
-              cursor: 'pointer',
-            }}
+            className="px-3 py-1.5 border border-indigo-600 rounded bg-indigo-600 text-white text-xs cursor-pointer hover:bg-indigo-700 transition-colors"
           >
             Reload Page
           </button>
@@ -615,21 +509,10 @@ export const PerformanceAlert: React.FC<{
   const severityColor = getSeverityColor(violation.severity);
 
   if (compact) {
+    const severityColorClass = getSeverityColorClass(violation.severity);
     return (
-      <div
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '6px',
-          padding: '4px 8px',
-          backgroundColor: '#fef2f2',
-          border: `1px solid ${severityColor}`,
-          borderRadius: '4px',
-          fontSize: '12px',
-          color: '#991b1b',
-        }}
-      >
-        <span style={{ color: severityColor, fontWeight: 'bold' }}>
+      <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-rose-50 dark:bg-rose-900/20 border border-rose-300 dark:border-rose-700 rounded text-xs text-rose-900 dark:text-rose-100">
+        <span className={`font-bold ${severityColorClass}`}>
           {violation.severity.toUpperCase()}
         </span>
         <span>
@@ -638,14 +521,7 @@ export const PerformanceAlert: React.FC<{
         {onDismiss && (
           <button
             onClick={onDismiss}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#6b7280',
-              cursor: 'pointer',
-              padding: '0',
-              fontSize: '14px',
-            }}
+            className="bg-transparent border-none text-slate-500 cursor-pointer p-0 text-sm hover:text-slate-700 dark:hover:text-slate-300"
           >
             ×
           </button>
@@ -654,43 +530,23 @@ export const PerformanceAlert: React.FC<{
     );
   }
 
+  const severityColorClass = getSeverityColorClass(violation.severity);
   return (
-    <div
-      style={{
-        padding: '12px',
-        backgroundColor: '#fef2f2',
-        border: `1px solid ${severityColor}`,
-        borderRadius: '6px',
-        margin: '8px 0',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div
-          style={{
-            width: '20px',
-            height: '20px',
-            borderRadius: '50%',
-            backgroundColor: severityColor,
-            color: 'white',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '12px',
-            fontWeight: 'bold',
-          }}
-        >
+    <div className="p-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-300 dark:border-rose-700 rounded-lg mx-0 my-2">
+      <div className="flex items-center gap-3">
+        <div className={`w-5 h-5 rounded-full ${severityColorClass} text-white flex items-center justify-center text-xs font-bold`}>
           !
         </div>
 
-        <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: '600', fontSize: '14px', color: '#991b1b' }}>
+        <div className="flex-1">
+          <div className="font-semibold text-sm text-rose-900 dark:text-rose-100">
             {violation.metric} Budget Violation
           </div>
-          <div style={{ fontSize: '13px', color: '#7f1d1d', marginTop: '2px' }}>
+          <div className="text-sm text-rose-700 dark:text-rose-300 mt-0.5">
             {formatMetricValue(violation.metric, violation.actual)} exceeds budget of{' '}
             {formatMetricValue(violation.metric, violation.threshold)}
           </div>
-          <div style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>
+          <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Severity: {violation.severity} | Violated {violation.count} times
           </div>
         </div>
@@ -698,14 +554,7 @@ export const PerformanceAlert: React.FC<{
         {onDismiss && (
           <button
             onClick={onDismiss}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#6b7280',
-              cursor: 'pointer',
-              fontSize: '16px',
-              padding: '4px',
-            }}
+            className="bg-transparent border-none text-slate-500 cursor-pointer text-base p-1 hover:text-slate-700 dark:hover:text-slate-300"
           >
             ×
           </button>

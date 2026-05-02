@@ -50,20 +50,20 @@ const mockHabits = [
 
 function ComponentShowcase() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 md:p-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8 flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
               UI Component Showcase
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">
+            <p className="text-slate-600 dark:text-slate-400 mt-2">
               Available components in the habit tracker application
             </p>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-4">
             <ThemeToggle />
-            <span className="text-sm text-gray-600 dark:text-gray-400">
+            <span className="text-sm text-slate-600 dark:text-slate-400">
               Theme:{' '}
               {typeof window !== 'undefined'
                 ? document.documentElement.classList.contains('dark')
@@ -76,10 +76,10 @@ function ComponentShowcase() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Buttons Section */}
-          <Card className="bg-white dark:bg-gray-800 shadow-lg">
+          <Card className="bg-white dark:bg-slate-800 shadow-lg">
             <CardHeader>
-              <CardTitle className="text-gray-900 dark:text-white">Buttons</CardTitle>
-              <CardDescription className="text-gray-600 dark:text-gray-400">
+              <CardTitle className="text-slate-900 dark:text-slate-100">Buttons</CardTitle>
+              <CardDescription className="text-slate-600 dark:text-slate-400">
                 Various button styles and states
               </CardDescription>
             </CardHeader>
@@ -105,10 +105,10 @@ function ComponentShowcase() {
           </Card>
 
           {/* Inputs Section */}
-          <Card className="bg-white dark:bg-gray-800 shadow-lg">
+          <Card className="bg-white dark:bg-slate-800 shadow-lg">
             <CardHeader>
-              <CardTitle className="text-gray-900 dark:text-white">Input Fields</CardTitle>
-              <CardDescription className="text-gray-600 dark:text-gray-400">
+              <CardTitle className="text-slate-900 dark:text-slate-100">Input Fields</CardTitle>
+              <CardDescription className="text-slate-600 dark:text-slate-400">
                 Form inputs with various states
               </CardDescription>
             </CardHeader>
@@ -125,10 +125,10 @@ function ComponentShowcase() {
           </Card>
 
           {/* Cards Section */}
-          <Card className="bg-white dark:bg-gray-800 shadow-lg">
+          <Card className="bg-white dark:bg-slate-800 shadow-lg">
             <CardHeader>
-              <CardTitle className="text-gray-900 dark:text-white">Card Components</CardTitle>
-              <CardDescription className="text-gray-600 dark:text-gray-400">
+              <CardTitle className="text-slate-900 dark:text-slate-100">Card Components</CardTitle>
+              <CardDescription className="text-slate-600 dark:text-slate-400">
                 Flexible card layouts
               </CardDescription>
             </CardHeader>
@@ -153,10 +153,10 @@ function ComponentShowcase() {
           </Card>
 
           {/* Draggable Habit Card Demo */}
-          <Card className="bg-white dark:bg-gray-800 shadow-lg">
+          <Card className="bg-white dark:bg-slate-800 shadow-lg">
             <CardHeader>
-              <CardTitle className="text-gray-900 dark:text-white">Draggable Components</CardTitle>
-              <CardDescription className="text-gray-600 dark:text-gray-400">
+              <CardTitle className="text-slate-900 dark:text-slate-100">Draggable Components</CardTitle>
+              <CardDescription className="text-slate-600 dark:text-slate-400">
                 Interactive drag-and-drop habit cards
               </CardDescription>
             </CardHeader>
@@ -164,15 +164,15 @@ function ComponentShowcase() {
               {mockHabits.map((habit) => (
                 <div
                   key={habit.id}
-                  className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800"
+                  className="border border-slate-200 dark:border-slate-700 rounded-lg p-4 bg-slate-50 dark:bg-slate-800"
                 >
-                  <h3 className="font-semibold text-gray-900 dark:text-white">{habit.name}</h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">{habit.description}</p>
+                  <h3 className="font-semibold text-slate-900 dark:text-slate-100">{habit.name}</h3>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm">{habit.description}</p>
                   <div className="flex items-center justify-between mt-2">
                     <span className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 px-2 py-1 rounded">
                       {habit.category}
                     </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
                       Streak: {habit.streak} days
                     </span>
                   </div>
@@ -183,10 +183,10 @@ function ComponentShowcase() {
         </div>
 
         {/* Component Status */}
-        <Card className="bg-white dark:bg-gray-800 shadow-lg mt-6">
+        <Card className="bg-white dark:bg-slate-800 shadow-lg mt-6">
           <CardHeader>
-            <CardTitle className="text-gray-900 dark:text-white">Available Components</CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
+            <CardTitle className="text-slate-900 dark:text-slate-100">Available Components</CardTitle>
+            <CardDescription className="text-slate-600 dark:text-slate-400">
               Components that are currently available in the project
             </CardDescription>
           </CardHeader>

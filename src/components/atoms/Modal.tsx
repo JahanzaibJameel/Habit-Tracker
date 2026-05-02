@@ -99,7 +99,7 @@ const Modal: React.FC<ModalProps> = ({
         <div
           ref={modalRef}
           className={cn(
-            'relative z-10 my-auto w-full rounded-lg bg-background shadow-lg',
+            'relative z-10 my-auto w-full rounded-xl bg-white dark:bg-slate-800 shadow-2xl',
             'max-h-[calc(100vh-3rem)] overflow-hidden',
             'transform transition-all duration-200 ease-out',
             sizeClasses[size],
@@ -113,15 +113,15 @@ const Modal: React.FC<ModalProps> = ({
         >
           {/* Header */}
           {(title || showCloseButton) && (
-            <div className="flex items-center justify-between border-b border-border p-6">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 p-6">
               <div className="flex-1">
                 {title && (
-                  <h2 id="modal-title" className="text-lg font-semibold">
+                  <h2 id="modal-title" className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                     {title}
                   </h2>
                 )}
                 {description && (
-                  <p id="modal-description" className="mt-1 text-sm text-muted-foreground">
+                  <p id="modal-description" className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                     {description}
                   </p>
                 )}
@@ -129,7 +129,7 @@ const Modal: React.FC<ModalProps> = ({
               {showCloseButton && (
                 <button
                   type="button"
-                  className="ml-4 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  className="ml-4 flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 dark:text-slate-500 transition-colors hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300"
                   onClick={onClose}
                   aria-label="Close modal"
                 >

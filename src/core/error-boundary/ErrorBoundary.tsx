@@ -131,41 +131,26 @@ const DefaultProductionFallback: ComponentType<ErrorFallbackProps> = ({
   return (
     <div
       data-boundary-id={boundaryId}
-      style={{
-        padding: '1rem',
-        textAlign: 'center',
-        backgroundColor: '#fef2f2',
-        border: '1px solid #fecaca',
-        borderRadius: '0.5rem',
-        color: '#991b1b',
-      }}
+      className="p-4 text-center bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/30 rounded-xl text-rose-900 dark:text-rose-100"
     >
-      <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', fontWeight: 'bold' }}>
+      <h3 className="mb-2 text-base font-bold">
         Something went wrong
       </h3>
-      <p style={{ margin: '0 0 1rem 0', fontSize: '0.875rem' }}>
+      <p className="mb-4 text-sm">
         This section encountered an error and couldn't display properly.
       </p>
 
       {canRetry && retryCount < maxRetries && (
         <button
           onClick={onRetry}
-          style={{
-            padding: '0.5rem 1rem',
-            backgroundColor: '#ff6b6b',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            marginRight: '0.5rem',
-          }}
+          className="px-4 py-2 bg-rose-600 text-white border-none rounded-lg cursor-pointer mr-2 hover:bg-rose-700 transition-colors"
         >
           Try Again {retryCount > 0 && `(${retryCount}/${maxRetries})`}
         </button>
       )}
 
       {circuitBreakerOpen && (
-        <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.75rem', fontStyle: 'italic' }}>
+        <p className="mt-2 text-xs italic">
           Temporarily disabled due to repeated errors. Please refresh the page.
         </p>
       )}
@@ -193,45 +178,23 @@ const DefaultDevelopmentFallback: ComponentType<ErrorFallbackProps> = ({
     <div
       role="alert"
       aria-live="polite"
-      style={{
-        padding: '1rem',
-        border: '2px solid #e74c3c',
-        borderRadius: '8px',
-        backgroundColor: '#fadbd8',
-        color: '#c0392b',
-        margin: '1rem 0',
-        fontFamily: 'monospace',
-      }}
+      className="p-4 border-2 border-rose-500 dark:border-rose-400 rounded-xl bg-rose-100 dark:bg-rose-900/30 text-rose-900 dark:text-rose-100 mx-4 my-4 font-mono"
     >
       <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '1rem',
-        }}
+        className="flex justify-between items-center mb-4"
       >
-        <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 'bold' }}>
+        <h3 className="m-0 text-base font-bold">
           Error Boundary: {boundaryId}
         </h3>
-        <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>Retry: {retryCount}</span>
+        <span className="text-xs opacity-70">Retry: {retryCount}</span>
       </div>
 
-      <p style={{ margin: '0 0 1rem 0', fontSize: '0.875rem' }}>{error.message}</p>
+      <p className="m-0 mb-4 text-sm">{error.message}</p>
 
-      <div style={{ marginBottom: '1rem' }}>
+      <div className="mb-4">
         <button
           onClick={() => setShowDetails(!showDetails)}
-          style={{
-            padding: '0.25rem 0.5rem',
-            backgroundColor: '#3498db',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            marginRight: '0.5rem',
-            fontSize: '0.75rem',
-          }}
+          className="px-2 py-1 bg-sky-600 text-white border-none rounded cursor-pointer mr-2 text-xs hover:bg-sky-700 transition-colors"
         >
           {showDetails ? 'Hide' : 'Show'} Details
         </button>
@@ -239,16 +202,7 @@ const DefaultDevelopmentFallback: ComponentType<ErrorFallbackProps> = ({
         {recoveryStrategies.includes(ErrorRecoveryStrategy.RETRY) && !circuitBreakerOpen && (
           <button
             onClick={onRetry}
-            style={{
-              padding: '0.25rem 0.5rem',
-              backgroundColor: '#27ae60',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              marginRight: '0.5rem',
-              fontSize: '0.75rem',
-            }}
+            className="px-2 py-1 bg-emerald-600 text-white border-none rounded cursor-pointer mr-2 text-xs hover:bg-emerald-700 transition-colors"
           >
             Retry
           </button>
@@ -257,16 +211,7 @@ const DefaultDevelopmentFallback: ComponentType<ErrorFallbackProps> = ({
         {recoveryStrategies.includes(ErrorRecoveryStrategy.RESET) && (
           <button
             onClick={onReset}
-            style={{
-              padding: '0.25rem 0.5rem',
-              backgroundColor: '#f39c12',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              marginRight: '0.5rem',
-              fontSize: '0.75rem',
-            }}
+            className="px-2 py-1 bg-amber-600 text-white border-none rounded cursor-pointer mr-2 text-xs hover:bg-amber-700 transition-colors"
           >
             Reset
           </button>
@@ -275,15 +220,7 @@ const DefaultDevelopmentFallback: ComponentType<ErrorFallbackProps> = ({
         {recoveryStrategies.includes(ErrorRecoveryStrategy.IGNORE) && (
           <button
             onClick={onIgnore}
-            style={{
-              padding: '0.25rem 0.5rem',
-              backgroundColor: '#95a5a6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '0.75rem',
-            }}
+            className="px-2 py-1 bg-slate-600 text-white border-none rounded cursor-pointer text-xs hover:bg-slate-700 transition-colors"
           >
             Ignore
           </button>
@@ -291,40 +228,28 @@ const DefaultDevelopmentFallback: ComponentType<ErrorFallbackProps> = ({
       </div>
 
       {showDetails && (
-        <div style={{ fontSize: '0.75rem', lineHeight: '1.4' }}>
-          <div style={{ marginBottom: '0.5rem' }}>
+        <div className="text-xs leading-relaxed">
+          <div className="mb-2">
             <strong>Error:</strong> {error.name}
           </div>
-          <div style={{ marginBottom: '0.5rem' }}>
+          <div className="mb-2">
             <strong>Stack:</strong>
             <pre
-              style={{
-                margin: '0.25rem 0',
-                padding: '0.5rem',
-                backgroundColor: 'rgba(0,0,0,0.1)',
-                borderRadius: '4px',
-                overflow: 'auto',
-              }}
+              className="m-1 p-2 bg-black/10 dark:bg-white/10 rounded overflow-auto"
             >
               {error.stack}
             </pre>
           </div>
-          <div style={{ marginBottom: '0.5rem' }}>
+          <div className="mb-2">
             <strong>Component Stack:</strong>
             <pre
-              style={{
-                margin: '0.25rem 0',
-                padding: '0.5rem',
-                backgroundColor: 'rgba(0,0,0,0.1)',
-                borderRadius: '4px',
-                overflow: 'auto',
-              }}
+              className="m-1 p-2 bg-black/10 dark:bg-white/10 rounded overflow-auto"
             >
               {errorInfo.componentStack}
             </pre>
           </div>
           {circuitBreakerOpen && (
-            <div style={{ color: '#e74c3c', fontWeight: 'bold' }}>
+            <div className="text-rose-600 dark:text-rose-400 font-bold">
               Circuit breaker is open - automatic retries disabled
             </div>
           )}

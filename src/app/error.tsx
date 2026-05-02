@@ -25,9 +25,9 @@ export default function Error({
     <div className="min-h-screen flex items-center justify-center p-8">
       <div className="text-center max-w-md">
         <div className="mb-4">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
+          <div className="w-16 h-16 bg-rose-100 dark:bg-rose-900/30 rounded-full flex items-center justify-center mx-auto">
             <svg
-              className="w-8 h-8 text-red-600"
+              className="w-8 h-8 text-rose-600 dark:text-rose-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -41,14 +41,14 @@ export default function Error({
             </svg>
           </div>
         </div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-2">Something went wrong</h2>
-        <p className="text-gray-600 mb-4">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">Something went wrong</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
           {process.env.NODE_ENV === 'development'
             ? error.message
             : 'An unexpected error occurred. Please try again.'}
         </p>
         {process.env.NODE_ENV === 'development' && error.digest && (
-          <p className="text-xs text-gray-500 mb-4">Error ID: {error.digest}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Error ID: {error.digest}</p>
         )}
         <Button onClick={reset} variant="outline">
           Try again

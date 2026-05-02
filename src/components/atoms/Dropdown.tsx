@@ -73,7 +73,7 @@ const Dropdown: React.FC<DropdownProps> = ({
     <div
       ref={dropdownRef}
       className={cn(
-        'absolute z-50 w-48 bg-background border border-border rounded-md shadow-lg py-1',
+        'absolute z-50 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl py-2',
         'animate-in fade-in-0 zoom-in-95 duration-200',
         placementClasses[placement],
         className || ''

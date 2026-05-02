@@ -51,7 +51,7 @@ const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
           aria-checked={checked}
           disabled={disabled}
           className={cn(
-            'peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input',
+            'peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-indigo-600 data-[state=unchecked]:bg-slate-300 dark:bg-slate-600',
             sizeClasses[size],
             className || ''
           )}
@@ -67,7 +67,7 @@ const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
         >
           <span
             className={cn(
-              'pointer-events-none block rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0',
+              'pointer-events-none block rounded-full bg-white shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0',
               thumbSizeClasses[size]
             )}
             data-state={checked ? 'checked' : 'unchecked'}
@@ -79,12 +79,12 @@ const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
             {label && (
               <label
                 htmlFor={switchId}
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="text-sm font-medium leading-none text-slate-900 dark:text-slate-100 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
                 {label}
               </label>
             )}
-            {description && <p className="text-sm text-muted-foreground">{description}</p>}
+            {description && <p className="text-sm text-slate-600 dark:text-slate-400">{description}</p>}
           </div>
         )}
       </div>

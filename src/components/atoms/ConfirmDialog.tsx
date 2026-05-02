@@ -44,13 +44,13 @@ export function ConfirmDialog({
   const getIconColor = () => {
     switch (variant) {
       case 'danger':
-        return 'text-red-600';
+        return 'text-rose-600 dark:text-rose-400';
       case 'warning':
-        return 'text-yellow-600';
+        return 'text-amber-600 dark:text-amber-400';
       case 'info':
-        return 'text-blue-600';
+        return 'text-sky-600 dark:text-sky-400';
       default:
-        return 'text-red-600';
+        return 'text-rose-600 dark:text-rose-400';
     }
   };
 
@@ -71,15 +71,15 @@ export function ConfirmDialog({
     <>
       {isOpen && (
         <Modal isOpen={isOpen} onClose={onClose}>
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-md w-full mx-4">
             <div className="p-6">
               <div className="flex items-start space-x-4">
                 <div className={`flex-shrink-0 ${getIconColor()}`}>
                   <AlertTriangle className="w-6 h-6" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-                  <p className="text-gray-600 mb-6">{message}</p>
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">{title}</h3>
+                  <p className="text-slate-600 dark:text-slate-400 mb-6">{message}</p>
                   <div className="flex space-x-3 justify-end">
                     <Button variant="outline" onClick={onClose} disabled={isLoading}>
                       {cancelText}
@@ -96,7 +96,7 @@ export function ConfirmDialog({
                 </div>
                 <button
                   onClick={onClose}
-                  className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="flex-shrink-0 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>

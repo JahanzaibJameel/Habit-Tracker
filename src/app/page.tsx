@@ -106,7 +106,6 @@ export default function HomePage() {
     setSearchQuery: setStoreSearchQuery,
     viewMode,
     setViewMode,
-    preferences,
     updatePreferences,
     selectedHabitIds,
     toggleHabitSelection,

@@ -43,7 +43,7 @@ const DraggableHabitCard: React.FC<DraggableHabitCardProps> = ({
           type="checkbox"
           checked={isSelected || false}
           onChange={() => habit?.id && onToggleSelection(habit.id)}
-          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+          className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800"
           onClick={(e) => e.stopPropagation()}
         />
       </div>
@@ -58,7 +58,7 @@ const DraggableHabitCard: React.FC<DraggableHabitCardProps> = ({
           onArchive={onArchive}
           onDelete={onDelete}
           onShare={onShare}
-          className={cn(isSelected ? 'ring-2 ring-primary ring-offset-2' : '')}
+          className={cn(isSelected ? 'ring-2 ring-indigo-500 ring-offset-2' : '')}
         />
       </div>
     </div>
