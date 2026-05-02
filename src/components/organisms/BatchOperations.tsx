@@ -86,7 +86,9 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center space-x-2">
                     <Tag className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                    <span className="text-slate-900 dark:text-slate-100">Batch Operations ({selectedHabitIds.length} selected)</span>
+                    <span className="text-slate-900 dark:text-slate-100">
+                      Batch Operations ({selectedHabitIds.length} selected)
+                    </span>
                   </CardTitle>
                   <Button variant="ghost" size="sm" onClick={onClose}>
                     <X className="h-4 w-4" />
@@ -115,7 +117,9 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                 {/* Batch Actions */}
                 {selectedHabitIds.length > 0 && (
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Batch Actions</h3>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                      Batch Actions
+                    </h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       <Button
@@ -317,7 +321,9 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                               {habit.category}
                             </span>
                           </div>
-                          <span className="text-xs text-slate-600 dark:text-slate-400">{habit.frequency}</span>
+                          <span className="text-xs text-slate-600 dark:text-slate-400">
+                            {habit.frequency}
+                          </span>
                         </div>
                       ))}
                     </div>

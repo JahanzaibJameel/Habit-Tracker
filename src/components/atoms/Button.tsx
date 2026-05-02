@@ -10,10 +10,13 @@ const buttonVariants = cva(
       variant: {
         default: 'bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:ring-indigo-600',
         primary: 'bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:ring-indigo-600',
-        secondary: 'bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 focus-visible:ring-slate-500',
+        secondary:
+          'bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 focus-visible:ring-slate-500',
         destructive: 'bg-rose-600 text-white hover:bg-rose-700 focus-visible:ring-rose-600',
-        outline: 'border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 focus-visible:ring-slate-500',
-        ghost: 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 focus-visible:ring-slate-500',
+        outline:
+          'border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 focus-visible:ring-slate-500',
+        ghost:
+          'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 focus-visible:ring-slate-500',
         link: 'text-indigo-600 dark:text-indigo-400 underline-offset-4 hover:underline focus-visible:ring-indigo-600',
         success: 'bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:ring-emerald-600',
         warning: 'bg-amber-600 text-white hover:bg-amber-700 focus-visible:ring-amber-600',

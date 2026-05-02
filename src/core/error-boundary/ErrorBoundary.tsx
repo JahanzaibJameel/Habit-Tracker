@@ -1,78 +1,30 @@
-/**
- * Advanced Error Boundary with hierarchical isolation
- * Prevents cascading failures and provides recovery strategies
- *
- * @fileoverview Error boundary component with isolation capabilities
- * @version 1.0.0
- * @author Enterprise Frontend Team
- */
-
 import type { ReactNode, ErrorInfo, ComponentType } from 'react';
 import React, { Component } from 'react';
 
-/**
- * Error boundary configuration
- */
 export interface ErrorBoundaryConfig {
-  /**
-   * Unique identifier for this boundary
-   */
   id: string;
 
-  /**
-   * Fallback component to render on error
-   */
   fallback?: ComponentType<ErrorFallbackProps>;
 
-  /**
-   * Development fallback component
-   */
   devFallback?: ComponentType<ErrorFallbackProps>;
 
-  /**
-   * Error callback for logging/monitoring
-   */
   onError?: (error: Error, errorInfo: ErrorInfo, boundaryId: string) => void;
 
-  /**
-   * Recovery callback
-   */
   onRecovery?: (boundaryId: string, strategy: ErrorRecoveryStrategy) => void;
 
-  /**
-   * Reset keys that trigger boundary reset when changed
-   */
   resetKeys?: readonly unknown[];
 
-  /**
-   * Whether to retry automatically
-   */
   retry?: boolean;
 
-  /**
-   * Number of retry attempts
-   */
   retryAttempts?: number;
 
-  /**
-   * Delay between retries in milliseconds
-   */
   retryDelay?: number;
 
-  /**
-   * Maximum error rate before circuit breaker
-   */
   maxErrorRate?: number;
 
-  /**
-   * Time window for error rate calculation (ms)
-   */
   errorRateWindow?: number;
 }
 
-/**
- * Error recovery strategies
- */
 export enum ErrorRecoveryStrategy {
   RETRY = 'retry',
   RESET = 'reset',
@@ -81,9 +33,6 @@ export enum ErrorRecoveryStrategy {
   ESCALATE = 'escalate',
 }
 
-/**
- * Error boundary state
- */
 interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
@@ -99,9 +48,6 @@ interface ErrorBoundaryState {
   lastErrorTime: number;
 }
 
-/**
- * Error fallback component props
- */
 export interface ErrorFallbackProps {
   error: Error;
   errorInfo: ErrorInfo;
@@ -115,9 +61,6 @@ export interface ErrorFallbackProps {
   circuitBreakerOpen: boolean;
 }
 
-/**
- * Default production fallback component
- */
 const DefaultProductionFallback: ComponentType<ErrorFallbackProps> = ({
   boundaryId,
   onRetry,
@@ -133,9 +76,7 @@ const DefaultProductionFallback: ComponentType<ErrorFallbackProps> = ({
       data-boundary-id={boundaryId}
       className="p-4 text-center bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/30 rounded-xl text-rose-900 dark:text-rose-100"
     >
-      <h3 className="mb-2 text-base font-bold">
-        Something went wrong
-      </h3>
+      <h3 className="mb-2 text-base font-bold">Something went wrong</h3>
       <p className="mb-4 text-sm">
         This section encountered an error and couldn't display properly.
       </p>
@@ -158,9 +99,6 @@ const DefaultProductionFallback: ComponentType<ErrorFallbackProps> = ({
   );
 };
 
-/**
- * Default development fallback component with detailed error info
- */
 const DefaultDevelopmentFallback: ComponentType<ErrorFallbackProps> = ({
   error,
   errorInfo,
@@ -180,12 +118,8 @@ const DefaultDevelopmentFallback: ComponentType<ErrorFallbackProps> = ({
       aria-live="polite"
       className="p-4 border-2 border-rose-500 dark:border-rose-400 rounded-xl bg-rose-100 dark:bg-rose-900/30 text-rose-900 dark:text-rose-100 mx-4 my-4 font-mono"
     >
-      <div
-        className="flex justify-between items-center mb-4"
-      >
-        <h3 className="m-0 text-base font-bold">
-          Error Boundary: {boundaryId}
-        </h3>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="m-0 text-base font-bold">Error Boundary: {boundaryId}</h3>
         <span className="text-xs opacity-70">Retry: {retryCount}</span>
       </div>
 
@@ -234,17 +168,13 @@ const DefaultDevelopmentFallback: ComponentType<ErrorFallbackProps> = ({
           </div>
           <div className="mb-2">
             <strong>Stack:</strong>
-            <pre
-              className="m-1 p-2 bg-black/10 dark:bg-white/10 rounded overflow-auto"
-            >
+            <pre className="m-1 p-2 bg-black/10 dark:bg-white/10 rounded overflow-auto">
               {error.stack}
             </pre>
           </div>
           <div className="mb-2">
             <strong>Component Stack:</strong>
-            <pre
-              className="m-1 p-2 bg-black/10 dark:bg-white/10 rounded overflow-auto"
-            >
+            <pre className="m-1 p-2 bg-black/10 dark:bg-white/10 rounded overflow-auto">
               {errorInfo.componentStack}
             </pre>
           </div>
@@ -259,9 +189,6 @@ const DefaultDevelopmentFallback: ComponentType<ErrorFallbackProps> = ({
   );
 };
 
-/**
- * Advanced Error Boundary Component
- */
 export class ErrorBoundary extends Component<
   ErrorBoundaryConfig & { children: ReactNode },
   ErrorBoundaryState
@@ -294,7 +221,6 @@ export class ErrorBoundary extends Component<
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const { onError, id } = this.props;
 
-    // Add to error history
     const errorEntry = {
       timestamp: Date.now(),
       error,
@@ -303,18 +229,15 @@ export class ErrorBoundary extends Component<
 
     this.setState((prevState) => ({
       errorInfo,
-      errorHistory: [...prevState.errorHistory.slice(-9), errorEntry], // Keep last 10 errors
+      errorHistory: [...prevState.errorHistory.slice(-9), errorEntry],
     }));
 
-    // Check circuit breaker
     this.checkCircuitBreaker();
 
-    // Call error callback
     if (onError) {
       onError(error, errorInfo, id);
     }
 
-    // Log to console in development
     if (process.env.NODE_ENV === 'development') {
       console.error(`Error Boundary [${id}]:`, error, errorInfo);
     }
@@ -324,7 +247,6 @@ export class ErrorBoundary extends Component<
     const { resetKeys } = this.props;
     const { hasError } = this.state;
 
-    // Reset boundary if reset keys changed
     if (hasError && resetKeys && prevProps.resetKeys) {
       const hasResetKeyChanged = resetKeys.some(
         (key, index) => key !== prevProps.resetKeys?.[index]
@@ -342,11 +264,8 @@ export class ErrorBoundary extends Component<
     }
   }
 
-  /**
-   * Checks if circuit breaker should be opened
-   */
   private checkCircuitBreaker = () => {
-    const { maxErrorRate = 5, errorRateWindow = 60000 } = this.props; // 5 errors per minute default
+    const { maxErrorRate = 5, errorRateWindow = 60000 } = this.props;
     const { errorHistory } = this.state;
 
     const now = Date.now();
@@ -355,16 +274,12 @@ export class ErrorBoundary extends Component<
     if (recentErrors.length >= maxErrorRate) {
       this.setState({ circuitBreakerOpen: true });
 
-      // Auto-close circuit breaker after 5 minutes
       setTimeout(() => {
         this.setState({ circuitBreakerOpen: false });
       }, 300000);
     }
   };
 
-  /**
-   * Handles retry attempt
-   */
   private handleRetry = () => {
     const { retryAttempts = 3, retryDelay = 1000, onRecovery, id } = this.props;
     const { retryCount, circuitBreakerOpen } = this.state;
@@ -379,7 +294,6 @@ export class ErrorBoundary extends Component<
       onRecovery(id, ErrorRecoveryStrategy.RETRY);
     }
 
-    // Delay retry
     this.retryTimer = setTimeout(
       () => {
         this.setState((prevState) => ({
@@ -391,12 +305,9 @@ export class ErrorBoundary extends Component<
         }));
       },
       retryDelay * Math.pow(2, retryCount)
-    ); // Exponential backoff
+    );
   };
 
-  /**
-   * Handles boundary reset
-   */
   private handleReset = () => {
     const { onRecovery, id } = this.props;
 
@@ -407,9 +318,6 @@ export class ErrorBoundary extends Component<
     this.reset();
   };
 
-  /**
-   * Handles error ignore
-   */
   private handleIgnore = () => {
     const { onRecovery, id } = this.props;
 
@@ -426,9 +334,6 @@ export class ErrorBoundary extends Component<
     });
   };
 
-  /**
-   * Resets boundary state
-   */
   private reset = () => {
     this.setState({
       hasError: false,
@@ -440,9 +345,6 @@ export class ErrorBoundary extends Component<
     });
   };
 
-  /**
-   * Gets available recovery strategies
-   */
   private getRecoveryStrategies = (): ErrorRecoveryStrategy[] => {
     const { retry = true } = this.props;
     const { circuitBreakerOpen, retryCount } = this.state;
@@ -488,9 +390,6 @@ export class ErrorBoundary extends Component<
   }
 }
 
-/**
- * Error boundary provider for context
- */
 export interface ErrorBoundaryProviderProps {
   children: ReactNode;
   config?: Partial<ErrorBoundaryConfig>;

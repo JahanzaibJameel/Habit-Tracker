@@ -195,7 +195,10 @@ const HabitForm: React.FC<HabitFormProps> = ({
           />
 
           <div className="space-y-2">
-            <label htmlFor="habit-category-select" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            <label
+              htmlFor="habit-category-select"
+              className="text-sm font-medium text-slate-700 dark:text-slate-300"
+            >
               Category
             </label>
             <select
@@ -216,7 +219,9 @@ const HabitForm: React.FC<HabitFormProps> = ({
                 </option>
               ))}
             </select>
-            {errors.category && <p className="text-sm text-rose-500 dark:text-rose-400">{errors.category}</p>}
+            {errors.category && (
+              <p className="text-sm text-rose-500 dark:text-rose-400">{errors.category}</p>
+            )}
           </div>
         </div>
 
@@ -229,10 +234,14 @@ const HabitForm: React.FC<HabitFormProps> = ({
         />
 
         <div className="space-y-4">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Icon & Color</label>
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            Icon & Color
+          </label>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
             <div className="flex-1">
-              <label className="mb-2 block text-xs text-slate-500 dark:text-slate-400">Choose Icon</label>
+              <label className="mb-2 block text-xs text-slate-500 dark:text-slate-400">
+                Choose Icon
+              </label>
               <div className="grid grid-cols-5 gap-2 sm:grid-cols-10">
                 {icons.map((icon) => (
                   <button
@@ -253,7 +262,9 @@ const HabitForm: React.FC<HabitFormProps> = ({
             </div>
 
             <div className="flex-1">
-              <label className="mb-2 block text-xs text-slate-500 dark:text-slate-400">Choose Color</label>
+              <label className="mb-2 block text-xs text-slate-500 dark:text-slate-400">
+                Choose Color
+              </label>
               <div className="grid grid-cols-5 gap-2">
                 {colors.map((color) => (
                   <button
@@ -296,7 +307,9 @@ const HabitForm: React.FC<HabitFormProps> = ({
         </div>
 
         <div className="space-y-4">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Frequency</label>
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            Frequency
+          </label>
           <div className="grid grid-cols-3 gap-2">
             {(['daily', 'weekly', 'monthly'] as const).map((frequency) => (
               <Button

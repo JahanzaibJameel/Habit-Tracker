@@ -334,7 +334,9 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
 
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <span className={`px-1.5 py-0.5 rounded text-xs font-semibold ${severityColorClass}`}>
+                    <span
+                      className={`px-1.5 py-0.5 rounded text-xs font-semibold ${severityColorClass}`}
+                    >
                       {violation.severity.toUpperCase()}
                     </span>
                     <span className="font-semibold text-sm">{violation.metric}</span>
@@ -347,9 +349,7 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
                   <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     Violated {violation.count} time{violation.count !== 1 ? 's' : ''}
                     {violation.url && (
-                      <span className="ml-2">
-                        on {new URL(violation.url).pathname}
-                      </span>
+                      <span className="ml-2">on {new URL(violation.url).pathname}</span>
                     )}
                   </div>
 
@@ -378,7 +378,9 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
                   )}
                 </div>
 
-                <div className={`w-4 h-4 rounded-full ${severityColorClass} flex items-center justify-center text-xs font-bold`}>
+                <div
+                  className={`w-4 h-4 rounded-full ${severityColorClass} flex items-center justify-center text-xs font-bold`}
+                >
                   {getSeverityIcon(violation.severity)}
                 </div>
               </div>
@@ -506,7 +508,7 @@ export const PerformanceAlert: React.FC<{
   onDismiss?: () => void;
   compact?: boolean;
 }> = ({ violation, onDismiss, compact = false }) => {
-  const severityColor = getSeverityColor(violation.severity);
+  const _severityColor = getSeverityColor(violation.severity);
 
   if (compact) {
     const severityColorClass = getSeverityColorClass(violation.severity);
@@ -534,7 +536,9 @@ export const PerformanceAlert: React.FC<{
   return (
     <div className="p-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-300 dark:border-rose-700 rounded-lg mx-0 my-2">
       <div className="flex items-center gap-3">
-        <div className={`w-5 h-5 rounded-full ${severityColorClass} text-white flex items-center justify-center text-xs font-bold`}>
+        <div
+          className={`w-5 h-5 rounded-full ${severityColorClass} text-white flex items-center justify-center text-xs font-bold`}
+        >
           !
         </div>
 

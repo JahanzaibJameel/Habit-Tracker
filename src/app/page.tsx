@@ -382,7 +382,7 @@ export default function HomePage() {
   );
 
   const { theme, setTheme } = useTheme();
-  
+
   const toggleTheme = useCallback(() => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
@@ -401,7 +401,9 @@ export default function HomePage() {
         <div className="container flex h-16 items-center justify-between px-4">
           <div className="flex items-center space-x-4">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Habit Tracker</h1>
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                Habit Tracker
+              </h1>
               <div className="flex items-center space-x-3 text-sm text-slate-600 dark:text-slate-400">
                 <span className="font-medium">{filteredHabits.length} habits</span>
                 <span className="text-slate-400 dark:text-slate-500">•</span>
@@ -431,11 +433,7 @@ export default function HomePage() {
               className="h-9 w-9 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
               aria-label="Toggle theme"
             >
-              {theme === 'dark' ? (
-                <Sun className="h-4 w-4" />
-              ) : (
-                <Moon className="h-4 w-4" />
-              )}
+              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
           </div>
         </div>
@@ -446,7 +444,9 @@ export default function HomePage() {
         <aside data-testid="sidebar" className="mb-6 sm:mb-0">
           <div className="sticky top-24 space-y-6 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 shadow-lg">
             <div>
-              <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Workspace</h3>
+              <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+                Workspace
+              </h3>
               <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400 mt-1">
                 Switch between planning and progress views.
               </p>
@@ -473,12 +473,20 @@ export default function HomePage() {
             </div>
             <div className="rounded-xl bg-slate-50 dark:bg-slate-900/50 p-4 text-sm">
               <div className="flex items-center justify-between mb-2">
-                <span className="font-medium text-slate-700 dark:text-slate-300">Active Habits</span>
-                <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{analyticsSummary.activeHabits.length}</span>
+                <span className="font-medium text-slate-700 dark:text-slate-300">
+                  Active Habits
+                </span>
+                <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
+                  {analyticsSummary.activeHabits.length}
+                </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="font-medium text-slate-700 dark:text-slate-300">Completed Today</span>
-                <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{analyticsSummary.completedTodayIds.size}</span>
+                <span className="font-medium text-slate-700 dark:text-slate-300">
+                  Completed Today
+                </span>
+                <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                  {analyticsSummary.completedTodayIds.size}
+                </span>
               </div>
             </div>
           </div>
@@ -493,7 +501,9 @@ export default function HomePage() {
               <div className="flex items-start gap-4">
                 <WifiOff className="mt-1 h-6 w-6 shrink-0 text-amber-600 dark:text-amber-400" />
                 <div>
-                  <p className="font-semibold text-amber-900 dark:text-amber-100">Connection lost</p>
+                  <p className="font-semibold text-amber-900 dark:text-amber-100">
+                    Connection lost
+                  </p>
                   <p className="text-sm leading-relaxed text-amber-800 dark:text-amber-300">
                     {appState.error ?? 'You are offline. Your local data is still available.'}
                   </p>
@@ -583,7 +593,13 @@ export default function HomePage() {
                       className="pl-11"
                     />
                   </div>
-                  <Button variant="outline" size="icon" type="button" aria-label="Filter habits" className="text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    type="button"
+                    aria-label="Filter habits"
+                    className="text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                  >
                     <Filter className="h-4 w-4" />
                   </Button>
                 </div>
@@ -618,7 +634,9 @@ export default function HomePage() {
                     <div className="mb-6 rounded-2xl bg-white dark:bg-slate-800 p-6 shadow-sm">
                       <Calendar className="h-16 w-16 text-slate-400 dark:text-slate-500" />
                     </div>
-                    <h2 className="mb-3 text-2xl font-bold text-slate-900 dark:text-slate-100">No habits found</h2>
+                    <h2 className="mb-3 text-2xl font-bold text-slate-900 dark:text-slate-100">
+                      No habits found
+                    </h2>
                     <p className="mb-8 max-w-md text-lg leading-relaxed text-slate-600 dark:text-slate-400">
                       {searchQuery
                         ? 'No habits match your search. Try different keywords.'
@@ -681,40 +699,54 @@ export default function HomePage() {
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 shadow-lg hover:shadow-xl transition-shadow">
                   <div className="flex items-center justify-between mb-4">
-                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Active Habits</p>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                      Active Habits
+                    </p>
                     <div className="h-8 w-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
                       <Calendar className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                     </div>
                   </div>
-                  <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{analyticsSummary.activeHabits.length}</p>
+                  <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+                    {analyticsSummary.activeHabits.length}
+                  </p>
                   <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">being tracked</p>
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 shadow-lg hover:shadow-xl transition-shadow">
                   <div className="flex items-center justify-between mb-4">
-                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Current Streak</p>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                      Current Streak
+                    </p>
                     <div className="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
                       <TrendingUp className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                     </div>
                   </div>
-                  <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{analyticsSummary.longestStreak}</p>
+                  <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+                    {analyticsSummary.longestStreak}
+                  </p>
                   <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">days in a row</p>
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 shadow-lg hover:shadow-xl transition-shadow">
                   <div className="flex items-center justify-between mb-4">
-                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Completion Rate</p>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                      Completion Rate
+                    </p>
                     <div className="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
                       <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                     </div>
                   </div>
-                  <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{analyticsSummary.completionRate}%</p>
+                  <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+                    {analyticsSummary.completionRate}%
+                  </p>
                   <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">today</p>
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 shadow-lg hover:shadow-xl transition-shadow">
                   <div className="flex items-center justify-between mb-4">
-                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Completions</p>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                      Total Completions
+                    </p>
                     <div className="h-8 w-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
                       <BarChart3 className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                     </div>
@@ -722,7 +754,9 @@ export default function HomePage() {
                   <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">
                     {analytics?.totalCompletions ?? completions.length}
                   </p>
-                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">tracked in this workspace</p>
+                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                    tracked in this workspace
+                  </p>
                 </div>
               </div>
 
@@ -733,7 +767,9 @@ export default function HomePage() {
               >
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Category Breakdown</h2>
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                      Category Breakdown
+                    </h2>
                     <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400 mt-1">
                       Where your consistency is stacking up.
                     </p>
@@ -754,14 +790,20 @@ export default function HomePage() {
                         className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-900/50 px-6 py-4 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
                       >
                         <div>
-                          <p className="font-semibold capitalize text-slate-900 dark:text-slate-100">{category.category}</p>
+                          <p className="font-semibold capitalize text-slate-900 dark:text-slate-100">
+                            {category.category}
+                          </p>
                           <p className="text-sm text-slate-600 dark:text-slate-400">
                             {category.habits} habit{category.habits !== 1 ? 's' : ''}
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{category.completions}</p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">completion{category.completions !== 1 ? 's' : ''}</p>
+                          <p className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
+                            {category.completions}
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            completion{category.completions !== 1 ? 's' : ''}
+                          </p>
                         </div>
                       </div>
                     ))

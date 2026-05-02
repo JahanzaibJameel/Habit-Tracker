@@ -78,7 +78,9 @@ export function ConfirmDialog({
                   <AlertTriangle className="w-6 h-6" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">{title}</h3>
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                    {title}
+                  </h3>
                   <p className="text-slate-600 dark:text-slate-400 mb-6">{message}</p>
                   <div className="flex space-x-3 justify-end">
                     <Button variant="outline" onClick={onClose} disabled={isLoading}>

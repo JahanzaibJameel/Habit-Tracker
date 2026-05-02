@@ -1,12 +1,3 @@
-/**
- * Real-time performance monitoring with budget enforcement
- * Tracks Core Web Vitals and custom metrics with automatic breach detection
- *
- * @fileoverview Performance monitoring implementation
- * @version 1.0.0
- * @author Enterprise Frontend Team
- */
-
 import type { BudgetConfig, PerformanceBudget } from './budget.config';
 import {
   BudgetBreachSeverity,
@@ -15,9 +6,6 @@ import {
   BudgetCategories,
 } from './budget.config';
 
-/**
- * Performance metric entry
- */
 export interface PerformanceMetric {
   name: string;
   value: number;
@@ -29,9 +17,6 @@ export interface PerformanceMetric {
   metadata?: Record<string, unknown>;
 }
 
-/**
- * Performance breach report
- */
 export interface PerformanceBreach {
   metric: string;
   category: string;
@@ -45,9 +30,6 @@ export interface PerformanceBreach {
   userId?: string;
 }
 
-/**
- * Performance monitor configuration
- */
 export interface PerformanceMonitorConfig {
   budgetConfig: BudgetConfig;
   enableReporting: boolean;
@@ -60,57 +42,27 @@ export interface PerformanceMonitorConfig {
   webhookConfig?: WebhookConfig;
 }
 
-/**
- * Webhook configuration for performance alerts
- */
 export interface WebhookConfig {
-  /**
-   * Webhook URL for notifications
-   */
   url: string;
 
-  /**
-   * Webhook secret for authentication
-   */
   secret?: string;
 
-  /**
-   * Throttle webhook notifications (in milliseconds)
-   */
   throttleMs?: number;
 
-  /**
-   * Minimum severity level to trigger webhook
-   */
   minSeverity?: BudgetBreachSeverity;
 
-  /**
-   * Custom webhook payload template
-   */
   payloadTemplate?: (breach: PerformanceBreach) => Record<string, unknown>;
 
-  /**
-   * Custom headers for webhook requests
-   */
   headers?: Record<string, string>;
 
-  /**
-   * Timeout for webhook requests (in milliseconds)
-   */
   timeout?: number;
 
-  /**
-   * Retry configuration for failed webhooks
-   */
   retry?: {
     maxAttempts: number;
     backoffMs: number;
   };
 }
 
-/**
- * Performance monitor class
- */
 export class PerformanceMonitor {
   private config: PerformanceMonitorConfig;
   private metrics: Map<string, PerformanceMetric[]> = new Map();
@@ -124,52 +76,39 @@ export class PerformanceMonitor {
   private webhookLastSent = new Map<string, number>();
   private webhookQueue: PerformanceBreach[] = [];
   private webhookTimer?: NodeJS.Timeout;
+  private webhookProcessing = new Set<string>();
 
   constructor(config: PerformanceMonitorConfig) {
     this.config = config;
     this.sessionId = this.generateSessionId();
 
-    // Initialize metrics storage
     this.initializeMetrics();
   }
 
-  /**
-   * Generate unique session ID
-   */
   private generateSessionId(): string {
     return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  /**
-   * Initialize metrics storage
-   */
   private initializeMetrics(): void {
     const budget = getEffectiveBudget(this.config.budgetConfig);
 
-    // Initialize runtime metrics
     Object.keys(budget.runtime).forEach((metric) => {
       this.metrics.set(metric, []);
     });
 
-    // Initialize memory metrics
     Object.keys(budget.memory).forEach((metric) => {
       this.metrics.set(metric, []);
     });
 
-    // Initialize network metrics
     Object.keys(budget.network).forEach((metric) => {
       this.metrics.set(metric, []);
     });
 
-    // Initialize animation metrics
     Object.keys(budget.animation).forEach((metric) => {
       this.metrics.set(metric, []);
     });
   }
 
-  /**
-   * Start performance monitoring
-   */
   start(): void {
     if (this.isMonitoring) {
       console.warn('Performance monitoring is already active');
@@ -184,37 +123,27 @@ export class PerformanceMonitor {
     this.isMonitoring = true;
     console.warn('Starting performance monitoring');
 
-    // Setup Core Web Vitals monitoring
     this.setupWebVitalsMonitoring();
 
-    // Setup resource monitoring
     this.setupResourceMonitoring();
 
-    // Setup navigation timing
     this.setupNavigationTiming();
 
-    // Setup memory monitoring if enabled
     if (this.config.enableMemoryMonitoring) {
       this.setupMemoryMonitoring();
     }
 
-    // Setup network monitoring if enabled
     if (this.config.enableNetworkMonitoring) {
       this.setupNetworkMonitoring();
     }
 
-    // Setup bundle analysis if enabled
     if (this.config.enableBundleAnalysis) {
       this.setupBundleAnalysis();
     }
 
-    // Start periodic reporting
     this.startPeriodicReporting();
   }
 
-  /**
-   * Stop performance monitoring
-   */
   stop(): void {
     if (!this.isMonitoring) {
       return;
@@ -223,11 +152,9 @@ export class PerformanceMonitor {
     this.isMonitoring = false;
     console.warn('Stopping performance monitoring');
 
-    // Disconnect all observers
     this.observers.forEach((observer) => observer.disconnect());
     this.observers = [];
 
-    // Clear timers
     if (this.reportTimer) {
       clearInterval(this.reportTimer);
     }
@@ -239,23 +166,16 @@ export class PerformanceMonitor {
     }
   }
 
-  /**
-   * Check if monitoring should run based on sampling rate
-   */
   private shouldMonitor(): boolean {
     return Math.random() <= this.config.samplingRate;
   }
 
-  /**
-   * Setup Core Web Vitals monitoring
-   */
   private setupWebVitalsMonitoring(): void {
     if (!('PerformanceObserver' in window)) {
       console.warn('PerformanceObserver not supported');
       return;
     }
 
-    // Monitor Largest Contentful Paint
     try {
       const lcpObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
@@ -268,7 +188,6 @@ export class PerformanceMonitor {
       console.warn('Failed to setup LCP monitoring:', _error);
     }
 
-    // Monitor First Input Delay
     try {
       const fidObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
@@ -289,7 +208,6 @@ export class PerformanceMonitor {
       console.warn('Failed to setup FID monitoring:', _error);
     }
 
-    // Monitor Cumulative Layout Shift
     try {
       let clsValue = 0;
       const clsObserver = new PerformanceObserver((list) => {
@@ -307,7 +225,6 @@ export class PerformanceMonitor {
       console.warn('Failed to setup CLS monitoring:', _error);
     }
 
-    // Monitor Interaction to Next Paint
     try {
       const inpObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
@@ -322,9 +239,6 @@ export class PerformanceMonitor {
     }
   }
 
-  /**
-   * Setup resource monitoring
-   */
   private setupResourceMonitoring(): void {
     if (!('PerformanceObserver' in window)) {
       return;
@@ -335,11 +249,9 @@ export class PerformanceMonitor {
         const entries = list.getEntries();
         entries.forEach((entry) => {
           if (entry.entryType === 'resource') {
-            // Track resource count and sizes
             const currentCount = this.getMetricValue('resourceCount') || 0;
             this.recordMetric('resourceCount', currentCount + 1, BudgetCategories.RESOURCES);
 
-            // Track resource sizes
             const size =
               (entry as PerformanceResourceTiming & { transferSize?: number }).transferSize || 0;
             const currentTotalSize = this.getMetricValue('totalResourceSize') || 0;
@@ -358,9 +270,6 @@ export class PerformanceMonitor {
     }
   }
 
-  /**
-   * Setup navigation timing
-   */
   private setupNavigationTiming(): void {
     if (!('performance' in window) || !('navigation' in performance)) {
       return;
@@ -368,7 +277,6 @@ export class PerformanceMonitor {
 
     const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
 
-    // Record key navigation metrics
     this.recordMetric(
       'firstContentfulPaint',
       navigation.responseStart - navigation.requestStart,
@@ -391,9 +299,6 @@ export class PerformanceMonitor {
     );
   }
 
-  /**
-   * Setup memory monitoring
-   */
   private setupMemoryMonitoring(): void {
     if (!('memory' in performance)) {
       console.warn('Memory API not available');
@@ -428,16 +333,11 @@ export class PerformanceMonitor {
       );
     };
 
-    // Check memory immediately
     checkMemory();
 
-    // Check memory every 30 seconds
     this.memoryTimer = setInterval(checkMemory, 30000);
   }
 
-  /**
-   * Setup network monitoring
-   */
   private setupNetworkMonitoring(): void {
     if (!('connection' in navigator)) {
       console.warn('Network Information API not available');
@@ -462,16 +362,9 @@ export class PerformanceMonitor {
       }
     };
 
-    // Check network immediately
-    checkNetwork();
-
-    // Check network every 10 seconds
     this.networkTimer = setInterval(checkNetwork, 10000);
   }
 
-  /**
-   * Convert effective type to numeric value for comparison
-   */
   private getEffectiveTypeValue(type: string): number {
     const values: Record<string, number> = {
       'slow-2g': 1,
@@ -486,8 +379,6 @@ export class PerformanceMonitor {
    * Setup bundle analysis
    */
   private setupBundleAnalysis(): void {
-    // This would typically integrate with webpack-bundle-analyzer or similar
-    // For now, we'll track basic bundle metrics
     if (typeof window !== 'undefined' && 'performance' in window) {
       const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
 
@@ -502,9 +393,6 @@ export class PerformanceMonitor {
     }
   }
 
-  /**
-   * Record a performance metric
-   */
   recordMetric(
     name: string,
     value: number,
@@ -523,7 +411,6 @@ export class PerformanceMonitor {
       metadata,
     };
 
-    // Check for budget breach
     if (budgetValue !== undefined) {
       const breached = this.checkBudgetBreach(value, budgetValue, name);
       metric.breached = breached;
@@ -538,7 +425,6 @@ export class PerformanceMonitor {
     const metricList = this.metrics.get(name) || [];
     metricList.push(metric);
 
-    // Keep only last 100 metrics per type
     if (metricList.length > 100) {
       metricList.splice(0, metricList.length - 100);
     }
@@ -546,9 +432,6 @@ export class PerformanceMonitor {
     this.metrics.set(name, metricList);
   }
 
-  /**
-   * Get budget value for a metric by name and category
-   */
   private getBudgetValue(
     name: string,
     category: string,
@@ -604,20 +487,15 @@ export class PerformanceMonitor {
       this.reportBreach(breach);
     }
 
-    // Show warning in UI if enabled
     if (this.config.budgetConfig.enableWarnings) {
       this.showBreachWarning(breach);
     }
 
-    // Send webhook notification if configured
     if (this.config.webhookConfig) {
       this.sendWebhookNotification(breach);
     }
   }
 
-  /**
-   * Report breach to monitoring service
-   */
   private async reportBreach(breach: PerformanceBreach): Promise<void> {
     if (!this.config.reportEndpoint) {
       return;
@@ -636,18 +514,13 @@ export class PerformanceMonitor {
     }
   }
 
-  /**
-   * Show breach warning in UI
-   */
   private showBreachWarning(breach: PerformanceBreach): void {
-    // Use console warning instead of DOM manipulation to avoid React script tag warnings
     if (typeof console !== 'undefined') {
       console.warn(
         `Performance Warning: ${breach.metric} (${Math.round(breach.actual)}) exceeds budget (${Math.round(breach.budget)})`,
         breach
       );
 
-      // Store breach info for React components to display if needed
       if (typeof window !== 'undefined') {
         (window as any).__PERFORMANCE_WARNINGS__ = (window as any).__PERFORMANCE_WARNINGS__ || [];
         (window as any).__PERFORMANCE_WARNINGS__.push({
@@ -659,7 +532,6 @@ export class PerformanceMonitor {
           timestamp: new Date().toISOString(),
         });
 
-        // Keep only last 10 warnings
         if ((window as any).__PERFORMANCE_WARNINGS__.length > 10) {
           (window as any).__PERFORMANCE_WARNINGS__.shift();
         }
@@ -667,36 +539,25 @@ export class PerformanceMonitor {
     }
   }
 
-  /**
-   * Start periodic reporting
-   */
   private startPeriodicReporting(): void {
     if (!this.config.enableReporting) {
       return;
     }
 
-    // Report every 5 minutes
     this.reportTimer = setInterval(() => {
       this.generatePerformanceReport();
     }, 300000);
   }
-  /**
-   * Get metric value
-   */
   getMetricValue(name: string): number | undefined {
     const metrics = this.metrics.get(name);
     if (!metrics || metrics.length === 0) {
       return undefined;
     }
 
-    // Return the latest value
     const latestMetric = metrics[metrics.length - 1];
     return latestMetric?.value;
   }
 
-  /**
-   * Get all metrics
-   */
   getAllMetrics(): PerformanceMetric[] {
     const allMetrics: PerformanceMetric[] = [];
     for (const metrics of this.metrics.values()) {
@@ -705,9 +566,6 @@ export class PerformanceMonitor {
     return allMetrics.sort((a, b) => b.timestamp - a.timestamp);
   }
 
-  /**
-   * Get metrics by category
-   */
   getMetricsByCategory(category: string): PerformanceMetric[] {
     const categoryMetrics: PerformanceMetric[] = [];
 
@@ -718,21 +576,15 @@ export class PerformanceMonitor {
     return categoryMetrics.sort((a, b) => b.timestamp - a.timestamp);
   }
 
-  /**
-   * Get all breaches
-   */
   getBreaches(): PerformanceBreach[] {
     return [...this.breaches].sort((a, b) => b.timestamp - a.timestamp);
   }
 
-  /**
-   * Get breach statistics
-   */
   getBreachStats(): {
     total: number;
     byCategory: Record<string, number>;
     bySeverity: Record<BudgetBreachSeverity, number>;
-    recent: number; // Last hour
+    recent: number;
   } {
     const now = Date.now();
     const oneHourAgo = now - 3600000;
@@ -763,9 +615,6 @@ export class PerformanceMonitor {
     };
   }
 
-  /**
-   * Generate performance report
-   */
   generatePerformanceReport(): void {
     const report = {
       timestamp: Date.now(),
@@ -777,9 +626,6 @@ export class PerformanceMonitor {
     console.warn('Performance Report:', report);
   }
 
-  /**
-   * Export performance data
-   */
   exportData(): string {
     const data = {
       timestamp: Date.now(),
@@ -791,9 +637,6 @@ export class PerformanceMonitor {
     return JSON.stringify(data, null, 2);
   }
 
-  /**
-   * Clear all data
-   */
   clearData(): void {
     this.metrics.clear();
     this.breaches = [];
@@ -802,34 +645,34 @@ export class PerformanceMonitor {
     this.initializeMetrics();
   }
 
-  /**
-   * Send webhook notification for performance breach
-   */
   private async sendWebhookNotification(breach: PerformanceBreach): Promise<void> {
     const webhookConfig = this.config.webhookConfig;
     if (!webhookConfig) {
       return;
     }
 
-    // Check minimum severity requirement
     if (webhookConfig.minSeverity && breach.severity < webhookConfig.minSeverity) {
       return;
     }
 
-    // Check throttling
+    const processingKey = `${breach.metric}_${breach.category}`;
+    if (this.webhookProcessing.has(processingKey)) {
+      return;
+    }
+
+    this.webhookProcessing.add(processingKey);
+
     const throttleKey = `${breach.metric}_${breach.category}`;
     const now = Date.now();
     const lastSent = this.webhookLastSent.get(throttleKey) || 0;
-    const throttleMs = webhookConfig.throttleMs || 60000; // 1 minute default
+    const throttleMs = webhookConfig.throttleMs || 60000;
 
     if (now - lastSent < throttleMs) {
-      // Add to queue for later processing
       this.webhookQueue.push(breach);
       this.scheduleWebhookProcessing();
       return;
     }
 
-    // Update last sent timestamp
     this.webhookLastSent.set(throttleKey, now);
 
     try {
@@ -837,15 +680,11 @@ export class PerformanceMonitor {
     } catch (_error) {
       console.error('Webhook notification failed:', _error);
 
-      // Add to queue for retry
       this.webhookQueue.push(breach);
       this.scheduleWebhookProcessing();
     }
   }
 
-  /**
-   * Execute webhook request with retry logic
-   */
   private async executeWebhook(breach: PerformanceBreach, config: WebhookConfig): Promise<void> {
     const maxAttempts = config.retry?.maxAttempts || 3;
     const backoffMs = config.retry?.backoffMs || 1000;
@@ -890,15 +729,11 @@ export class PerformanceMonitor {
           throw _error;
         }
 
-        // Exponential backoff
         await new Promise((resolve) => setTimeout(resolve, backoffMs * Math.pow(2, attempt - 1)));
       }
     }
   }
 
-  /**
-   * Create default webhook payload
-   */
   private createDefaultWebhookPayload(breach: PerformanceBreach): Record<string, unknown> {
     return {
       timestamp: new Date(breach.timestamp).toISOString(),
@@ -921,9 +756,6 @@ export class PerformanceMonitor {
     };
   }
 
-  /**
-   * Generate webhook signature for authentication
-   */
   private async generateWebhookSignature(
     payload: Record<string, unknown>,
     secret: string
@@ -949,9 +781,6 @@ export class PerformanceMonitor {
     return `sha256=${hashArray}`;
   }
 
-  /**
-   * Schedule processing of queued webhook notifications
-   */
   private scheduleWebhookProcessing(): void {
     if (this.webhookTimer) {
       return;
@@ -960,12 +789,9 @@ export class PerformanceMonitor {
     this.webhookTimer = setTimeout(() => {
       this.processWebhookQueue();
       this.webhookTimer = undefined;
-    }, 30000); // Process queue after 30 seconds
+    }, 30000);
   }
 
-  /**
-   * Process queued webhook notifications
-   */
   private async processWebhookQueue(): Promise<void> {
     if (this.webhookQueue.length === 0 || !this.config.webhookConfig) {
       return;
@@ -979,15 +805,11 @@ export class PerformanceMonitor {
         await this.sendWebhookNotification(breach);
       } catch (_error) {
         console.error('Failed to process queued webhook notification:', _error);
-        // Re-add to queue for next attempt
         this.webhookQueue.push(breach);
       }
     }
   }
 
-  /**
-   * Get webhook statistics
-   */
   getWebhookStats(): {
     queueSize: number;
     lastSent: Record<string, number>;
@@ -1000,9 +822,6 @@ export class PerformanceMonitor {
     };
   }
 
-  /**
-   * Force process webhook queue (useful for testing)
-   */
   async forceProcessWebhookQueue(): Promise<void> {
     await this.processWebhookQueue();
   }

@@ -152,7 +152,9 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                 {/* Add New Dependency */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Create Dependency Rule</h3>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                      Create Dependency Rule
+                    </h3>
                     <Button
                       variant="outline"
                       size="sm"
@@ -251,7 +253,9 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Rule Type</label>
+                          <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">
+                            Rule Type
+                          </label>
                           <select
                             value={newDependency.type || 'completion'}
                             onChange={(e) =>
@@ -277,16 +281,16 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Condition</label>
+                          <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">
+                            Condition
+                          </label>
                           <select
                             value={newDependency.condition || 'must_complete'}
                             onChange={(e) =>
-                              setNewDependency(
-                                (prev) => ({
-                                  ...prev,
-                                  condition: e.target.value as DependencyRule['condition'],
-                                })
-                              )
+                              setNewDependency((prev) => ({
+                                ...prev,
+                                condition: e.target.value as DependencyRule['condition'],
+                              }))
                             }
                             className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                           >
@@ -318,7 +322,9 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                       {(newDependency.condition === 'streak_greater' ||
                         newDependency.condition === 'streak_equal') && (
                         <div>
-                          <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Streak Value</label>
+                          <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">
+                            Streak Value
+                          </label>
                           <Input
                             type="number"
                             min="1"
@@ -338,7 +344,9 @@ const HabitDependencies: React.FC<HabitDependenciesProps> = ({
                       {(newDependency.condition === 'time_before' ||
                         newDependency.condition === 'time_after') && (
                         <div>
-                          <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Time</label>
+                          <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">
+                            Time
+                          </label>
                           <Input
                             type="time"
                             value={newDependency.timeValue || ''}

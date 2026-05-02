@@ -86,7 +86,9 @@ const BadgesModal: React.FC<BadgesModalProps> = ({
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center space-x-2">
                     <Trophy className="h-5 w-5 text-amber-500 dark:text-amber-400" />
-                    <span className="text-slate-900 dark:text-slate-100">Achievements & Badges</span>
+                    <span className="text-slate-900 dark:text-slate-100">
+                      Achievements & Badges
+                    </span>
                   </CardTitle>
                   <Button variant="ghost" size="sm" onClick={onClose}>
                     ×
@@ -126,7 +128,9 @@ const BadgesModal: React.FC<BadgesModalProps> = ({
                 {/* Stats Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{unlockedBadges.length}</div>
+                    <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                      {unlockedBadges.length}
+                    </div>
                     <div className="text-sm text-slate-600 dark:text-slate-400">Unlocked</div>
                   </div>
                   <div className="text-center">
@@ -173,7 +177,9 @@ const BadgesModal: React.FC<BadgesModalProps> = ({
                         <h3
                           className={cn(
                             'font-semibold text-center mb-2',
-                            isUnlocked ? 'text-slate-900 dark:text-slate-100' : 'text-slate-600 dark:text-slate-400'
+                            isUnlocked
+                              ? 'text-slate-900 dark:text-slate-100'
+                              : 'text-slate-600 dark:text-slate-400'
                           )}
                         >
                           {badge.name}
@@ -183,7 +189,9 @@ const BadgesModal: React.FC<BadgesModalProps> = ({
                         <p
                           className={cn(
                             'text-sm text-center mb-3',
-                            isUnlocked ? 'text-slate-600 dark:text-slate-400' : 'text-slate-500 dark:text-slate-500'
+                            isUnlocked
+                              ? 'text-slate-600 dark:text-slate-400'
+                              : 'text-slate-500 dark:text-slate-500'
                           )}
                         >
                           {badge.description}

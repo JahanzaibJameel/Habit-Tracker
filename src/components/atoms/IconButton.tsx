@@ -7,11 +7,16 @@ const iconButtonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:ring-indigo-600 shadow-sm hover:shadow-md',
-        secondary: 'bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 focus-visible:ring-slate-500',
-        destructive: 'bg-rose-600 text-white hover:bg-rose-700 focus-visible:ring-rose-600 shadow-sm hover:shadow-md',
-        outline: 'border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 focus-visible:ring-slate-500',
-        ghost: 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 focus-visible:ring-slate-500',
+        default:
+          'bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:ring-indigo-600 shadow-sm hover:shadow-md',
+        secondary:
+          'bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 focus-visible:ring-slate-500',
+        destructive:
+          'bg-rose-600 text-white hover:bg-rose-700 focus-visible:ring-rose-600 shadow-sm hover:shadow-md',
+        outline:
+          'border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 focus-visible:ring-slate-500',
+        ghost:
+          'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 focus-visible:ring-slate-500',
       },
       size: {
         sm: 'h-8 w-8',
@@ -28,28 +33,14 @@ const iconButtonVariants = cva(
 );
 
 export interface IconButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof iconButtonVariants> {
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof iconButtonVariants> {
   icon: React.ReactNode;
   label?: string;
   loading?: boolean;
 }
 
 const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
-  (
-    {
-      className,
-      variant,
-      size,
-      icon,
-      label,
-      loading,
-      disabled,
-      children,
-      ...props
-    },
-    ref
-  ) => {
+  ({ className, variant, size, icon, label, loading, disabled, children, ...props }, ref) => {
     return (
       <button
         className={cn(iconButtonVariants({ variant, size }), className || '')}

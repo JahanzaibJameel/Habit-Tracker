@@ -41,14 +41,18 @@ export default function Error({
             </svg>
           </div>
         </div>
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">Something went wrong</h2>
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
+          Something went wrong
+        </h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           {process.env.NODE_ENV === 'development'
             ? error.message
             : 'An unexpected error occurred. Please try again.'}
         </p>
         {process.env.NODE_ENV === 'development' && error.digest && (
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Error ID: {error.digest}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+            Error ID: {error.digest}
+          </p>
         )}
         <Button onClick={reset} variant="outline">
           Try again

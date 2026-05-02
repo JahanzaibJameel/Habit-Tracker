@@ -155,7 +155,9 @@ function ComponentShowcase() {
           {/* Draggable Habit Card Demo */}
           <Card className="bg-white dark:bg-slate-800 shadow-lg">
             <CardHeader>
-              <CardTitle className="text-slate-900 dark:text-slate-100">Draggable Components</CardTitle>
+              <CardTitle className="text-slate-900 dark:text-slate-100">
+                Draggable Components
+              </CardTitle>
               <CardDescription className="text-slate-600 dark:text-slate-400">
                 Interactive drag-and-drop habit cards
               </CardDescription>
@@ -185,7 +187,9 @@ function ComponentShowcase() {
         {/* Component Status */}
         <Card className="bg-white dark:bg-slate-800 shadow-lg mt-6">
           <CardHeader>
-            <CardTitle className="text-slate-900 dark:text-slate-100">Available Components</CardTitle>
+            <CardTitle className="text-slate-900 dark:text-slate-100">
+              Available Components
+            </CardTitle>
             <CardDescription className="text-slate-600 dark:text-slate-400">
               Components that are currently available in the project
             </CardDescription>

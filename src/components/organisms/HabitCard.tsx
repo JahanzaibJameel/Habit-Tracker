@@ -113,10 +113,10 @@ const HabitCard: React.FC<HabitCardProps> = ({
                 onOpenChange={setShowActions}
                 placement="bottom-right"
                 trigger={
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="icon-sm" 
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
                     className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
                   >
                     <MoreVertical className="h-4 w-4" />
@@ -173,7 +173,9 @@ const HabitCard: React.FC<HabitCardProps> = ({
                 <TrendingUp className="h-4 w-4" />
                 <span className="text-lg font-bold">{currentStreak}</span>
               </div>
-              <p className="text-xs font-medium text-indigo-700 dark:text-indigo-300 mt-1">Streak</p>
+              <p className="text-xs font-medium text-indigo-700 dark:text-indigo-300 mt-1">
+                Streak
+              </p>
             </div>
 
             <div className="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/30 p-3 text-center transition-all hover:scale-105">
@@ -181,7 +183,9 @@ const HabitCard: React.FC<HabitCardProps> = ({
                 <Check className="h-4 w-4" />
                 <span className="text-lg font-bold">{completionRate}%</span>
               </div>
-              <p className="text-xs font-medium text-emerald-700 dark:text-emerald-300 mt-1">Rate</p>
+              <p className="text-xs font-medium text-emerald-700 dark:text-emerald-300 mt-1">
+                Rate
+              </p>
             </div>
 
             <div className="rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800/30 p-3 text-center transition-all hover:scale-105">
@@ -214,8 +218,8 @@ const HabitCard: React.FC<HabitCardProps> = ({
           <div
             className={cn(
               'flex flex-col gap-3 rounded-xl border-2 p-4 sm:flex-row sm:items-center sm:justify-between transition-all duration-200',
-              isCompleted 
-                ? 'border-emerald-300 bg-emerald-50 dark:border-emerald-600 dark:bg-emerald-900/20' 
+              isCompleted
+                ? 'border-emerald-300 bg-emerald-50 dark:border-emerald-600 dark:bg-emerald-900/20'
                 : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50',
               isAnimating ? 'scale-[0.98]' : ''
             )}
@@ -226,8 +230,8 @@ const HabitCard: React.FC<HabitCardProps> = ({
               data-testid={`habit-checkbox-${habit.name}`}
               className={cn(
                 'flex items-center gap-3 text-sm font-medium transition-all duration-200',
-                isCompleted 
-                  ? 'text-emerald-700 dark:text-emerald-300' 
+                isCompleted
+                  ? 'text-emerald-700 dark:text-emerald-300'
                   : 'text-slate-700 dark:text-slate-300'
               )}
             >
@@ -240,9 +244,7 @@ const HabitCard: React.FC<HabitCardProps> = ({
                       : 'border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-800'
                   )}
                 >
-                  {isCompleted && (
-                    <Check className="absolute inset-0 m-auto h-3 w-3 text-white" />
-                  )}
+                  {isCompleted && <Check className="absolute inset-0 m-auto h-3 w-3 text-white" />}
                 </div>
               </div>
               <span>{isCompleted ? 'Completed today' : 'Mark complete'}</span>
@@ -251,26 +253,21 @@ const HabitCard: React.FC<HabitCardProps> = ({
             <span
               className={cn(
                 'text-sm font-medium',
-                isCompleted 
-                  ? 'text-emerald-700 dark:text-emerald-300' 
+                isCompleted
+                  ? 'text-emerald-700 dark:text-emerald-300'
                   : 'text-slate-600 dark:text-slate-400'
               )}
             >
               {isCompleted
                 ? 'Nice work, keep the streak alive! 🔥'
-                : `Target ${habit.target} ${habit.unit || 'unit'}`
-              }
+                : `Target ${habit.target} ${habit.unit || 'unit'}`}
             </span>
           </div>
 
           {habit.tags && habit.tags.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {habit.tags.slice(0, 3).map((tag) => (
-                <Badge
-                  key={`${habit.id}-${tag}`}
-                  variant="outline"
-                  size="sm"
-                >
+                <Badge key={`${habit.id}-${tag}`} variant="outline" size="sm">
                   {tag}
                 </Badge>
               ))}

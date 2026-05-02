@@ -1,16 +1,5 @@
-/**
- * End-to-End Chaos Tests for Resilience Verification
- * Tests that the system survives real-world failure modes
- *
- * @fileoverview Chaos engineering tests for foundation resilience
- * @version 1.0.0
- * @author Enterprise Frontend Team
- */
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { test, expect, beforeEach, describe, vi } from 'vitest';
 
-// Extend global types for chaos testing
 declare global {
   var __CHAOS_MODE__: boolean;
   var __CHAOS_EVENTS__: any[];
@@ -25,60 +14,34 @@ declare global {
 import { z } from 'zod';
 import { createStorageEngine } from '../storage/StorageEngine';
 
-/**
- * Chaos Test Configuration
- */
 interface ChaosTestConfig {
-  /**
-   * Enable network failure simulation
-   */
   simulateNetworkFailures?: boolean;
 
-  /**
-   * Enable storage quota exceeded simulation
-   */
   simulateStorageQuotaExceeded?: boolean;
 
-  /**
-   * Enable memory pressure simulation
-   */
   simulateMemoryPressure?: boolean;
 
-  /**
-   * Enable API failure simulation
-   */
   simulateAPIFailures?: boolean;
 
-  /**
-   * Enable component crash simulation
-   */
   simulateComponentCrashes?: boolean;
 
-  /**
-   * Test duration in milliseconds
-   */
   testDuration?: number;
 }
 
-/**
- * Default chaos test configuration
- */
 const DEFAULT_CHAOS_CONFIG: ChaosTestConfig = {
   simulateNetworkFailures: true,
   simulateStorageQuotaExceeded: true,
   simulateMemoryPressure: true,
   simulateAPIFailures: true,
   simulateComponentCrashes: true,
-  testDuration: 30000, // 30 seconds
+  testDuration: 30000,
 };
 
 describe('Chaos Engineering Tests', () => {
   beforeEach(() => {
-    // Enable chaos mode for testing
     (globalThis as any).__CHAOS_MODE__ = true;
     (globalThis as any).__CHAOS_EVENTS__ = [];
 
-    // Chaos event collector
     (globalThis as any).recordChaosEvent = (event: any) => {
       (globalThis as any).__CHAOS_EVENTS__.push({
         ...event,
@@ -86,7 +49,6 @@ describe('Chaos Engineering Tests', () => {
       });
     };
 
-    // Mock page object for chaos tests
     const mockPage = {
       addInitScript: vi.fn().mockResolvedValue(undefined),
       locator: vi.fn().mockReturnValue({
@@ -94,19 +56,16 @@ describe('Chaos Engineering Tests', () => {
       }),
     };
 
-    // Make page available to all tests
     (globalThis as any).page = mockPage;
   });
 
   test('survives localStorage quota exceeded', async () => {
-    // Override localStorage.setItem to simulate quota exceeded
     const originalSetItem = Storage.prototype.setItem;
     let callCount = 0;
 
     Storage.prototype.setItem = function (key: string, value: string) {
       callCount++;
       if (callCount > 3) {
-        // Simulate quota exceeded after 3 calls
         const error = new Error('QuotaExceededError');
         error.name = 'QuotaExceededError';
         throw error;
@@ -114,7 +73,6 @@ describe('Chaos Engineering Tests', () => {
       return originalSetItem.call(this, key, value);
     };
 
-    // Try to store data until quota is exceeded
     (globalThis as any).recordChaosEvent({
       type: 'localStorage_quota_test_start',
       message: 'Starting localStorage quota exceeded test',
@@ -133,7 +91,6 @@ describe('Chaos Engineering Tests', () => {
       }
     }
 
-    // Verify the app is still functional
     expect(document.body).toBeDefined();
 
     const chaosEvents = (globalThis as any).__CHAOS_EVENTS__;
@@ -143,12 +100,10 @@ describe('Chaos Engineering Tests', () => {
       })
     );
 
-    // Restore original localStorage
     Storage.prototype.setItem = originalSetItem;
   });
 
   test('survives IndexedDB corruption', async () => {
-    // Test that StorageEngine can handle IndexedDB failures
     const storageEngine = createStorageEngine({
       backend: 'indexedDB',
       keyPrefix: 'test',
@@ -163,7 +118,6 @@ describe('Chaos Engineering Tests', () => {
       message: 'Simulating IndexedDB corruption',
     });
 
-    // Verify storage engine exists and can handle errors
     expect(storageEngine).toBeDefined();
 
     const chaosEvents = (globalThis as any).__CHAOS_EVENTS__;
@@ -175,14 +129,12 @@ describe('Chaos Engineering Tests', () => {
   });
 
   test('survives network failures with retry logic', async () => {
-    // Override fetch to simulate network failures
     const originalFetch = globalThis.fetch;
     let failureCount = 0;
 
     globalThis.fetch = async function (input: RequestInfo | URL, init?: RequestInit) {
       failureCount++;
 
-      // Fail first 3 attempts, then succeed
       if (failureCount <= 3) {
         (globalThis as any).recordChaosEvent({
           type: 'network_failure',
@@ -193,40 +145,32 @@ describe('Chaos Engineering Tests', () => {
         throw new Error('Network request failed');
       }
 
-      // Succeed on 4th attempt
       return originalFetch.call(this, input, init);
     };
 
-    // Test retry logic
     try {
       await fetch('https://api.example.com/data');
-    } catch (_error) {
-      // Expected to fail initially
-    }
+    } catch (_error) {}
 
-    // Check chaos events
     const chaosEvents = (globalThis as any).__CHAOS_EVENTS__;
     const networkFailures = chaosEvents.filter((e: any) => e.type === 'network_failure');
     expect(networkFailures).toHaveLength(3);
 
-    // Restore original fetch
     globalThis.fetch = originalFetch;
   });
 
   test('survives API version mismatch', async () => {
-    // Override fetch to return wrong API version
     const originalFetch = globalThis.fetch;
 
     globalThis.fetch = async function (input: RequestInfo | URL, init?: RequestInit) {
       const response = await originalFetch.call(this, input, init);
 
-      // Clone response to modify headers
       const modifiedResponse = new Response(response.body, {
         status: response.status,
         statusText: response.statusText,
         headers: {
           ...response.headers,
-          'X-API-Version': '2.0.0', // Wrong version
+          'X-API-Version': '2.0.0',
         },
       });
 
@@ -239,21 +183,16 @@ describe('Chaos Engineering Tests', () => {
       return modifiedResponse;
     };
 
-    // Simulate API call
     try {
       await fetch('/api/version');
-    } catch (_error) {
-      // Expected to fail due to version mismatch
-    }
+    } catch (_error) {}
 
-    // Verify chaos events
     const chaosEvents = (globalThis as any).__CHAOS_EVENTS__;
     const versionMismatch = chaosEvents.find((e: any) => e.type === 'api_version_mismatch');
     expect(versionMismatch).toBeTruthy();
   });
 
   test('survives memory pressure', async () => {
-    // Simulate memory pressure
     const originalCreateElement = document.createElement;
     let memoryFallbackCount = 0;
 
@@ -265,7 +204,6 @@ describe('Chaos Engineering Tests', () => {
           message: 'Simulating memory pressure for resource-intensive elements',
         });
 
-        // Create a lightweight fallback instead
         const fallback = originalCreateElement.call(this, 'div');
         fallback.setAttribute('data-memory-fallback', 'true');
         memoryFallbackCount++;
@@ -275,24 +213,19 @@ describe('Chaos Engineering Tests', () => {
       return originalCreateElement.call(this, tagName);
     };
 
-    // Simulate creating memory-intensive elements
     const _canvas = document.createElement('canvas');
     const _video = document.createElement('video');
 
-    // Verify fallbacks were created
     expect(memoryFallbackCount).toBe(2);
 
-    // Check chaos events
     const chaosEvents = (globalThis as any).__CHAOS_EVENTS__;
     const memoryPressure = chaosEvents.find((e: any) => e.type === 'memory_pressure');
     expect(memoryPressure).toBeTruthy();
 
-    // Restore original function
     document.createElement = originalCreateElement;
   });
 
   test('survives component crashes', async () => {
-    // Inject a component that crashes
     (globalThis as any).__CRASH_COMPONENT__ = () => {
       throw new Error('Intentional component crash for chaos testing');
     };
@@ -302,49 +235,40 @@ describe('Chaos Engineering Tests', () => {
       message: 'Simulating component crash',
     });
 
-    // Simulate component crash
     try {
       (globalThis as any).__CRASH_COMPONENT__();
     } catch (error) {
-      // Expected to crash
       expect(error).toBeDefined();
     }
 
-    // Verify error boundary would catch the crash
     const errorBoundary = document.createElement('div');
     errorBoundary.setAttribute('data-testid', 'error-boundary');
     document.body.appendChild(errorBoundary);
 
-    // Verify fallback UI is shown
     const errorFallback = document.createElement('div');
     errorFallback.setAttribute('data-testid', 'error-fallback');
     document.body.appendChild(errorFallback);
 
-    // Verify app continues to function
     const appRoot = document.createElement('div');
     appRoot.setAttribute('data-testid', 'app-root');
     document.body.appendChild(appRoot);
 
-    // Check chaos events
     const chaosEvents = (globalThis as any).__CHAOS_EVENTS__;
     const componentCrash = chaosEvents.find((e: any) => e.type === 'component_crash');
     expect(componentCrash).toBeTruthy();
 
-    // Clean up
     document.body.removeChild(errorBoundary);
     document.body.removeChild(errorFallback);
     document.body.removeChild(appRoot);
   });
 
   test('survives partial API failures', async () => {
-    // Override fetch to return partial success responses
     const originalFetch = globalThis.fetch;
 
     globalThis.fetch = async function (input: RequestInfo | URL, init?: RequestInit) {
       const url = typeof input === 'string' ? input : (input as URL).href;
 
       if (url.includes('/batch')) {
-        // Return partial success for batch requests
         const partialResponse = {
           valid: [
             { id: 1, name: 'Item 1', status: 'success' },
@@ -365,7 +289,7 @@ describe('Chaos Engineering Tests', () => {
         });
 
         return new Response(JSON.stringify(partialResponse), {
-          status: 207, // Multi-Status
+          status: 207,
           headers: { 'Content-Type': 'application/json' },
         });
       }
@@ -373,21 +297,16 @@ describe('Chaos Engineering Tests', () => {
       return originalFetch.call(this, input, init);
     };
 
-    // Simulate batch API call
     try {
       await fetch('/api/batch');
-    } catch (_error) {
-      // Expected to handle partial failures
-    }
+    } catch (_error) {}
 
-    // Check chaos events
     const chaosEvents = (globalThis as any).__CHAOS_EVENTS__;
     const partialFailure = chaosEvents.find((e: any) => e.type === 'partial_api_failure');
     expect(partialFailure).toBeTruthy();
   });
 
   test('survives performance budget violations', async () => {
-    // Override performance API to simulate slow metrics
     const originalGetEntriesByType = performance.getEntriesByType;
 
     performance.getEntriesByType = function (type: string) {
@@ -396,7 +315,7 @@ describe('Chaos Engineering Tests', () => {
       if (type === 'navigation') {
         return entries.map((entry: any) => ({
           ...entry,
-          loadEventEnd: entry.loadEventEnd + 5000, // Add 5 seconds
+          loadEventEnd: entry.loadEventEnd + 5000,
         }));
       }
 
@@ -410,7 +329,6 @@ describe('Chaos Engineering Tests', () => {
       budget: 2.5,
     });
 
-    // Simulate performance monitoring check
     setTimeout(() => {
       const degradationElement = document.createElement('div');
       degradationElement.setAttribute('data-testid', 'performance-degradation');
@@ -421,33 +339,31 @@ describe('Chaos Engineering Tests', () => {
       document.body.appendChild(notificationElement);
     }, 100);
 
-    // Wait for performance monitoring to detect violations
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    // Verify performance degradation is active
     expect(document.querySelector('[data-testid="performance-degradation"]')).toBeTruthy();
 
-    // Verify degradation notification
     expect(document.querySelector('[data-testid="degradation-notification"]')).toBeTruthy();
 
-    // Check chaos events
     const chaosEvents = (globalThis as any).__CHAOS_EVENTS__;
     const budgetViolation = chaosEvents.find((e: any) => e.type === 'performance_budget_violation');
     expect(budgetViolation).toBeTruthy();
 
-    // Clean up
-    const degradationElement = document.querySelector('[data-testid="performance-degradation"]');
-    const notificationElement = document.querySelector('[data-testid="degradation-notification"]');
-    if (degradationElement) {
-      document.body.removeChild(degradationElement);
+    const cleanupDegradationElement = document.querySelector(
+      '[data-testid="performance-degradation"]'
+    );
+    const cleanupNotificationElement = document.querySelector(
+      '[data-testid="degradation-notification"]'
+    );
+    if (cleanupDegradationElement) {
+      document.body.removeChild(cleanupDegradationElement);
     }
-    if (notificationElement) {
-      document.body.removeChild(notificationElement);
+    if (cleanupNotificationElement) {
+      document.body.removeChild(cleanupNotificationElement);
     }
   });
 
   test('survives monitoring service failures', async () => {
-    // Override monitoring service to simulate failures
     (globalThis as any).__MONITORING_FAILURE__ = true;
 
     (globalThis as any).recordChaosEvent({
@@ -455,38 +371,31 @@ describe('Chaos Engineering Tests', () => {
       message: 'Simulating monitoring service failure',
     });
 
-    // Simulate error that would be monitored
     try {
       throw new Error('Test error for monitoring failure');
     } catch (error) {
-      // Expected to be handled locally
       expect(error).toBeDefined();
     }
 
-    // Verify app continues to function despite monitoring failure
     const appRoot = document.createElement('div');
     appRoot.setAttribute('data-testid', 'app-root');
     document.body.appendChild(appRoot);
     expect(document.querySelector('[data-testid="app-root"]')).toBeTruthy();
 
-    // Verify error is still handled locally
     const errorHandled = document.createElement('div');
     errorHandled.setAttribute('data-testid', 'error-handled');
     document.body.appendChild(errorHandled);
     expect(document.querySelector('[data-testid="error-handled"]')).toBeTruthy();
 
-    // Check chaos events
     const chaosEvents = (globalThis as any).__CHAOS_EVENTS__;
     const monitoringFailure = chaosEvents.find((e: any) => e.type === 'monitoring_service_failure');
     expect(monitoringFailure).toBeTruthy();
 
-    // Clean up
     document.body.removeChild(appRoot);
     document.body.removeChild(errorHandled);
   });
 
   test('survives cookie consent failures', async () => {
-    // Override localStorage to simulate consent storage failure
     const originalSetItem = Storage.prototype.setItem;
 
     Storage.prototype.setItem = function (key: string, value: string) {
@@ -501,41 +410,31 @@ describe('Chaos Engineering Tests', () => {
       return originalSetItem.call(this, key, value);
     };
 
-    // Simulate app loading with default consent
     const appRoot = document.createElement('div');
     appRoot.setAttribute('data-testid', 'app-root');
     document.body.appendChild(appRoot);
 
-    // Verify app loads with default consent settings
     expect(document.querySelector('[data-testid="app-root"]')).toBeTruthy();
 
-    // Simulate consent banner
     const consentBanner = document.createElement('div');
     consentBanner.setAttribute('data-testid', 'consent-banner');
     document.body.appendChild(consentBanner);
 
-    // Verify consent banner appears
     expect(document.querySelector('[data-testid="consent-banner"]')).toBeTruthy();
 
-    // Verify monitoring is disabled by default
     (globalThis as any).__MONITORING_ENABLED__ = false;
     expect((globalThis as any).__MONITORING_ENABLED__).toBeFalsy();
 
-    // Check chaos events
     const chaosEvents = (globalThis as any).__CHAOS_EVENTS__;
     const consentFailure = chaosEvents.find((e: any) => e.type === 'cookie_consent_failure');
     expect(consentFailure).toBeTruthy();
 
-    // Clean up
     document.body.removeChild(appRoot);
     document.body.removeChild(consentBanner);
-    // Restore original localStorage
     Storage.prototype.setItem = originalSetItem;
   });
 
   test('comprehensive chaos resilience test', async () => {
-    // Enable multiple chaos scenarios
-    // Network failures
     let networkFailureCount = 0;
     const originalFetch = globalThis.fetch;
     globalThis.fetch = async function (input: RequestInfo | URL, init?: RequestInit) {
@@ -546,7 +445,6 @@ describe('Chaos Engineering Tests', () => {
       return originalFetch.call(this, input, init);
     };
 
-    // Storage quota exceeded
     const originalSetItem = Storage.prototype.setItem;
     let storageCallCount = 0;
     Storage.prototype.setItem = function (key: string, value: string) {
@@ -557,34 +455,27 @@ describe('Chaos Engineering Tests', () => {
       return originalSetItem.call(this, key, value);
     };
 
-    // Component crashes
-    (globalThis as any).__RANDOM_CRASH__ = Math.random() < 0.1; // 10% chance
+    (globalThis as any).__RANDOM_CRASH__ = Math.random() < 0.1;
 
     (globalThis as any).recordChaosEvent({
       type: 'comprehensive_chaos_test',
       message: 'Multiple chaos scenarios enabled',
     });
 
-    // Wait for chaos test duration
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
-    // Simulate app being functional
     const appRoot = document.createElement('div');
     appRoot.setAttribute('data-testid', 'app-root');
     document.body.appendChild(appRoot);
 
-    // Simulate resilience features
     const resilienceActive = document.createElement('div');
     resilienceActive.setAttribute('data-testid', 'resilience-active');
     document.body.appendChild(resilienceActive);
 
-    // Verify app is still functional
     expect(document.querySelector('[data-testid="app-root"]')).toBeTruthy();
 
-    // Verify resilience features are active
     expect(document.querySelector('[data-testid="resilience-active"]')).toBeTruthy();
 
-    // Check overall system health
     const systemHealth = {
       errorBoundaryActive: !!document.querySelector('[data-testid="error-boundary"]'),
       performanceDegradationActive: !!document.querySelector(
@@ -594,49 +485,38 @@ describe('Chaos Engineering Tests', () => {
       monitoringEnabled: (globalThis as any).__MONITORING_ENABLED__,
     };
 
-    // Verify resilience mechanisms are working
     expect(
       systemHealth.errorBoundaryActive || systemHealth.performanceDegradationActive
     ).toBeTruthy();
 
-    // Check chaos events
     const chaosEvents = (globalThis as any).__CHAOS_EVENTS__;
     expect(chaosEvents.length).toBeGreaterThan(0);
 
-    // Clean up
     document.body.removeChild(appRoot);
     document.body.removeChild(resilienceActive);
-    // Restore originals
     globalThis.fetch = originalFetch;
     Storage.prototype.setItem = originalSetItem;
   });
 });
 
-/**
- * Helper function to run chaos tests with specific configuration
- */
 export async function runChaosTest(testName: string, config: Partial<ChaosTestConfig> = {}) {
   const fullConfig = { ...DEFAULT_CHAOS_CONFIG, ...config };
 
-  // Record test start
   (globalThis as any).recordChaosEvent({
     type: 'chaos_test_start',
     test: testName,
     config: fullConfig,
   });
 
-  // Wait for test duration
   if (fullConfig.testDuration) {
     await new Promise((resolve) => setTimeout(resolve, fullConfig.testDuration));
   }
 
-  // Record test end
   (globalThis as any).recordChaosEvent({
     type: 'chaos_test_end',
     test: testName,
   });
 
-  // Collect results
   const results = {
     chaosEvents: (globalThis as any).__CHAOS_EVENTS__,
     appHealthy: !!document.querySelector('[data-testid="app-root"]'),
