@@ -504,6 +504,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-_Made with ❤️ by the Habit Tracker Team_
+_Made with ❤️ by Jahanzaib Jameel_
 
 </div>
