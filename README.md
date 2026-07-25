@@ -1,6 +1,6 @@
 <div align="center">
 
-# Habit Tracker Pro
+# Habit Tracker 
 ### *Build better habits. Track with clarity.*
 
 [![Next.js](https://img.shields.io/badge/Next.js-15-000000?style=flat&logo=next.js)](https://nextjs.org/)
