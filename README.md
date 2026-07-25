@@ -20,6 +20,7 @@
 > **[![Solo Developer](https://img.shields.io/badge/100%25%20Solo%20Built-brightgreen?style=flat&logo=github)](https://github.com/JahanzaibJameel/Habit-Tracker) Individual Achievement: 99/100 Frontend Enterprise Score** - A sophisticated, enterprise-grade habit tracking application that I developed entirely by myself from scratch. Built with cutting-edge web technologies, featuring zero script tag warnings, comprehensive validation testing, and production-ready architecture. This represents my individual capability to deliver enterprise-level software independently.
 
 **🔗 Live Demo**: https://habit-tracker25.netlify.app/
+**🔗 Live Demo**: https://habit-tracker-eight-iota-17.vercel.app/
 ---
 
 ## Proof of Solo Ownership
