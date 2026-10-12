@@ -385,7 +385,7 @@ const HabitForm: React.FC<HabitFormProps> = ({
           </div>
         </div>
 
-        <div className="-mx-6 sticky bottom-0 flex justify-end space-x-3 border-t bg-white px-6 py-4">
+        <div className="-mx-6 sticky bottom-0 flex justify-end space-x-3 border-t border-slate-200 bg-white px-6 py-4 dark:border-slate-700 dark:bg-slate-800">
           <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
             Cancel
           </Button>
