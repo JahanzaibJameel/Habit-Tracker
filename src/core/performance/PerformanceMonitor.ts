@@ -4,6 +4,7 @@ import {
   getEffectiveBudget,
   getBreachSeverity,
   BudgetCategories,
+  DefaultBudgetConfig,
 } from './budget.config';
 
 export interface PerformanceMetric {
@@ -78,8 +79,17 @@ export class PerformanceMonitor {
   private webhookTimer?: NodeJS.Timeout;
   private webhookProcessing = new Set<string>();
 
-  constructor(config: PerformanceMonitorConfig) {
-    this.config = config;
+  constructor(config: Partial<PerformanceMonitorConfig> = {}) {
+    this.config = {
+      enableReporting: false,
+      samplingRate: 1.0,
+      enableRealTimeMonitoring: true,
+      enableBundleAnalysis: false,
+      enableMemoryMonitoring: false,
+      enableNetworkMonitoring: false,
+      ...config,
+      budgetConfig: config.budgetConfig ?? DefaultBudgetConfig,
+    };
     this.sessionId = this.generateSessionId();
 
     this.initializeMetrics();
@@ -271,11 +281,18 @@ export class PerformanceMonitor {
   }
 
   private setupNavigationTiming(): void {
-    if (!('performance' in window) || !('navigation' in performance)) {
+    if (!('performance' in window) || typeof performance.getEntriesByType !== 'function') {
       return;
     }
 
-    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+    const navigationEntries = performance.getEntriesByType('navigation');
+    const navigation = (Array.isArray(navigationEntries) ? navigationEntries[0] : undefined) as
+      | PerformanceNavigationTiming
+      | undefined;
+
+    if (!navigation) {
+      return;
+    }
 
     this.recordMetric(
       'firstContentfulPaint',
@@ -380,7 +397,8 @@ export class PerformanceMonitor {
    */
   private setupBundleAnalysis(): void {
     if (typeof window !== 'undefined' && 'performance' in window) {
-      const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
+      const resources =
+        (performance.getEntriesByType('resource') as PerformanceResourceTiming[]) || [];
 
       const jsResources = resources.filter((r) => r.name.endsWith('.js'));
       const cssResources = resources.filter((r) => r.name.endsWith('.css'));
@@ -522,8 +540,19 @@ export class PerformanceMonitor {
       );
 
       if (typeof window !== 'undefined') {
-        (window as any).__PERFORMANCE_WARNINGS__ = (window as any).__PERFORMANCE_WARNINGS__ || [];
-        (window as any).__PERFORMANCE_WARNINGS__.push({
+        const warningsWindow = window as Window & {
+          __PERFORMANCE_WARNINGS__?: Array<{
+            id: number;
+            metric: string;
+            actual: number;
+            budget: number;
+            severity: BudgetBreachSeverity;
+            timestamp: string;
+          }>;
+        };
+
+        warningsWindow.__PERFORMANCE_WARNINGS__ = warningsWindow.__PERFORMANCE_WARNINGS__ || [];
+        warningsWindow.__PERFORMANCE_WARNINGS__.push({
           id: Date.now(),
           metric: breach.metric,
           actual: breach.actual,
@@ -532,8 +561,8 @@ export class PerformanceMonitor {
           timestamp: new Date().toISOString(),
         });
 
-        if ((window as any).__PERFORMANCE_WARNINGS__.length > 10) {
-          (window as any).__PERFORMANCE_WARNINGS__.shift();
+        if (warningsWindow.__PERFORMANCE_WARNINGS__.length > 10) {
+          warningsWindow.__PERFORMANCE_WARNINGS__.shift();
         }
       }
     }
