@@ -28,7 +28,7 @@ const CONFIG = {
     'tailwind.config.js',
     'next.config.js',
     'tsconfig.json',
-    '.eslintrc.json',
+    'eslint.config.js',
     'package.json',
     'knip.json',
     'Dockerfile',
