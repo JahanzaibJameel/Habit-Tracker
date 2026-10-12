@@ -188,7 +188,14 @@ class LocalStorageAdapter implements IStorageAdapter {
 
   async keys(): Promise<string[]> {
     try {
-      return Object.keys(localStorage);
+      const keys: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key !== null) {
+          keys.push(key);
+        }
+      }
+      return keys;
     } catch (error) {
       throw new Error(
         `LocalStorage keys failed: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -277,7 +284,14 @@ class SessionStorageAdapter implements IStorageAdapter {
 
   async keys(): Promise<string[]> {
     try {
-      return Object.keys(sessionStorage);
+      const keys: string[] = [];
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (key !== null) {
+          keys.push(key);
+        }
+      }
+      return keys;
     } catch (error) {
       throw new Error(
         `SessionStorage keys failed: ${error instanceof Error ? error.message : 'Unknown error'}`
