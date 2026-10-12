@@ -627,6 +627,13 @@ export class CircuitBreakerFactory {
   }
 
   /**
+   * Remove all circuit breaker instances from the registry
+   */
+  static clear(): void {
+    this.instances.clear();
+  }
+
+  /**
    * Get statistics for all circuit breakers
    */
   static getAllStats(): Record<string, ReturnType<CircuitBreaker['getStats']>> {
@@ -676,6 +683,13 @@ export function useCircuitBreaker(id: string, config?: Partial<CircuitBreakerCon
   const [state, setState] = React.useState(() => circuitBreaker.getState());
   const [stats, setStats] = React.useState(() => circuitBreaker.getStats());
 
+  // Refresh state immediately after an operation instead of waiting for the
+  // (slower) polling interval below.
+  const refresh = React.useCallback(() => {
+    setState(circuitBreaker.getState());
+    setStats(circuitBreaker.getStats());
+  }, [circuitBreaker]);
+
   React.useEffect(() => {
     const interval = setInterval(() => {
       const newState = circuitBreaker.getState();
@@ -691,19 +705,37 @@ export function useCircuitBreaker(id: string, config?: Partial<CircuitBreakerCon
   }, [circuitBreaker, state, stats]);
 
   const execute = React.useCallback(
-    <T>(operation: () => Promise<T>) => circuitBreaker.execute(operation),
-    [circuitBreaker]
+    async <T>(operation: () => Promise<T>) => {
+      try {
+        return await circuitBreaker.execute(operation);
+      } finally {
+        refresh();
+      }
+    },
+    [circuitBreaker, refresh]
   );
 
   const executeSync = React.useCallback(
-    <T>(operation: () => T) => circuitBreaker.executeSync(operation),
-    [circuitBreaker]
+    <T>(operation: () => T) => {
+      try {
+        return circuitBreaker.executeSync(operation);
+      } finally {
+        refresh();
+      }
+    },
+    [circuitBreaker, refresh]
   );
 
-  const reset = React.useCallback(() => circuitBreaker.reset(), [circuitBreaker]);
+  const reset = React.useCallback(() => {
+    circuitBreaker.reset();
+    refresh();
+  }, [circuitBreaker, refresh]);
   const open = React.useCallback(
-    (reason?: string) => circuitBreaker.open(reason),
-    [circuitBreaker]
+    (reason?: string) => {
+      circuitBreaker.open(reason);
+      refresh();
+    },
+    [circuitBreaker, refresh]
   );
 
   return {
