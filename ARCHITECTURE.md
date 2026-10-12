@@ -1,72 +1,60 @@
-# Architecture Overview
+# Architecture
 
-## Directory Structure
+Client-only application. No backend, no API routes. State lives in `localStorage`.
 
-- `app/` – Next.js App Router pages and layouts
-- `components/` – Atomic design components (atoms, molecules, organisms)
-- `core/` – Business logic subsystems:
-  - `storage/` – Multi‑backend persistence with migration engine
-  - `validation/` – Zod schemas and error handling
-  - `monitoring/` – Performance and error monitoring
-  - `error-boundary/` – Fault‑isolated error recovery
-  - `performance/` – Budget tracking and optimization
-- `lib/` – Shared utilities and helpers
-- `store/` – Zustand state management with persistence
-- `types/` – Global TypeScript type definitions
-- `contracts/` – Type contracts and interfaces
+```
+UI (atoms · molecules · organisms)
+        │
+   Zustand store ── Zod validation
+        │
+   StorageEngine ── migrations
+        │
+   localStorage
 
-## Design Patterns
+ErrorBoundary + CircuitBreaker   PerformanceMonitor   MonitoringService
+        └────────────── all wrap the UI ──────────────┘
+```
 
-- **Atomic Design**: Components are organized into atoms, molecules, and organisms for reusability.
-- **Separation of Concerns**: Core business logic is separated from UI components.
-- **Type Safety**: All code is strictly typed with TypeScript; Zod provides runtime validation.
-- **State Management**: Zustand stores are persisted to localStorage and support partialization.
-- **Error Isolation**: Error boundaries and circuit breakers prevent cascading failures.
-- **Performance Budgeting**: Proactive monitoring with configurable budgets and alerts.
+## Structure
 
-## Key Flows
+| Path | Purpose |
+|---|---|
+| `src/app/` | App Router: page, layout, providers, `globals.css`, error/loading, ui-showcase |
+| `src/components/` | Atomic design — atoms, molecules, organisms |
+| `src/core/storage/` | `StorageEngine`, schema migrations, quota |
+| `src/core/validation/` | Zod schemas and error handling |
+| `src/core/monitoring/` | `MonitoringService`, `OfflineQueue`, `DataRedaction` |
+| `src/core/error-boundary/` | `ErrorBoundary`, fallbacks, `CircuitBreaker` |
+| `src/core/performance/` | `PerformanceMonitor`, budgets, banner, hooks, alerts |
+| `src/store/` | Zustand store with persistence |
+| `src/lib/` | SSR-safe helpers, performance bridge |
 
-1. User adds a habit → validated by Zod schema → stored in StorageEngine (IndexedDB/localStorage).
-2. Performance metrics are tracked by PerformanceMonitor and reported when budgets are breached.
-3. Monitoring telemetry is collected (with privacy controls) and can be sent to external services.
-4. Validation errors are caught by error boundaries and displayed with user-friendly messages.
+## Subsystems
 
-## Core Subsystems
+**StorageEngine** — persists to `localStorage` with schema versioning and migrations. Enumeration uses the Storage API (`length`/`key(i)`), never `Object.keys`. Session/IndexedDB adapters exist but aren't the default.
 
-### Storage Engine
+**Validation** — Zod schemas for habits, users, and settings. Custom error classes carry structured context.
 
-- Multi-backend support (IndexedDB, localStorage, future API)
-- Migration engine for schema changes
-- Type-safe operations with TypeScript
+**Monitoring** — in-house service collecting events with an offline queue and PII redaction. User IDs are SHA-256 hashed.
 
-### Validation Layer
+**Performance** — Core Web Vitals against configurable budgets. Breaches surface through a violation banner, hook, and alert component.
 
-- Zod schemas for runtime validation
-- Custom error classes with detailed context
-- Form integration utilities
+**Error handling** — class-based error boundaries with layered fallbacks plus a circuit breaker. The boundary shows its fallback as soon as `hasError` is set, never gated on `errorInfo`.
 
-### Performance Monitoring
+## Patterns
 
-- Budget-based performance tracking
-- Real-time metrics collection
-- Privacy-first telemetry
+- **Atomic design** — atoms → molecules → organisms
+- **Separation of concerns** — business logic in `core/`, presentation in `components/`
+- **Hydration safety** — persisted state is gated behind a mount check so SSR and the first client render are identical
+- **Type safety** — strict TypeScript with `noUncheckedIndexedAccess`, plus runtime validation
 
-### Error Handling
+## Key flows
 
-- Circuit breaker pattern for resilience
-- Error boundaries for UI isolation
-- Structured error reporting
+1. Add a habit → Zod validates → store updates → `StorageEngine` writes to `localStorage`
+2. A habit completes → store records it → analytics and streaks recompute
+3. A render throws → nearest boundary catches → fallback renders
+4. A Web Vital exceeds budget → monitor records a breach → banner surfaces it
 
-## Future Backend Integration
+## Stack
 
-The storage engine is designed to swap from client‑side stores to API calls without affecting the UI layer. All state is managed through a unified Zustand interface, ready for a backend.
-
-## Technology Stack
-
-- **Framework**: Next.js 14 with App Router
-- **Language**: TypeScript with strict mode
-- **Styling**: Tailwind CSS
-- **State**: Zustand with persistence
-- **Validation**: Zod schemas
-- **Testing**: Vitest with React Testing Library
-- **Build**: Next.js optimized builds
+Next.js 16 (App Router, Turbopack) · React 18 · TypeScript strict · Tailwind CSS v4 with class-based dark mode · next-themes · Zustand + Immer · Zod · Vitest + Testing Library
