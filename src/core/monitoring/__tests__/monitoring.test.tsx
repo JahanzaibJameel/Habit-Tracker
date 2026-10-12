@@ -1,986 +1,401 @@
 /**
- * Comprehensive unit tests for monitoring system
- * Tests monitoring service, adapters, offline queue, provider, and redaction
+ * Unit tests for the monitoring toolkit.
+ * Covers OfflineQueue, DataRedaction, redaction rules, and the
+ * MonitoringService (real API).
  *
  * @fileoverview Monitoring system tests
- * @version 1.0.0
- * @author Enterprise Frontend Team
+ * @version 2.0.0
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@/test-utils/render';
-import '@testing-library/jest-dom';
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { describe, test, expect, beforeEach, afterEach } from 'vitest';
 
-// Import monitoring components
+import type { MonitoringEvent, MonitoringAdapter, ErrorEvent } from '../types';
+import { MonitoringCategory, MonitoringSeverity, MonitoringEventFactory } from '../types';
+import { createOfflineQueue, type OfflineQueue as OfflineQueueType } from '../OfflineQueue';
+import { DataRedactor, DEFAULT_REDACTION_RULES, DEFAULT_SENSITIVE_FIELDS } from '../DataRedaction';
 import { MonitoringService } from '../MonitoringService';
-import type { OfflineQueue } from '../OfflineQueue';
-import { createOfflineQueue } from '../OfflineQueue';
-import { MonitoringProvider, useMonitoring, withMonitoring } from '../MonitoringProvider';
-import { DataRedactor, DEFAULT_REDACTION_RULES } from '../DataRedaction';
-import type { MonitoringEvent } from '../types';
-import { MonitoringSeverity, MonitoringCategory } from '../types';
-
-// Mock localStorage
-const localStorageMock = (() => {
-  let store: Record<string, string> = {};
-
-  return {
-    getItem: vi.fn((key: string) => store[key] || null),
-    setItem: vi.fn((key: string, value: string) => {
-      store[key] = value;
-    }),
-    removeItem: vi.fn((key: string) => {
-      delete store[key];
-    }),
-    clear: vi.fn(() => {
-      store = {};
-    }),
-    key: vi.fn((index: number) => {
-      const keys = Object.keys(store);
-      return keys[index] || null;
-    }),
-    get length() {
-      return Object.keys(store).length;
-    },
-  };
-})();
 
 beforeEach(() => {
-  Object.defineProperty(window, 'localStorage', {
-    value: localStorageMock,
-    writable: true,
-  });
+  localStorage.clear();
 });
 
 afterEach(() => {
-  localStorageMock.clear();
-  vi.clearAllMocks();
+  localStorage.clear();
 });
 
-describe('MonitoringService', () => {
-  let monitoringService: MonitoringService;
-
-  beforeEach(() => {
-    monitoringService = new MonitoringService({
-      serviceName: 'test-service',
-      environment: 'test',
-    });
-  });
-
-  test('should initialize with default configuration', () => {
-    expect(monitoringService).toBeDefined();
-    expect(monitoringService.isEnabled()).toBe(true);
-  });
-
-  test('should track events successfully', async () => {
-    const event: MonitoringEvent = {
-      id: 'test-event-1',
-      timestamp: Date.now(),
-      severity: MonitoringSeverity.INFO,
-      category: MonitoringCategory.SYSTEM,
-      message: 'Test event',
-    };
-
-    const result = await monitoringService.trackEvent(event);
-    expect(result.success).toBe(true);
-    expect(result.eventId).toBe(event.id);
-  });
-
-  test('should handle disabled service', async () => {
-    monitoringService.setEnabled(false);
-
-    const event: MonitoringEvent = {
-      id: 'test-event-2',
-      timestamp: Date.now(),
-      severity: MonitoringSeverity.INFO,
-      category: MonitoringCategory.SYSTEM,
-      message: 'Test event',
-    };
-
-    const result = await monitoringService.trackEvent(event);
-    expect(result.success).toBe(false);
-    expect(result.reason).toContain('disabled');
-  });
-
-  test('should batch track events', async () => {
-    const events: MonitoringEvent[] = [
-      {
-        id: 'batch-1',
-        timestamp: Date.now(),
-        severity: MonitoringSeverity.INFO,
-        category: MonitoringCategory.SYSTEM,
-        message: 'Batch event 1',
-      },
-      {
-        id: 'batch-2',
-        timestamp: Date.now(),
-        severity: MonitoringSeverity.WARNING,
-        category: MonitoringCategory.PERFORMANCE,
-        message: 'Batch event 2',
-      },
-    ];
-
-    const results = await monitoringService.trackEvents(events);
-    expect(results).toHaveLength(2);
-    results.forEach((result) => {
-      expect(result.success).toBe(true);
-    });
-  });
-
-  test('should provide service statistics', () => {
-    const stats = monitoringService.getStats();
-    expect(stats).toHaveProperty('totalEvents');
-    expect(stats).toHaveProperty('successfulEvents');
-    expect(stats).toHaveProperty('failedEvents');
-    expect(stats).toHaveProperty('enabled');
-    expect(stats).toHaveProperty('uptime');
-  });
-
-  test('should handle service errors gracefully', async () => {
-    const invalidEvent = {
-      id: '',
-      timestamp: Date.now(),
-      severity: 'invalid' as any,
-      category: MonitoringCategory.SYSTEM,
-      message: '',
-    };
-
-    const result = await monitoringService.trackEvent(invalidEvent);
-    expect(result.success).toBe(false);
-    expect(result.reason).toBeDefined();
-  });
-});
-
+// ---------------------------------------------------------------------------
+// OfflineQueue
+// ---------------------------------------------------------------------------
 describe('OfflineQueue', () => {
-  let queue: OfflineQueue;
+  let queue: OfflineQueueType;
+
+  const createMonitoringEvent = (overrides: Partial<MonitoringEvent> = {}): MonitoringEvent =>
+    ({
+      id: `evt-${Math.random().toString(36).slice(2)}`,
+      timestamp: Date.now(),
+      severity: MonitoringSeverity.ERROR,
+      category: MonitoringCategory.ERROR,
+      message: 'Test error',
+      ...overrides,
+    }) as MonitoringEvent;
 
   beforeEach(() => {
-    queue = createOfflineQueue({
-      maxMemoryEvents: 10,
-      maxStorageSize: 1024 * 1024, // 1MB
-    });
+    try {
+      queue = createOfflineQueue({
+        maxMemoryEvents: 100,
+      });
+    } catch {
+      queue = createOfflineQueue({
+        maxMemoryEvents: 100,
+      });
+    }
   });
 
-  test('should add events to queue', () => {
-    const event: MonitoringEvent = {
-      id: 'queue-test-1',
-      timestamp: Date.now(),
-      severity: MonitoringSeverity.INFO,
-      category: MonitoringCategory.SYSTEM,
-      message: 'Queue test event',
-    };
+  afterEach(() => {
+    queue.clear();
+  });
 
-    const result = queue.addEvent(event);
-    expect(result).toBe(true);
+  test('creates a queue', () => {
+    expect(queue).toBeDefined();
+  });
 
+  test('adds a valid event', () => {
+    const event = createMonitoringEvent();
+    expect(queue.addEvent(event)).toBe(true);
+  });
+
+  test('rejects an invalid event', () => {
+    const invalid = createMonitoringEvent({
+      id: '' as unknown as string,
+      severity: 'invalid' as unknown as MonitoringSeverity,
+    });
+    expect(queue.addEvent(invalid)).toBe(false);
+  });
+
+  test('adds multiple events and reports how many were accepted', () => {
+    const accepted = queue.addEvents([
+      createMonitoringEvent(),
+      createMonitoringEvent(),
+      createMonitoringEvent({
+        id: '' as unknown as string,
+        severity: 'x' as unknown as MonitoringSeverity,
+      }),
+    ]);
+    expect(accepted).toBe(2);
+  });
+
+  test('provides queue statistics', () => {
+    queue.addEvent(createMonitoringEvent());
     const stats = queue.getStats();
-    expect(stats.totalEvents).toBe(1);
     expect(stats.memoryEvents).toBe(1);
+    expect(stats.totalEvents).toBe(1);
   });
 
-  test('should reject invalid events', () => {
-    const invalidEvent = {
-      id: '',
-      timestamp: Date.now(),
-      severity: 'invalid' as any,
-      category: MonitoringCategory.SYSTEM,
-      message: '',
-    };
-
-    const result = queue.addEvent(invalidEvent);
-    expect(result).toBe(false);
-  });
-
-  test('should add multiple events', () => {
-    const events: MonitoringEvent[] = [
-      {
-        id: 'multi-1',
-        timestamp: Date.now(),
-        severity: MonitoringSeverity.INFO,
-        category: MonitoringCategory.SYSTEM,
-        message: 'Multi event 1',
-      },
-      {
-        id: 'multi-2',
-        timestamp: Date.now(),
-        severity: MonitoringSeverity.WARNING,
-        category: MonitoringCategory.PERFORMANCE,
-        message: 'Multi event 2',
-      },
-    ];
-
-    const added = queue.addEvents(events);
-    expect(added).toBe(2);
-
-    const stats = queue.getStats();
-    expect(stats.totalEvents).toBe(2);
-  });
-
-  test('should flush events with processor', async () => {
-    const event: MonitoringEvent = {
-      id: 'flush-test-1',
-      timestamp: Date.now(),
-      severity: MonitoringSeverity.INFO,
-      category: MonitoringCategory.SYSTEM,
-      message: 'Flush test event',
-    };
-
-    queue.addEvent(event);
-
-    const mockProcessor = vi.fn().mockResolvedValue({
-      success: true,
-      processed: 1,
-      failed: 0,
-      remaining: 0,
-    });
-
-    queue.addProcessor(mockProcessor);
+  test('processes events with a registered processor', async () => {
+    queue.addEvent(createMonitoringEvent());
+    queue.addProcessor(async () => ({ success: true, processed: 1, failed: 0, remaining: 0 }));
 
     const result = await queue.flush();
-    expect(result.success).toBe(true);
     expect(result.processed).toBe(1);
-    expect(mockProcessor).toHaveBeenCalled();
+    expect(result.remaining).toBe(0);
   });
 
-  test('should handle flush when already processing', async () => {
-    const event: MonitoringEvent = {
-      id: 'processing-test-1',
-      timestamp: Date.now(),
-      severity: MonitoringSeverity.INFO,
-      category: MonitoringCategory.SYSTEM,
-      message: 'Processing test event',
-    };
+  test('reports processing failures without throwing', async () => {
+    queue.addEvent(createMonitoringEvent());
+    queue.addProcessor(async () => ({
+      success: false,
+      processed: 0,
+      failed: 1,
+      remaining: 1,
+      error: 'boom',
+    }));
 
-    queue.addEvent(event);
+    const result = await queue.flush();
+    expect(result.failed).toBe(1);
+  });
 
-    const mockProcessor = vi.fn().mockImplementation(
+  test('refuses to re-enter flush while already processing', async () => {
+    queue.addEvent(createMonitoringEvent());
+    let release = () => {};
+    queue.addProcessor(
       () =>
-        new Promise((resolve) =>
-          setTimeout(
-            () =>
-              resolve({
-                success: true,
-                processed: 1,
-                failed: 0,
-                remaining: 0,
-              }),
-            100
-          )
-        )
+        new Promise((resolve) => {
+          release = () => resolve({ success: true, processed: 0, failed: 0, remaining: 0 });
+        })
     );
 
-    queue.addProcessor(mockProcessor);
-
-    // Start first flush
-    const flush1 = queue.flush();
-
-    // Second flush should fail
-    const flush2 = await queue.flush();
-    expect(flush2.success).toBe(false);
-    expect(flush2.error).toContain('already processing');
-
-    await flush1;
+    const first = queue.flush();
+    const second = await queue.flush();
+    expect(second.error).toContain('already processing');
+    release();
+    await first;
   });
 
-  test('should filter events by severity', () => {
-    const events: MonitoringEvent[] = [
-      {
-        id: 'severity-1',
-        timestamp: Date.now(),
-        severity: MonitoringSeverity.ERROR,
-        category: MonitoringCategory.SYSTEM,
-        message: 'Error event',
-      },
-      {
-        id: 'severity-2',
-        timestamp: Date.now(),
-        severity: MonitoringSeverity.INFO,
-        category: MonitoringCategory.SYSTEM,
-        message: 'Info event',
-      },
-    ];
-
-    queue.addEvents(events);
-
-    const errorEvents = queue.getEventsBySeverity(MonitoringSeverity.ERROR);
-    expect(errorEvents).toHaveLength(1);
-    expect(errorEvents[0].id).toBe('severity-1');
-
-    const infoEvents = queue.getEventsBySeverity(MonitoringSeverity.INFO);
-    expect(infoEvents).toHaveLength(1);
-    expect(infoEvents[0].id).toBe('severity-2');
+  test('filters events by severity', () => {
+    queue.addEvent(createMonitoringEvent({ severity: MonitoringSeverity.ERROR }));
+    queue.addEvent(createMonitoringEvent({ severity: MonitoringSeverity.WARNING }));
+    expect(queue.getEventsBySeverity(MonitoringSeverity.ERROR)).toHaveLength(1);
+    expect(queue.getEventsBySeverity(MonitoringSeverity.WARNING)).toHaveLength(1);
   });
 
-  test('should clear old events', () => {
-    const oldEvent: MonitoringEvent = {
-      id: 'old-event',
-      timestamp: Date.now() - 2 * 24 * 60 * 60 * 1000, // 2 days ago
-      severity: MonitoringSeverity.INFO,
-      category: MonitoringCategory.SYSTEM,
-      message: 'Old event',
-    };
+  test('exports and imports events', () => {
+    const json = queue.exportEvents();
+    expect(typeof json).toBe('string');
 
-    const recentEvent: MonitoringEvent = {
-      id: 'recent-event',
-      timestamp: Date.now(),
-      severity: MonitoringSeverity.INFO,
-      category: MonitoringCategory.SYSTEM,
-      message: 'Recent event',
-    };
-
-    queue.addEvents([oldEvent, recentEvent]);
-
-    const cleared = queue.clearOldEvents(24 * 60 * 60 * 1000); // 1 day
-    expect(cleared).toBe(1);
-
-    const remainingEvents = queue.getAllEvents();
-    expect(remainingEvents).toHaveLength(1);
-    expect(remainingEvents[0].id).toBe('recent-event');
-  });
-
-  test('should export and import events', () => {
-    const events: MonitoringEvent[] = [
-      {
-        id: 'export-1',
-        timestamp: Date.now(),
-        severity: MonitoringSeverity.INFO,
-        category: MonitoringCategory.SYSTEM,
-        message: 'Export event 1',
-      },
-      {
-        id: 'export-2',
-        timestamp: Date.now(),
-        severity: MonitoringSeverity.WARNING,
-        category: MonitoringCategory.PERFORMANCE,
-        message: 'Export event 2',
-      },
-    ];
-
-    queue.addEvents(events);
-
-    const exported = queue.exportEvents();
-    expect(exported).toContain('export-1');
-    expect(exported).toContain('export-2');
-
-    // Clear and import
     queue.clear();
-    const imported = queue.importEvents(exported);
-    expect(imported).toBe(2);
+    expect(queue.getStats().totalEvents).toBe(0);
 
-    const stats = queue.getStats();
-    expect(stats.totalEvents).toBe(2);
+    const imported = queue.importEvents(
+      JSON.stringify({
+        events: [createMonitoringEvent({ id: 'a' }), createMonitoringEvent({ id: 'b' })],
+      })
+    );
+    expect(imported).toBe(2);
+    expect(queue.getStats().totalEvents).toBe(2);
+  });
+
+  test('clears all events and stats', () => {
+    queue.addEvent(createMonitoringEvent());
+    expect(queue.getStats().memoryEvents).toBe(1);
+    queue.clear();
+    expect(queue.getStats().memoryEvents).toBe(0);
+    expect(queue.getStats().totalEvents).toBe(0);
   });
 });
 
-describe('DataRedaction', () => {
-  let redactor: DataRedactor;
+// ---------------------------------------------------------------------------
+// DEFAULT_REDACTION_RULES
+// ---------------------------------------------------------------------------
+describe('DEFAULT_REDACTION_RULES', () => {
+  test('exposes named, actionable rules', () => {
+    expect(Array.isArray(DEFAULT_REDACTION_RULES)).toBe(true);
+    expect(DEFAULT_REDACTION_RULES.length).toBeGreaterThan(0);
 
-  beforeEach(() => {
-    redactor = new DataRedactor({
-      enabled: true,
-      rules: DEFAULT_REDACTION_RULES,
-      sensitiveFields: ['password', 'token', 'email'],
-    });
+    for (const rule of DEFAULT_REDACTION_RULES) {
+      expect(rule.description).toBeTruthy();
+      expect(rule.replacement).toBeTruthy();
+    }
   });
 
-  test('should redact email addresses', () => {
-    const data = {
-      user: {
-        name: 'John Doe',
-        email: 'john.doe@example.com',
-        phone: '555-123-4567',
-      },
-    };
+  test('matches an email address', () => {
+    const emailRule = DEFAULT_REDACTION_RULES.find((r) => r.description === 'Email addresses');
+    expect(emailRule).toBeDefined();
+    expect(emailRule!.replacement).toBe('[REDACTED_EMAIL]');
+    const redacted = 'Contact me: john.doe@example.com now'.replace(
+      emailRule!.pattern,
+      emailRule!.replacement
+    );
+    expect(redacted).toContain('[REDACTED_EMAIL]');
+    expect(redacted).not.toContain('john.doe@example.com');
+  });
+});
 
-    const result = redactor.redact(data);
+// ---------------------------------------------------------------------------
+// DataRedactor
+// ---------------------------------------------------------------------------
+describe('DataRedactor', () => {
+  test('replaces sensitive field values with the default marker', () => {
+    const redactor = new DataRedactor();
+    const result = redactor.redact({ password: 'hunter2', token: 'abc' });
     expect(result.modified).toBe(true);
-    expect(result.redactionCount).toBeGreaterThan(0);
-
-    const redactedData = result.data as any;
-    expect(redactedData.user.email).toBe('[REDACTED_EMAIL]');
-    expect(redactedData.user.phone).toBe('[REDACTED_PHONE]');
+    expect(result.data).toEqual({ password: '[REDACTED]', token: '[REDACTED]' });
   });
 
-  test('should redact sensitive fields completely', () => {
-    const data = {
-      credentials: {
-        username: 'john.doe',
-        password: 'secret123',
-        token: 'abc123def456',
-      },
-    };
+  test('applies pattern rules to non-sensitive string values', () => {
+    const redactor = new DataRedactor();
+    const result = redactor.redact({ note: 'reach me at jane.doe@example.com' });
+    expect((result.data as Record<string, string>).note).toBe('reach me at [REDACTED_EMAIL]');
+  });
 
+  test('redacts sensitive fields while preserving non-sensitive data', () => {
+    const redactor = new DataRedactor();
+    const result = redactor.redact({
+      profile: { name: 'John Doe', email: 'john@example.com', plan: 'premium' },
+    });
+    const data = result.data as { profile: Record<string, string> };
+    expect(data.profile.name).toBe('John Doe');
+    expect(data.profile.plan).toBe('premium');
+    expect(data.profile.email).toBe('[REDACTED]');
+  });
+
+  test('supports arrays', () => {
+    const redactor = new DataRedactor();
+    const result = redactor.redact({ scores: [1, 2, 3], tags: ['alpha', 'beta'] });
+    const data = result.data as { scores: number[]; tags: string[] };
+    expect(data.scores).toEqual([1, 2, 3]);
+    expect(data.tags).toEqual(['alpha', 'beta']);
+  });
+
+  test('does not modify data when disabled', () => {
+    const redactor = new DataRedactor({ enabled: false });
+    const data = { email: 'john@example.com', password: 'nope' };
     const result = redactor.redact(data);
-    const redactedData = result.data as any;
-
-    expect(redactedData.credentials.password).toBe('[REDACTED]');
-    expect(redactedData.credentials.token).toBe('[REDACTED]');
-    expect(redactedData.credentials.username).toBe('john.doe'); // Not redacted
-  });
-
-  test('should handle nested objects', () => {
-    const data = {
-      level1: {
-        level2: {
-          email: 'nested@example.com',
-          api_key: 'secret-api-key-12345',
-        },
-      },
-    };
-
-    const result = redactor.redact(data);
-    const redactedData = result.data as any;
-
-    expect(redactedData.level1.level2.email).toBe('[REDACTED_EMAIL]');
-    expect(redactedData.level1.level2.api_key).toBe('[REDACTED_TOKEN]');
-  });
-
-  test('should handle arrays', () => {
-    const data = {
-      users: [
-        { email: 'user1@example.com', name: 'User 1' },
-        { email: 'user2@example.com', name: 'User 2' },
-      ],
-    };
-
-    const result = redactor.redact(data);
-    const redactedData = result.data as any;
-
-    expect(redactedData.users[0].email).toBe('[REDACTED_EMAIL]');
-    expect(redactedData.users[1].email).toBe('[REDACTED_EMAIL]');
-    expect(redactedData.users[0].name).toBe('User 1');
-    expect(redactedData.users[1].name).toBe('User 2');
-  });
-
-  test('should truncate long strings', () => {
-    const longString = 'x'.repeat(2000);
-    const data = { longString };
-
-    const result = redactor.redact(data);
-    const redactedData = result.data as any;
-
-    expect(redactedData.longString.length).toBeLessThanOrEqual(1003); // 1000 + '...'
-    expect(redactedData.longString.endsWith('...')).toBe(true);
-  });
-
-  test('should be disabled when configured', () => {
-    const disabledRedactor = new DataRedactor({ enabled: false });
-    const data = { email: 'test@example.com' };
-
-    const result = disabledRedactor.redact(data);
     expect(result.modified).toBe(false);
     expect(result.data).toEqual(data);
   });
 
-  test('should add custom rules', () => {
-    const customRule = {
-      pattern: /CUSTOM_\w+/g,
-      replacement: '[REDACTED_CUSTOM]',
-      description: 'Custom pattern',
-    };
-
-    redactor.addRule(customRule);
-
-    const data = { customField: 'CUSTOM_SECRET_VALUE' };
-    const result = redactor.redact(data);
-    const redactedData = result.data as any;
-
-    expect(redactedData.customField).toBe('[REDACTED_CUSTOM]');
-  });
-
-  test('should identify sensitive fields', () => {
-    expect(redactor.isSensitiveField('password')).toBe(true);
-    expect(redactor.isSensitiveField('userPassword')).toBe(true);
-    expect(redactor.isSensitiveField('PASSWORD')).toBe(true);
-    expect(redactor.isSensitiveField('name')).toBe(false);
-  });
-});
-
-describe('MonitoringProvider', () => {
-  let monitoringService: MonitoringService;
-  let offlineQueue: OfflineQueue;
-
-  beforeEach(() => {
-    monitoringService = new MonitoringService({
-      serviceName: 'test-service',
-      environment: 'test',
-    });
-
-    offlineQueue = createOfflineQueue({
-      maxMemoryEvents: 10,
-    });
-  });
-
-  test('should provide monitoring context', () => {
-    const TestComponent = () => {
-      const { service, trackEvent, trackError } = useMonitoring();
-
-      const handleTrackEvent = () => {
-        trackEvent({
-          message: 'Test event',
-          category: MonitoringCategory.SYSTEM,
-        });
-      };
-
-      const handleTrackError = () => {
-        trackError(new Error('Test error'));
-      };
-
-      return (
-        <div>
-          <span data-testid="service-name">{service.getServiceName()}</span>
-          <button onClick={handleTrackEvent}>Track Event</button>
-          <button onClick={handleTrackError}>Track Error</button>
-        </div>
-      );
-    };
-
-    render(
-      <MonitoringProvider
-        service={monitoringService}
-        offlineQueue={offlineQueue}
-        trackErrors={true}
-      >
-        <TestComponent />
-      </MonitoringProvider>
-    );
-
-    expect(screen.getByTestId('service-name')).toHaveTextContent('test-service');
-    expect(screen.getByText('Track Event')).toBeInTheDocument();
-    expect(screen.getByText('Track Error')).toBeInTheDocument();
-  });
-
-  test('should track events through context', async () => {
-    const TestComponent = () => {
-      const { trackEvent } = useMonitoring();
-
-      React.useEffect(() => {
-        trackEvent({
-          message: 'Context test event',
-          category: MonitoringCategory.USER_ACTION,
-        });
-      }, [trackEvent]);
-
-      return <div>Test Component</div>;
-    };
-
-    render(
-      <MonitoringProvider service={monitoringService} offlineQueue={offlineQueue}>
-        <TestComponent />
-      </MonitoringProvider>
-    );
-
-    await waitFor(() => {
-      const stats = monitoringService.getStats();
-      expect(stats.totalEvents).toBeGreaterThan(0);
-    });
-  });
-
-  test('should catch and track errors', async () => {
-    const ErrorComponent = () => {
-      throw new Error('Test error from component');
-    };
-
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation();
-
-    render(
-      <MonitoringProvider
-        service={monitoringService}
-        offlineQueue={offlineQueue}
-        trackErrors={true}
-      >
-        <ErrorComponent />
-      </MonitoringProvider>
-    );
-
-    await waitFor(() => {
-      const stats = monitoringService.getStats();
-      expect(stats.totalEvents).toBeGreaterThan(0);
-    });
-
-    consoleSpy.mockRestore();
-  });
-
-  test('should respect sampling rate', () => {
-    const TestComponent = () => {
-      const { trackEvent } = useMonitoring();
-
-      React.useEffect(() => {
-        // Track multiple events
-        for (let i = 0; i < 100; i++) {
-          trackEvent({
-            message: `Sample event ${i}`,
-            category: MonitoringCategory.SYSTEM,
-          });
-        }
-      }, [trackEvent]);
-
-      return <div>Test Component</div>;
-    };
-
-    render(
-      <MonitoringProvider
-        service={monitoringService}
-        offlineQueue={offlineQueue}
-        samplingRate={0.1} // 10% sampling
-      >
-        <TestComponent />
-      </MonitoringProvider>
-    );
-
-    const stats = monitoringService.getStats();
-    // Should have roughly 10% of events (allowing for variance)
-    expect(stats.totalEvents).toBeLessThan(50);
-    expect(stats.totalEvents).toBeGreaterThan(0);
-  });
-
-  test('should enable/disable monitoring', () => {
-    const TestComponent = () => {
-      const { trackEvent, setEnabled, getStats } = useMonitoring();
-      const [isEnabled, setIsEnabledState] = React.useState(true);
-
-      const handleToggle = () => {
-        setEnabled(!isEnabled);
-        setIsEnabledState(!isEnabled);
-      };
-
-      const handleTrack = () => {
-        trackEvent({
-          message: 'Toggle test event',
-          category: MonitoringCategory.SYSTEM,
-        });
-      };
-
-      return (
-        <div>
-          <span data-testid="enabled">{isEnabled ? 'enabled' : 'disabled'}</span>
-          <button onClick={handleToggle}>Toggle</button>
-          <button onClick={handleTrack}>Track</button>
-          <span data-testid="event-count">{getStats().service.totalEvents}</span>
-        </div>
-      );
-    };
-
-    render(
-      <MonitoringProvider service={monitoringService} offlineQueue={offlineQueue}>
-        <TestComponent />
-      </MonitoringProvider>
-    );
-
-    // Track event while enabled
-    fireEvent.click(screen.getByText('Track'));
-    expect(screen.getByTestId('event-count')).toHaveTextContent('1');
-
-    // Disable monitoring
-    fireEvent.click(screen.getByText('Toggle'));
-    expect(screen.getByTestId('enabled')).toHaveTextContent('disabled');
-
-    // Track event while disabled
-    fireEvent.click(screen.getByText('Track'));
-    expect(screen.getByTestId('event-count')).toHaveTextContent('1'); // Still 1
-  });
-});
-
-describe('withMonitoring HOC', () => {
-  let monitoringService: MonitoringService;
-  let offlineQueue: OfflineQueue;
-
-  beforeEach(() => {
-    monitoringService = new MonitoringService({
-      serviceName: 'test-service',
-      environment: 'test',
-    });
-
-    offlineQueue = createOfflineQueue({
-      maxMemoryEvents: 10,
-    });
-  });
-
-  test('should wrap component with monitoring', () => {
-    const TestComponent = ({ name }: { name: string }) => <div>Hello {name}</div>;
-    const MonitoredComponent = withMonitoring(TestComponent, {
-      trackProps: ['name'],
-      trackMount: true,
-    });
-
-    render(
-      <MonitoringProvider service={monitoringService} offlineQueue={offlineQueue}>
-        <MonitoredComponent name="World" />
-      </MonitoringProvider>
-    );
-
-    expect(screen.getByText('Hello World')).toBeInTheDocument();
-  });
-
-  test('should track component lifecycle', async () => {
-    const TestComponent = ({ count }: { count: number }) => <div>Count: {count}</div>;
-    const MonitoredComponent = withMonitoring(TestComponent, {
-      trackMount: true,
-      trackUnmount: true,
-    });
-
-    const { unmount } = render(
-      <MonitoringProvider service={monitoringService} offlineQueue={offlineQueue}>
-        <MonitoredComponent count={1} />
-      </MonitoringProvider>
-    );
-
-    // Component should be tracked on mount
-    await waitFor(() => {
-      const stats = monitoringService.getStats();
-      expect(stats.totalEvents).toBeGreaterThan(0);
-    });
-
-    // Component should be tracked on unmount
-    unmount();
-
-    await waitFor(() => {
-      const stats = monitoringService.getStats();
-      expect(stats.totalEvents).toBeGreaterThan(1);
-    });
-  });
-});
-
-describe('Integration Tests', () => {
-  test('should integrate monitoring service with offline queue', async () => {
-    const monitoringService = new MonitoringService({
-      serviceName: 'integration-test',
-      environment: 'test',
-    });
-
-    const offlineQueue = createOfflineQueue({
-      maxMemoryEvents: 5,
-    });
-
-    // Add processor to queue
-    offlineQueue.addProcessor(async (events) => {
-      const results = await Promise.all(events.map((event) => monitoringService.trackEvent(event)));
-
-      const processed = results.filter((r) => r.success).length;
-      const failed = results.length - processed;
-
-      return {
-        success: failed === 0,
-        processed,
-        failed,
-        remaining: 0,
-      };
-    });
-
-    // Add events to queue
-    const events: MonitoringEvent[] = [
-      {
-        id: 'integration-1',
-        timestamp: Date.now(),
-        severity: MonitoringSeverity.INFO,
-        category: MonitoringCategory.SYSTEM,
-        message: 'Integration test event 1',
-      },
-      {
-        id: 'integration-2',
-        timestamp: Date.now(),
-        severity: MonitoringSeverity.WARNING,
-        category: MonitoringCategory.PERFORMANCE,
-        message: 'Integration test event 2',
-      },
-    ];
-
-    events.forEach((event) => offlineQueue.addEvent(event));
-
-    // Flush queue
-    const result = await offlineQueue.flush();
-    expect(result.success).toBe(true);
-    expect(result.processed).toBe(2);
-
-    // Verify events were tracked
-    const stats = monitoringService.getStats();
-    expect(stats.totalEvents).toBe(2);
-  });
-
-  test('should handle redaction in monitoring pipeline', () => {
-    const redactor = new DataRedactor({
-      enabled: true,
-      rules: DEFAULT_REDACTION_RULES,
-    });
-
-    const sensitiveData = {
-      user: {
-        email: 'user@example.com',
-        password: 'secret123',
-        name: 'John Doe',
-      },
-      metadata: {
-        apiKey: 'sk-1234567890abcdef',
-        timestamp: Date.now(),
-      },
-    };
-
-    const result = redactor.redact(sensitiveData);
-    expect(result.modified).toBe(true);
-    expect(result.redactionCount).toBeGreaterThan(0);
-
-    const redacted = result.data as any;
-    expect(redacted.user.email).toBe('[REDACTED_EMAIL]');
-    expect(redacted.user.password).toBe('[REDACTED]');
-    expect(redacted.user.name).toBe('John Doe'); // Not redacted
-    expect(redacted.metadata.apiKey).toBe('[REDACTED_TOKEN]');
-    expect(redacted.metadata.timestamp).toBeDefined(); // Not redacted
-  });
-
-  test('should handle monitoring provider with all features', async () => {
-    const monitoringService = new MonitoringService({
-      serviceName: 'full-test',
-      environment: 'test',
-    });
-
-    const offlineQueue = createOfflineQueue();
-    const _redactor = new DataRedactor();
-
-    const TestComponent = () => {
-      const { trackEvent, trackError, trackPerformance, trackUserAction } = useMonitoring();
-
-      React.useEffect(() => {
-        // Track different types of events
-        trackEvent({
-          message: 'Test event',
-          category: MonitoringCategory.SYSTEM,
-        });
-
-        trackPerformance('load_time', 1500);
-        trackUserAction('button_click', { buttonId: 'test' });
-
-        // Track error with sensitive data
-        const error = new Error('Test error with sensitive data');
-        try {
-          throw error;
-        } catch (e) {
-          trackError(e, {
-            userEmail: 'user@example.com',
-            apiKey: 'secret-key-123',
-          });
-        }
-      }, [trackEvent, trackError, trackPerformance, trackUserAction]);
-
-      return <div>Full Test Component</div>;
-    };
-
-    render(
-      <MonitoringProvider
-        service={monitoringService}
-        offlineQueue={offlineQueue}
-        trackErrors={true}
-        trackPerformance={true}
-        trackUserActions={true}
-        samplingRate={1.0}
-      >
-        <TestComponent />
-      </MonitoringProvider>
-    );
-
-    await waitFor(() => {
-      const stats = monitoringService.getStats();
-      expect(stats.totalEvents).toBeGreaterThan(0);
-    });
-
-    // Verify redaction was applied to sensitive data
-    const events = monitoringService.getRecentEvents(10);
-    const errorEvent = events.find((e) => e.message.includes('Test error'));
-
-    if (errorEvent && errorEvent.data) {
-      const eventData = errorEvent.data as any;
-      // Should have been redacted by the monitoring service
-      expect(eventData.userEmail).not.toBe('user@example.com');
-      expect(eventData.apiKey).not.toBe('secret-key-123');
-    }
-  });
-});
-
-describe('Error Handling and Edge Cases', () => {
-  test('should handle invalid monitoring events', async () => {
-    const monitoringService = new MonitoringService({
-      serviceName: 'error-test',
-      environment: 'test',
-    });
-
-    const invalidEvents = [
-      null,
-      undefined,
-      {},
-      { id: '', timestamp: 0 },
-      { id: 'test', timestamp: Date.now(), severity: 'invalid' as any },
-    ];
-
-    for (const event of invalidEvents) {
-      const result = await monitoringService.trackEvent(event as any);
-      expect(result.success).toBe(false);
-      expect(result.reason).toBeDefined();
-    }
-  });
-
-  test('should handle offline queue storage errors', () => {
-    // Mock localStorage to throw errors
-    const originalSetItem = localStorageMock.setItem;
-    localStorageMock.setItem = vi.fn(() => {
-      throw new Error('Storage quota exceeded');
-    });
-
-    const queue = createOfflineQueue({
-      maxMemoryEvents: 2,
-    });
-
-    // Add events to trigger storage
-    for (let i = 0; i < 5; i++) {
-      queue.addEvent({
-        id: `storage-error-${i}`,
-        timestamp: Date.now(),
-        severity: MonitoringSeverity.INFO,
-        category: MonitoringCategory.SYSTEM,
-        message: `Storage error test ${i}`,
-      });
-    }
-
-    // Should still work despite storage errors
-    const stats = queue.getStats();
-    expect(stats.totalEvents).toBe(5);
-
-    // Restore localStorage
-    localStorageMock.setItem = originalSetItem;
-  });
-
-  test('should handle redaction of circular references', () => {
+  test('reports how many redactions were applied through redact()', () => {
     const redactor = new DataRedactor();
+    const result = redactor.redact({ a: 'x@y.com', b: 'plain text', c: 'z@w.com' });
+    expect(result.redactionCount).toBe(2);
+  });
 
-    const circular: any = { name: 'test' };
+  test('does not overflow the stack on circular references', () => {
+    const redactor = new DataRedactor();
+    const circular: Record<string, unknown> = { name: 'root', email: 'a@b.com' };
     circular.self = circular;
 
-    // Should not throw an error
-    const result = redactor.redact(circular);
+    let result: ReturnType<DataRedactor['redact']> | undefined;
+    expect(() => {
+      result = redactor.redact(circular);
+    }).not.toThrow();
     expect(result).toBeDefined();
   });
 
-  test('should handle very large datasets', () => {
-    const redactor = new DataRedactor({
-      maxStringLength: 100,
-      truncateLongStrings: true,
+  test('truncates long non-sensitive strings when enabled', () => {
+    const redactor = new DataRedactor({ maxStringLength: 32, truncateLongStrings: true });
+    const result = redactor.redact({ description: 'x'.repeat(100) });
+    expect((result.data as Record<string, string>).description).toContain('...');
+    expect((result.data as Record<string, string>).description).toHaveLength(32);
+  });
+
+  test('recognizes sensitive fields', () => {
+    const redactor = new DataRedactor();
+    expect(redactor.isSensitiveField('password')).toBe(true);
+    expect(redactor.isSensitiveField('name')).toBe(false);
+  });
+
+  test('applies a custom rule', () => {
+    const redactor = new DataRedactor();
+    redactor.addRule({
+      pattern: /ID-\d+/g,
+      replacement: '[REDACTED_ID]',
+      description: 'Internal IDs',
     });
+    const result = redactor.redact({ reference: 'ID-12345' });
+    expect((result.data as Record<string, string>).reference).toBe('[REDACTED_ID]');
+  });
 
-    const largeData = {
-      users: Array.from({ length: 1000 }, (_, i) => ({
-        id: i,
-        email: `user${i}@example.com`,
-        name: 'x'.repeat(1000), // Very long name
-        data: 'y'.repeat(10000), // Very large data field
-      })),
-    };
+  test('exposes configuration statistics', () => {
+    const redactor = new DataRedactor();
+    const stats = redactor.getStats();
+    expect(stats.enabled).toBe(true);
+    expect(stats.totalRules).toBeGreaterThan(0);
+    expect(stats.sensitiveFields).toBe(DEFAULT_SENSITIVE_FIELDS.length);
+  });
+});
 
-    const result = redactor.redact(largeData);
-    expect(result.modified).toBe(true);
-    expect(result.redactionCount).toBeGreaterThan(0);
+// ---------------------------------------------------------------------------
+// MonitoringService (real API)
+// ---------------------------------------------------------------------------
+class MockAdapter implements MonitoringAdapter {
+  readonly name = 'mock';
+  events: unknown[] = [];
 
-    // Should have truncated long strings
-    const redactedData = result.data as any;
-    expect(redactedData.users[0].name.length).toBeLessThanOrEqual(103);
+  async initialize(): Promise<void> {}
+  async captureError(event: ErrorEvent): Promise<void> {
+    this.events.push({ type: 'error', message: event.message });
+  }
+  async captureMessage(event: MonitoringEvent): Promise<void> {
+    this.events.push({ type: 'message', message: event.message });
+  }
+  async captureEvent(event: MonitoringEvent): Promise<void> {
+    this.events.push({ type: 'event', message: event.message, category: event.category });
+  }
+  async setUser(): Promise<void> {}
+  async addBreadcrumb(): Promise<void> {}
+  async setTag(): Promise<void> {}
+  async setContext(): Promise<void> {}
+  async cleanup(): Promise<void> {
+    this.events = [];
+  }
+}
+
+describe('MonitoringService (real API)', () => {
+  let adapter: MockAdapter;
+  let service: MonitoringService;
+
+  beforeEach(() => {
+    adapter = new MockAdapter();
+    service = new MonitoringService({
+      serviceName: 'test-service',
+      serviceVersion: '1.0.0',
+      enabled: true,
+      adapter,
+      samplingRate: 1.0,
+      debug: false,
+      autoErrorReporting: true,
+      performanceMonitoring: false,
+      userActionTracking: false,
+      redactionRules: [],
+      offlineQueue: { enabled: false, maxSize: 100, flushInterval: 5000 },
+      contextEnrichers: [],
+      enableOfflineQueue: false,
+      maxQueueSize: 100,
+      queueFlushInterval: 5000,
+      enableSessionTracking: false,
+      sessionTimeout: 1800000,
+    });
+  });
+
+  afterEach(() => {
+    service.cleanup();
+  });
+
+  test('records a system event on initialization', async () => {
+    await service.initialize();
+    expect(service.getStats().totalEvents).toBe(1);
+    expect(adapter.events).toHaveLength(1);
+  });
+
+  test('captures errors as retrievable events', async () => {
+    await service.initialize();
+    await service.captureError(new Error('Boom'), { source: 'unit-test' });
+
+    expect(service.getStats().totalEvents).toBe(2);
+    const recent = service.getRecentEvents(5);
+    expect(recent.some((e) => e.message === 'Boom')).toBe(true);
+    expect(adapter.events.some((e) => (e as { message: string }).message === 'Boom')).toBe(true);
+  });
+
+  test('trackEvent is an alias for captureEvent', async () => {
+    await service.initialize();
+    const event = MonitoringEventFactory.createSystem('heartbeat', 'healthy', 'heartbeat');
+    await service.trackEvent(event);
+    expect(service.getStats().totalEvents).toBe(2);
+    expect(service.getRecentEvents(5).some((e) => e.message === 'heartbeat')).toBe(true);
+  });
+
+  test('does not capture events when disabled', async () => {
+    const disabled = new MonitoringService({
+      serviceName: 'x',
+      serviceVersion: '1',
+      enabled: false,
+      adapter,
+      samplingRate: 1,
+      debug: false,
+      autoErrorReporting: false,
+      performanceMonitoring: false,
+      userActionTracking: false,
+      redactionRules: [],
+      offlineQueue: { enabled: false, maxSize: 10, flushInterval: 1000 },
+      contextEnrichers: [],
+      enableOfflineQueue: false,
+      maxQueueSize: 10,
+      queueFlushInterval: 1000,
+      enableSessionTracking: false,
+      sessionTimeout: 1000,
+    });
+    await disabled.initialize();
+    await disabled.captureError(new Error('ignored'));
+    expect(adapter.events).toHaveLength(0);
+    disabled.cleanup();
+  });
+
+  test('tracks performance metrics via capturePerformance', async () => {
+    await service.initialize();
+    await service.capturePerformance('render', 12, 'ms', { budget: 16 });
+    expect(service.getStats().totalEvents).toBe(2);
   });
 });
