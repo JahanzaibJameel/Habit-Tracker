@@ -109,7 +109,7 @@ const BadgesModal: React.FC<BadgesModalProps> = ({
                         className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400"
                       />
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {categories.map((category) => (
                         <Button
                           key={category}
