@@ -291,7 +291,7 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setShowAllDetails(!showAllDetails)}
             className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-800 text-xs cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
@@ -424,7 +424,7 @@ export const BudgetViolationBanner: React.FC<BudgetViolationBannerProps> = ({
           </span>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {someSelected && (
             <button
               onClick={handleAcknowledge}
