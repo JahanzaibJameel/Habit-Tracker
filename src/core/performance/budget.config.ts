@@ -51,7 +51,9 @@ export interface PerformanceBudget {
   };
 }
 
-export const DefaultBudgets: Record<string, PerformanceBudget> = {
+export type BudgetEnvironment = 'production' | 'development' | 'testing';
+
+export const DefaultBudgets: Record<BudgetEnvironment, PerformanceBudget> = {
   production: {
     bundleSize: {
       total: 250 * 1024,
@@ -264,8 +266,7 @@ export const DefaultBudgetConfig: BudgetConfig = {
 };
 
 export function getEffectiveBudget(config: BudgetConfig): PerformanceBudget {
-  const baseBudget: PerformanceBudget =
-    DefaultBudgets[config.environment] ?? DefaultBudgets.production!;
+  const baseBudget: PerformanceBudget = DefaultBudgets[config.environment];
 
   if (config.customBudget) {
     return mergeBudgets(baseBudget, config.customBudget as Partial<PerformanceBudget>);
@@ -278,23 +279,21 @@ function mergeBudgets(
   base: PerformanceBudget,
   override: Partial<PerformanceBudget>
 ): PerformanceBudget {
-  const merged = { ...base };
+  const merged: Record<string, unknown> = { ...base };
 
   for (const [key, value] of Object.entries(override)) {
-    const budgetKey = key as keyof PerformanceBudget;
-    if (value && typeof value === 'object' && !Array.isArray(value)) {
-      const baseValue = base[budgetKey];
-      if (baseValue && typeof baseValue === 'object' && !Array.isArray(baseValue)) {
-        merged[budgetKey] = { ...baseValue, ...value } as any;
-      } else {
-        merged[budgetKey] = value as any;
-      }
-    } else {
-      merged[budgetKey] = value as any;
+    if (value === undefined) {
+      continue;
     }
+
+    const baseValue = merged[key];
+    const isMergeable =
+      baseValue !== null && typeof baseValue === 'object' && !Array.isArray(baseValue);
+
+    merged[key] = isMergeable ? { ...(baseValue as object), ...value } : value;
   }
 
-  return merged;
+  return merged as unknown as PerformanceBudget;
 }
 
 export const BudgetValidationRules = {
