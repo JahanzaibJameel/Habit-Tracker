@@ -60,6 +60,11 @@ export interface MonitoringServiceConfig extends MonitoringConfig {
    * Session timeout (ms)
    */
   sessionTimeout: number;
+
+  /**
+   * Maximum number of events retained in memory for retrieval/export
+   */
+  maxRetainedEvents?: number;
 }
 
 /**
@@ -79,7 +84,7 @@ export class MonitoringService {
   private stats: MonitoringStats;
 
   constructor(config: MonitoringServiceConfig) {
-    this.config = config;
+    this.config = { maxRetainedEvents: 1000, ...config };
     this.adapter = config.adapter;
     this.sessionStartTime = Date.now();
 
@@ -126,8 +131,12 @@ export class MonitoringService {
         this.startQueueProcessing();
       }
 
+      // Mark as initialized before capturing the bootstrap event so it is
+      // always recorded (bypassing the sampling check for the init event).
+      this.initialized = true;
+
       // Capture initial system event
-      await this.captureEvent(
+      await this.processEvent(
         MonitoringEventFactory.createSystem(
           'monitoring_service',
           'healthy',
@@ -141,7 +150,6 @@ export class MonitoringService {
         )
       );
 
-      this.initialized = true;
       console.warn('Monitoring service initialized successfully');
     } catch (error) {
       this.stats.adapterStatus = 'error';
@@ -367,6 +375,7 @@ export class MonitoringService {
   async clearData(): Promise<void> {
     this.queue = [];
     this.breadcrumbs = [];
+    this.events = [];
     this.stats = {
       totalEvents: 0,
       eventsByCategory: {} as Record<string, number>,
@@ -394,6 +403,11 @@ export class MonitoringService {
     // Cleanup adapter
     await this.adapter.cleanup();
 
+    // Release retained events context/contexts held in memory
+    this.events = [];
+    this.queue = [];
+    this.breadcrumbs = [];
+
     this.initialized = false;
     console.warn('Monitoring service cleaned up');
   }
@@ -408,6 +422,13 @@ export class MonitoringService {
 
       // Apply redaction rules
       event = this.redactSensitiveData(event);
+
+      // Retain the event for retrieval/export (bounded to avoid leaks)
+      this.events.push(event);
+      const maxRetained = this.config.maxRetainedEvents ?? 1000;
+      while (this.events.length > maxRetained) {
+        this.events.shift();
+      }
 
       // Add to queue
       this.addToQueue(event);
@@ -450,18 +471,13 @@ export class MonitoringService {
    */
   private async sendEvent(event: AnyMonitoringEvent): Promise<void> {
     try {
-      switch (event.category) {
-        case 'error':
-          await this.adapter.captureError(event as ErrorEvent);
-          break;
-        case 'performance':
-          await this.adapter.captureEvent(event);
-          break;
-        case 'user_action':
-          await this.adapter.captureEvent(event);
-          break;
-        default:
-          await this.adapter.captureMessage(event);
+      if (event.category === 'error') {
+        await this.adapter.captureError(event as ErrorEvent);
+      } else {
+        // All other structured events (performance, user_action, system,
+        // business, security, and custom categories) are forwarded as events.
+        // `captureMessage` remains on the adapter contract for custom adapters.
+        await this.adapter.captureEvent(event);
       }
     } catch (error) {
       console.error('Failed to send event to adapter:', error);
