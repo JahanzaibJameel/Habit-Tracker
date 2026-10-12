@@ -173,7 +173,10 @@ export const useHabitStore = create<HabitStore>()(
         appState: {
           isLoading: false,
           error: null,
-          isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
+          // Optimistic default so SSR and the first client render agree
+          // (avoids a hydration mismatch). The real value is synced from
+          // navigator.onLine + online/offline events in the app effect.
+          isOnline: true,
           lastSync: null,
         },
 
@@ -755,6 +758,11 @@ export const useHabitStore = create<HabitStore>()(
       })),
       {
         name: 'habit-store',
+        // Do not hydrate during the first client render: it would read the
+        // persisted value while the server rendered empty state, causing a
+        // hydration mismatch. Hydration runs explicitly after mount (see
+        // useStoreRehydration in src/app/providers.tsx).
+        skipHydration: true,
         storage: createJSONStorage(() => {
           if (typeof window === 'undefined') {
             return {
