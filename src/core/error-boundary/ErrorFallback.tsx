@@ -186,69 +186,6 @@ export const ProductionFallback: ComponentType<ErrorFallbackProps> = ({
 
         {getActionButton() && <div className="error-fallback-actions">{getActionButton()}</div>}
       </div>
-
-      <style jsx>{`
-        .error-fallback {
-          padding: 16px;
-          border: 1px solid #e5e7eb;
-          border-radius: 8px;
-          background-color: #fef2f2;
-          color: #991b1b;
-          max-width: 400px;
-          margin: 16px 0;
-        }
-
-        .error-fallback-content {
-          display: flex;
-          align-items: flex-start;
-          gap: 12px;
-        }
-
-        .error-fallback-icon {
-          flex-shrink: 0;
-          margin-top: 2px;
-        }
-
-        .error-fallback-message {
-          flex: 1;
-        }
-
-        .error-fallback-title {
-          margin: 0 0 8px 0;
-          font-size: 16px;
-          font-weight: 600;
-        }
-
-        .error-fallback-description {
-          margin: 0;
-          font-size: 14px;
-          line-height: 1.5;
-        }
-
-        .error-fallback-actions {
-          margin-top: 12px;
-        }
-
-        .error-fallback-button {
-          padding: 8px 16px;
-          border: 1px solid #991b1b;
-          border-radius: 4px;
-          background-color: #991b1b;
-          color: white;
-          font-size: 14px;
-          cursor: pointer;
-          transition: background-color 0.2s;
-        }
-
-        .error-fallback-button:hover {
-          background-color: #7f1d1d;
-        }
-
-        .error-fallback-button:focus {
-          outline: 2px solid #991b1b;
-          outline-offset: 2px;
-        }
-      `}</style>
     </div>
   );
 };
@@ -422,139 +359,6 @@ export const DevFallback: ComponentType<ErrorFallbackProps> = ({
           </div>
         </div>
       )}
-
-      <style jsx>{`
-        .error-fallback-development {
-          border: 2px solid #dc2626;
-          border-radius: 8px;
-          background-color: #fef2f2;
-          color: #991b1b;
-          margin: 16px 0;
-          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-          font-size: 12px;
-        }
-
-        .error-fallback-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 12px 16px;
-          border-bottom: 1px solid #fca5a5;
-        }
-
-        .error-fallback-title-section {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-
-        .error-fallback-title {
-          margin: 0;
-          font-size: 14px;
-          font-weight: 600;
-        }
-
-        .error-fallback-severity {
-          padding: 2px 6px;
-          border-radius: 4px;
-          background-color: #dc2626;
-          color: white;
-          font-size: 10px;
-          font-weight: 600;
-        }
-
-        .error-fallback-actions {
-          display: flex;
-          gap: 8px;
-        }
-
-        .error-fallback-button {
-          padding: 4px 8px;
-          border: 1px solid #dc2626;
-          border-radius: 4px;
-          background-color: white;
-          color: #dc2626;
-          font-size: 11px;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .error-fallback-button:hover {
-          background-color: #dc2626;
-          color: white;
-        }
-
-        .error-fallback-summary {
-          padding: 12px 16px;
-          border-bottom: 1px solid #fca5a5;
-        }
-
-        .error-fallback-message {
-          margin: 0 0 8px 0;
-          line-height: 1.4;
-        }
-
-        .error-fallback-boundary {
-          margin: 0;
-          font-size: 11px;
-          opacity: 0.8;
-        }
-
-        .error-fallback-details {
-          padding: 16px;
-          border-top: 1px solid #fca5a5;
-        }
-
-        .error-fallback-section {
-          margin-bottom: 16px;
-        }
-
-        .error-fallback-section:last-child {
-          margin-bottom: 0;
-        }
-
-        .error-fallback-section h4 {
-          margin: 0 0 8px 0;
-          font-size: 12px;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        .error-fallback-stack {
-          margin: 0;
-          padding: 8px;
-          background-color: #1f2937;
-          color: #f3f4f6;
-          border-radius: 4px;
-          font-size: 10px;
-          line-height: 1.4;
-          overflow-x: auto;
-          white-space: pre-wrap;
-        }
-
-        .error-fallback-context {
-          margin: 0;
-          display: grid;
-          grid-template-columns: auto 1fr;
-          gap: 4px 8px;
-          font-size: 11px;
-        }
-
-        .error-fallback-context dt {
-          font-weight: 600;
-        }
-
-        .error-fallback-context dd {
-          margin: 0;
-          word-break: break-all;
-        }
-
-        .error-fallback-user-agent {
-          font-size: 10px;
-          opacity: 0.7;
-        }
-      `}</style>
     </div>
   );
 };
@@ -563,7 +367,7 @@ export const DevFallback: ComponentType<ErrorFallbackProps> = ({
  * Adaptive fallback that chooses between production and dev based on environment
  */
 export const AdaptiveFallback: ComponentType<ErrorFallbackProps> = (props) => {
-  const isDevelopment = process.env.NODE_ENV === 'development';
+  const isDevelopment = process.env.NODE_ENV !== 'production';
 
   const FallbackComponent = isDevelopment ? DevFallback : ProductionFallback;
 
@@ -586,43 +390,6 @@ export const MinimalFallback: ComponentType<ErrorFallbackProps> = ({
           Retry
         </button>
       )}
-
-      <style jsx>{`
-        .error-fallback-minimal {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 4px 8px;
-          background-color: #fef2f2;
-          color: #991b1b;
-          border: 1px solid #fca5a5;
-          border-radius: 4px;
-          font-size: 12px;
-        }
-
-        .error-fallback-icon {
-          font-weight: bold;
-        }
-
-        .error-fallback-text {
-          flex: 1;
-        }
-
-        .error-fallback-minimal-button {
-          padding: 2px 6px;
-          border: 1px solid #991b1b;
-          border-radius: 2px;
-          background-color: transparent;
-          color: #991b1b;
-          font-size: 11px;
-          cursor: pointer;
-        }
-
-        .error-fallback-minimal-button:hover {
-          background-color: #991b1b;
-          color: white;
-        }
-      `}</style>
     </div>
   );
 };
@@ -669,57 +436,6 @@ export const AsyncFallback: ComponentType<ErrorFallbackProps> = ({ error, onRetr
           </button>
         )}
       </div>
-
-      <style jsx>{`
-        .error-fallback-async {
-          padding: 12px;
-          border: 1px solid #e5e7eb;
-          border-radius: 6px;
-          background-color: #fef2f2;
-          color: #991b1b;
-        }
-
-        .error-fallback-async-content {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-
-        .error-fallback-async-icon {
-          flex-shrink: 0;
-          opacity: 0.7;
-        }
-
-        .error-fallback-async-message {
-          flex: 1;
-        }
-
-        .error-fallback-async-title {
-          margin: 0 0 4px 0;
-          font-size: 14px;
-          font-weight: 500;
-        }
-
-        .error-fallback-async-description {
-          margin: 0;
-          font-size: 12px;
-          opacity: 0.8;
-        }
-
-        .error-fallback-async-button {
-          padding: 6px 12px;
-          border: 1px solid #991b1b;
-          border-radius: 4px;
-          background-color: #991b1b;
-          color: white;
-          font-size: 12px;
-          cursor: pointer;
-        }
-
-        .error-fallback-async-button:hover {
-          background-color: #7f1d1d;
-        }
-      `}</style>
     </div>
   );
 };
