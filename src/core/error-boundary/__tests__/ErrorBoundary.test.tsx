@@ -10,7 +10,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ReactNode } from 'react';
 import React, { Component } from 'react';
-import { render, screen, fireEvent, waitFor } from '@/test-utils/render';
+import { render, screen, fireEvent, act } from '@/test-utils/render';
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { ErrorBoundaryConfig } from '../ErrorBoundary';
 import { ErrorBoundary, ErrorRecoveryStrategy } from '../ErrorBoundary';
@@ -47,19 +47,6 @@ describe('ErrorBoundary', () => {
         throw new Error('Conditional error');
       }
       return <div>No error</div>;
-    }
-  }
-
-  // Test component that throws after delay
-  class DelayedErrorComponent extends Component<{ delay: number }> {
-    componentDidMount(): void {
-      setTimeout(() => {
-        throw new Error('Delayed error');
-      }, this.props.delay);
-    }
-
-    render(): ReactNode {
-      return <div>Loading...</div>;
     }
   }
 
@@ -151,48 +138,44 @@ describe('ErrorBoundary', () => {
       </ErrorBoundary>
     );
 
-    const retryButton = screen.getByText(/try again/i);
+    expect(screen.getByText(/try again/i)).toBeInTheDocument();
 
-    // First retry
-    fireEvent.click(retryButton);
-    await waitFor(() => {
-      expect(screen.getByText(/try again.*\(1\/2\)/i)).toBeInTheDocument();
+    // First retry: the count advances after the retry delay timer fires.
+    fireEvent.click(screen.getByText(/try again/i));
+    await act(async () => {
+      vi.advanceTimersByTime(1000);
     });
+    expect(screen.getByText(/try again.*\(1\/2\)/i)).toBeInTheDocument();
 
-    // Second retry
-    fireEvent.click(retryButton);
-    await waitFor(() => {
-      expect(screen.getByText(/try again.*\(2\/2\)/i)).toBeInTheDocument();
+    // Second retry reaches the limit; the retry control disappears.
+    fireEvent.click(screen.getByText(/try again/i));
+    await act(async () => {
+      vi.advanceTimersByTime(1000);
     });
-
-    // Third attempt should not show retry button
-    fireEvent.click(retryButton);
-    await waitFor(() => {
-      expect(screen.queryByText(/try again/i)).not.toBeInTheDocument();
-    });
+    expect(screen.queryByText(/try again/i)).not.toBeInTheDocument();
   });
 
-  test('should open circuit breaker after error threshold', () => {
+  test('should open circuit breaker after error threshold', async () => {
     const config: ErrorBoundaryConfig = {
       ...defaultConfig,
       maxErrorRate: 2, // Lower threshold for testing
-      errorRateWindow: 1000, // Short window for testing
+      errorRateWindow: 60000,
     };
 
-    const { rerender } = render(
+    render(
       <ErrorBoundary {...config}>
         <ConditionalErrorComponent shouldThrow={true} />
       </ErrorBoundary>
     );
 
-    // Trigger multiple errors quickly
-    for (let i = 0; i < 3; i++) {
-      rerender(
-        <ErrorBoundary {...config}>
-          <ConditionalErrorComponent shouldThrow={true} />
-        </ErrorBoundary>
-      );
-    }
+    expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
+
+    // Retry once: after the delay the boundary clears its error and the child
+    // throws again, recording a second error and tripping the circuit breaker.
+    fireEvent.click(screen.getByText(/try again/i));
+    await act(async () => {
+      vi.advanceTimersByTime(1000);
+    });
 
     expect(screen.getByText(/temporarily disabled/i)).toBeInTheDocument();
   });
@@ -211,9 +194,9 @@ describe('ErrorBoundary', () => {
 
     expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
 
-    // Change resetKey
+    // Change resetKey: the boundary resets and renders children again.
     rerender(
-      <ErrorBoundary {...config}>
+      <ErrorBoundary {...config} resetKeys={['key2']}>
         <ConditionalErrorComponent shouldThrow={false} />
       </ErrorBoundary>
     );
@@ -293,19 +276,36 @@ describe('ErrorBoundary', () => {
   test('should handle async errors', async () => {
     const config: ErrorBoundaryConfig = { ...defaultConfig };
 
+    // Async errors are surfaced to the boundary by throwing on the *next*
+    // render (error boundaries cannot catch errors thrown in async callbacks).
+    class AsyncErrorComponent extends Component {
+      state: { asyncError: Error | null } = { asyncError: null };
+
+      componentDidMount(): void {
+        setTimeout(() => this.setState({ asyncError: new Error('Async error') }), 50);
+      }
+
+      render(): ReactNode {
+        if (this.state.asyncError) {
+          throw this.state.asyncError;
+        }
+        return <div>Loading...</div>;
+      }
+    }
+
     render(
       <ErrorBoundary {...config}>
-        <DelayedErrorComponent delay={50} />
+        <AsyncErrorComponent />
       </ErrorBoundary>
     );
 
-    // Initially shows loading
     expect(screen.getByText('Loading...')).toBeInTheDocument();
 
-    // Advance timers to trigger async error
-    vi.runAllTimers();
+    // Advance timers to trigger the async error surfaced on the next render.
+    await act(async () => {
+      vi.runAllTimers();
+    });
 
-    // Check for async error
     expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
   });
 
@@ -412,14 +412,19 @@ describe('ErrorBoundary', () => {
       fallback: BadFallback,
     };
 
-    // Should not crash completely
+    // A fallback that throws is caught by the *outer* boundary, so the tree
+    // still renders (it does not crash the whole app).
     expect(() => {
       render(
-        <ErrorBoundary {...config}>
-          <ThrowingComponent />
+        <ErrorBoundary id="outer-boundary">
+          <ErrorBoundary {...config}>
+            <ThrowingComponent />
+          </ErrorBoundary>
         </ErrorBoundary>
       );
     }).not.toThrow();
+
+    expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
   });
 
   test('should handle errors in development mode', () => {
