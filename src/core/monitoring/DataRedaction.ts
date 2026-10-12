@@ -243,7 +243,7 @@ export class DataRedactor {
       };
     }
 
-    const result = this.redactValue(data, '');
+    const result = this.redactValue(data, '', new WeakSet());
     return {
       data: result.value,
       redactionCount: result.count,
@@ -344,7 +344,8 @@ export class DataRedactor {
    */
   private redactValue(
     value: unknown,
-    context: string
+    context: string,
+    seen: WeakSet<object> = new WeakSet()
   ): {
     value: unknown;
     count: number;
@@ -372,15 +373,25 @@ export class DataRedactor {
       return { value, count: 0, rules: [] };
     }
 
+    // Guard against circular references
+    if (typeof value === 'object' && seen.has(value)) {
+      return { value, count: 0, rules: [] };
+    }
+    if (typeof value === 'object') {
+      seen.add(value);
+    }
+
     if (Array.isArray(value)) {
       const redactedArray: unknown[] = [];
 
       for (let i = 0; i < value.length; i++) {
-        const result = this.redactValue(value[i], `${context}[${i}]`);
+        const result = this.redactValue(value[i], `${context}[${i}]`, seen);
         redactedArray.push(result.value);
         totalCount += result.count;
         allAppliedRules.push(...result.rules);
       }
+
+      seen.delete(value);
 
       return {
         value: redactedArray,
@@ -401,12 +412,14 @@ export class DataRedactor {
           totalCount++;
           allAppliedRules.push(`field_redaction: ${key}`);
         } else {
-          const result = this.redactValue(val, fieldContext);
+          const result = this.redactValue(val, fieldContext, seen);
           redactedObj[key] = result.value;
           totalCount += result.count;
           allAppliedRules.push(...result.rules);
         }
       }
+
+      seen.delete(value);
 
       return {
         value: redactedObj,
