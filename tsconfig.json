@@ -24,7 +24,8 @@
     },
     "forceConsistentCasingInFileNames": true,
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": false
+    "exactOptionalPropertyTypes": false,
+    "types": ["node", "vitest/globals"]
   },
   "include": [
     "next-env.d.ts",
