@@ -164,6 +164,7 @@ module.exports = [
     ignores: [
       'node_modules/**',
       '.next/**',
+      'next-env.d.ts',
       'out/**',
       'build/**',
       'dist/**',
