@@ -1,272 +1,108 @@
-<div align="center">
+# Habit Tracker
 
-# Habit Tracker 
-### *Build better habits. Track with clarity.*
+Local-first habit tracking that runs entirely in the browser. No backend, no accounts — your data stays on your device.
 
-[![Next.js](https://img.shields.io/badge/Next.js-15-000000?style=flat&logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178C6?style=flat&logo=typescript)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38BDF8?style=flat&logo=tailwindcss)](https://tailwindcss.com/)
-[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat&logo=react)](https://reactjs.org/)
-[![PWA Ready](https://img.shields.io/badge/PWA-Ready-4CAF50?style=flat&logo=progressive-web-apps)](https://web.dev/progressive-web-apps/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-3DA639?style=flat&logo=opensourceinitiative)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-30%2F30_passing-2E7D32?style=flat&logo=vitest)](https://vitest.dev/)
-[![Storybook](https://img.shields.io/badge/storybook-documented-FF4785?style=flat&logo=storybook)](https://storybook.js.org/)
+[![Next.js 16](https://img.shields.io/badge/Next.js-16-000?style=flat&logo=next.js)](https://nextjs.org/)
+[![React 18](https://img.shields.io/badge/React-18-61DAFB?style=flat&logo=react)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat&logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS v4](https://img.shields.io/badge/Tailwind-4-38BDF8?style=flat&logo=tailwindcss)](https://tailwindcss.com/)
+[![Tests](https://img.shields.io/badge/tests-326%20passing-2E7D32?style=flat&logo=vitest)](https://vitest.dev/)
+[![MIT](https://img.shields.io/badge/license-MIT-3DA639?style=flat)](LICENSE)
 
-</div>
+## Status
 
----
+| Build | Types | Lint | Tests |
+|-------|-------|------|-------|
+| ✅ | ✅ 0 errors | ✅ 0 errors, 0 warnings | ✅ 326 / 326 |
 
-# 📖 Overview
+> `npm run test:coverage` currently **fails**: the coverage config excludes `src/core`
+> (where the tests live), sets 100% thresholds, and reports ~0.6%. See
+> [PROJECT_STATUS.md](./PROJECT_STATUS.md).
 
-**Habit Tracker Pro** is a modern, full-stack habit management application built with performance, offline capability, and accessibility at its core. It offers smart tracking, rich analytics, gamification, and end-to-end encryption—all in a clean, responsive interface.
+## Features
 
-### 🌐 Live Demo
+- **Habit tracking** — recurrence, streaks, completion state
+- **Analytics** — category breakdown, streaks, completion rate (custom d3 charts)
+- **Gamification** — achievements and a badges modal
+- **Local-first** — persists to `localStorage` with versioned schema migrations
+- **Export** — JSON and CSV
+- **Theming** — light / dark / system
+- **PWA** — installable, with generated icons
+- **Resilience** — error boundaries, circuit breaker, Core Web Vitals budgets
 
-- **Primary:** https://habit-tracker25.netlify.app/
-- **Alternative:** https://habit-tracker-eight-iota-17.vercel.app/
+## Stack
 
----
+| | |
+|---|---|
+| **Framework** | Next.js 16 (App Router, Turbopack) |
+| **UI** | React 18, Tailwind CSS v4, lucide-react |
+| **State** | Zustand + Immer |
+| **Storage** | `localStorage` via custom `StorageEngine` (+ migrations) |
+| **Validation** | Zod |
+| **Theming** | next-themes (class-based dark mode) |
+| **Testing** | Vitest 4, Testing Library |
+| **Lint** | ESLint 9 (flat), Prettier |
 
-# ✨ Features
-
-- 🧠 **Smart Habit Tracking** — Flexible recurrence (daily, weekly, custom), intelligent date handling, and dependency chains.
-- 📊 **Powerful Analytics** — Heatmaps, streak visualizations, completion charts, and performance insights powered by Recharts.
-- 🏆 **Gamification** — Unlockable achievements, milestone badges, and a rewards system.
-- 📱 **Offline-First & PWA** — Install on any device and continue tracking without an internet connection.
-- ⚡ **Enterprise Reliability** — Zod validation, error boundaries, circuit-breaker patterns, and Core Web Vitals monitoring.
-- ♿ **Accessibility** — WCAG 2.1 AA compliant with keyboard navigation and internationalization support.
-- 🔒 **Privacy & Security** — Client-side encryption, XSS/CSRF protection, strict CSP, and zero third-party tracking.
-- 📦 **Data Portability** — Export your habits anytime as JSON, CSV, or PDF.
-
----
-
-# 🛠 Tech Stack
-
-| Category | Technology |
-|----------|------------|
-| **Framework** | Next.js (App Router) |
-| **Language** | TypeScript (Strict Mode) |
-| **UI** | React, Tailwind CSS, Radix UI, Framer Motion |
-| **State Management** | Zustand, Immer, TanStack Query |
-| **Database** | Dexie.js (IndexedDB) |
-| **Forms & Validation** | React Hook Form, Zod |
-| **Charts** | Recharts |
-| **Testing** | Vitest, Testing Library, Playwright |
-| **Monitoring** | Sentry |
-| **Bundle Analysis** | @next/bundle-analyzer |
-| **CI/CD** | GitHub Actions, Vercel, Netlify |
-
----
-
-# 🏗 Architecture
-
-```mermaid
-graph TD
-    A[User Interface] --> B[Next.js App Router]
-    B --> C[Zustand Store]
-    B --> D[TanStack Query]
-    C --> E[IndexedDB / Dexie]
-    D --> F[API Routes]
-    C --> G[LocalStorage]
-    H[Error Boundaries] --> B
-    I[Sentry] --> H
-    J[Performance Monitor] --> B
-    K[Validation Layer] --> B
-    L[Security Layer] --> B
-```
-
-### Architecture Highlights
-
-- Atomic Design (Atoms → Molecules → Organisms)
-- Offline-first storage with automatic database migrations
-- Progressive enhancement
-- Secure client-side architecture
-- High-performance rendering
-- Modular and scalable project structure
-
----
-
-# 📁 Project Structure
-
-```text
-src/
-├── app/                     # Next.js App Router pages & API routes
-├── components/
-│   ├── atoms/               # Primitive UI elements
-│   ├── molecules/           # Composed UI components
-│   ├── organisms/           # Complex UI sections
-│   └── charts/              # Recharts visualizations
-├── core/                    # Business logic & utilities
-├── hooks/                   # Custom React hooks
-├── lib/                     # Third-party wrappers
-├── store/                   # Zustand stores
-├── types/                   # Global TypeScript types
-└── __tests__/               # Unit & integration tests
-```
-
----
-
-# 🚀 Getting Started
-
-## Prerequisites
-
-- Node.js **20+**
-- npm **10+**
-
-## Installation
+## Quick start
 
 ```bash
-git clone https://github.com/JahanzaibJameel/Habit-Tracker.git
-
-cd Habit-Tracker
-
 npm install
-
-cp .env.example .env.local
-
-npm run dev
+npm run dev          # http://localhost:3000
 ```
 
-Application will start at:
+No environment variables required.
 
-```
-http://localhost:3000
-```
-
----
-
-# 📜 Available Scripts
+## Commands
 
 | Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Production build |
-| `npm run start` | Start production server |
-| `npm run lint` | Lint the project |
-| `npm run type-check` | TypeScript checking |
-| `npm test` | Run unit & integration tests |
-| `npm run test:e2e` | Run Playwright E2E tests |
-| `npm run storybook` | Launch Storybook |
-| `npm run analyze` | Analyze bundle size |
+|---|---|
+| `npm run dev` | Dev server (Turbopack) |
+| `npm run build` | Production build (types + static generation) |
+| `npm start` | Serve the production build |
+| `npm run test:run` | Unit & integration tests |
+| `npm run test:coverage` | Tests with coverage thresholds |
+| `npm run lint` · `lint:fix` | ESLint |
+| `npx tsc --noEmit` | Type-check |
+| `npm run knip` | Unused files, exports, deps |
+| `ANALYZE=true npm run build` | Build with bundle analyzer |
 
----
+## Structure
 
-# 🧪 Testing
-
-### Stack
-
-- **Vitest**
-- **Testing Library**
-- **Playwright**
-
-### Run Tests
-
-```bash
-npm test
-
-npm run test:e2e
-
-npm test -- --coverage
+```
+src/
+├── app/          Routes, layout, providers, globals.css, ui-showcase
+├── components/   atoms · molecules · organisms
+├── contracts/    Type contracts
+├── core/         storage · validation · monitoring · error-boundary · performance
+├── hooks/        useDragAndDrop, useAnimationState
+├── lib/          SSR-safe helpers, performance bridge
+├── store/        Zustand store
+└── types/        Shared types
 ```
 
----
+**Data flow:** UI → Zustand store → `StorageEngine` → `localStorage`, with Zod validation at the boundary and error boundaries above the UI.
 
-# 🚀 Deployment
+**Dark mode:** `globals.css` declares `@custom-variant dark (&:where(.dark, .dark *))` so every `dark:` utility follows the `.dark` class set by `next-themes`. Tokens are HSL vars in `:root`/`.dark`, exposed via `@theme inline`.
 
-## Vercel
+**Hydration:** persisted state uses `skipHydration` plus a mount gate in `src/app/providers.tsx`, so the server HTML and the client's first render are identical. Never read `localStorage` during initial render.
 
-Deploy instantly using Vercel.
+## Known limitations
 
-https://vercel.com/new
+- No backend or API routes — client-only.
+- No cloud sync; data stays on-device.
+- No data-at-rest encryption (the storage `encryption` option is a metadata flag only).
+- No service worker — installable PWA, but the shell isn't fully offline.
+- Storybook configured, no stories yet. No CI workflows.
 
----
+## Docs
 
-## Docker
+| | |
+|---|---|
+| [PROJECT_STATUS.md](./PROJECT_STATUS.md) | Verified gates and recent fixes |
+| [ARCHITECTURE.md](./ARCHITECTURE.md) | Architecture and subsystems |
+| [CONTRIBUTING.md](./CONTRIBUTING.md) | Contribution guidelines |
+| [AGENTS.md](./AGENTS.md) | Guidance for AI coding agents |
 
-```bash
-docker build -t habit-tracker .
+## License
 
-docker run -p 3000:3000 habit-tracker
-```
-
----
-
-# ⚙ Environment Variables
-
-```env
-NEXT_PUBLIC_SENTRY_DSN=your_sentry_dsn
-
-SENTRY_AUTH_TOKEN=your_auth_token
-
-NEXT_PUBLIC_GA_ID=your_google_analytics_id
-```
-
----
-
-# ⚡ Performance
-
-- ✅ LCP < 2.5s
-- ✅ FID < 100ms
-- ✅ CLS < 0.1
-- ✅ Bundle < 200KB (gzipped)
-- ✅ Route Chunks < 50KB
-
-### Optimizations
-
-- Automatic Code Splitting
-- Tree Shaking
-- Next.js Image Optimization
-- CDN Ready
-- Aggressive Caching
-- Lazy Loading
-
----
-
-# 🤝 Contributing
-
-1. Fork the repository.
-2. Create a feature branch.
-
-```bash
-git checkout -b feature/your-feature
-```
-
-3. Commit using Conventional Commits.
-
-```bash
-feat: add amazing feature
-```
-
-4. Push your changes.
-
-5. Open a Pull Request.
-
-Please follow the existing code style, include tests for new functionality, and maintain accessibility standards.
-
----
-
-# 📚 Documentation
-
-- Architecture Guide
-- Component Library (Storybook)
-- API Reference
-- Testing Guide
-- Deployment Guide
-
----
-
-# 📄 License
-
-This project is licensed under the **MIT License**.
-
-See the **LICENSE** file for more details.
-
----
-
-<div align="center">
-
-### Built with focus, for personal growth.
-
-⭐ **If you found this project useful, consider giving it a Star!**
-
-</div>
+[MIT](./LICENSE)
