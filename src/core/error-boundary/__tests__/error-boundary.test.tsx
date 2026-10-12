@@ -126,8 +126,10 @@ describe('ErrorBoundary Component', () => {
     expect(onRecovery).toHaveBeenCalledWith('test-boundary', 'retry');
   });
 
-  test('should generate unique error ID based on component hierarchy', () => {
-    const NestedComponent = () => <div>Nested</div>;
+  test('should resolve the innermost boundary by id', () => {
+    const NestedComponent = () => {
+      throw new Error('Nested error');
+    };
 
     const { container } = render(
       <ErrorBoundary id="parent">
@@ -137,9 +139,10 @@ describe('ErrorBoundary Component', () => {
       </ErrorBoundary>
     );
 
-    // The boundary should have stable IDs based on hierarchy
+    // Only the innermost boundary catches, and it renders with its own id.
     const boundaries = container.querySelectorAll('[data-boundary-id]');
-    expect(boundaries).toHaveLength(2);
+    expect(boundaries).toHaveLength(1);
+    expect(boundaries[0]).toHaveAttribute('data-boundary-id', 'child');
   });
 });
 
@@ -279,6 +282,9 @@ describe('Error Fallback Components', () => {
       writable: true,
     });
     const { rerender } = render(<AdaptiveFallback error={mockError} boundaryId="test" />);
+    expect(screen.queryByText('Something went wrong')).not.toBeInTheDocument();
+    // Development fallback hides the stack behind a details toggle.
+    fireEvent.click(screen.getByText('Show Details'));
     expect(screen.getByText(/Error Stack/i)).toBeInTheDocument();
 
     // Test production mode
@@ -305,7 +311,8 @@ describe('Error Fallback Components', () => {
   });
 
   test('AsyncFallback should handle async operation errors', () => {
-    render(<AsyncFallback error={mockError} boundaryId="test" onRetry={vi.fn()} />);
+    // No message -> falls back to the generic async failure text.
+    render(<AsyncFallback error={new Error('')} boundaryId="test" onRetry={vi.fn()} />);
 
     expect(screen.getByText('Operation failed')).toBeInTheDocument();
     expect(screen.getByText('An async operation failed to complete.')).toBeInTheDocument();
@@ -639,7 +646,7 @@ describe('CircuitBreaker', () => {
 
 describe('CircuitBreakerFactory', () => {
   afterEach(() => {
-    CircuitBreakerFactory.resetAll();
+    CircuitBreakerFactory.clear();
   });
 
   test('should create and reuse instances', () => {
@@ -656,6 +663,7 @@ describe('CircuitBreakerFactory', () => {
   });
 
   test('should get all instances', () => {
+    CircuitBreakerFactory.clear();
     CircuitBreakerFactory.get('instance-1');
     CircuitBreakerFactory.get('instance-2');
 
@@ -796,20 +804,13 @@ describe('useCircuitBreaker Hook', () => {
 
 describe('Error Recovery Strategies', () => {
   test('should handle retry strategy correctly', async () => {
-    const _attempts = 0;
     const onRecovery = vi.fn();
 
     const RetryComponent = () => {
-      const [shouldThrow, _setShouldThrow] = React.useState(true);
-
-      if (shouldThrow) {
-        throw new Error('Retry test error');
-      }
-
-      return <div>Success after retry</div>;
+      throw new Error('Retry test error');
     };
 
-    const { rerender } = render(
+    render(
       <ErrorBoundary id="retry-test" onRecovery={onRecovery}>
         <RetryComponent />
       </ErrorBoundary>
@@ -817,13 +818,8 @@ describe('Error Recovery Strategies', () => {
 
     expect(screen.getByText('Try Again')).toBeInTheDocument();
 
-    // Simulate retry by fixing the error
-    rerender(
-      <ErrorBoundary id="retry-test" onRecovery={onRecovery}>
-        <div>Success after retry</div>
-      </ErrorBoundary>
-    );
-
+    // Clicking retry invokes the recovery callback.
+    fireEvent.click(screen.getByText('Try Again'));
     expect(onRecovery).toHaveBeenCalledWith('retry-test', 'retry');
   });
 
