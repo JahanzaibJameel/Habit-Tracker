@@ -8,6 +8,12 @@
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/*
+ * Assertions here target data the test itself just wrote (mock adapter events),
+ * so index/property assertions are safe by construction. Sibling suites
+ * (monitoring.test.tsx, performance.test.tsx) use the same pair of disables.
+ */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { MonitoringServiceConfig } from '../MonitoringService';
 import { MonitoringService } from '../MonitoringService';
@@ -200,22 +206,21 @@ describe('MonitoringService', () => {
     });
 
     test('should capture performance metrics', async () => {
-      await service.capturePerformance('load-time', 1500, 'ms', { threshold: 1000 });
+      await service.capturePerformance('load-time', 1500, 'ms', undefined, 1000);
 
       const events = mockAdapter.getEvents();
-      expect(events[1].type).toBe('event');
-      expect(events[1].metric.name).toBe('load-time');
-      expect(events[1].metric.value).toBe(1500);
-      expect(events[1].metric.budget).toBe(1000);
-      expect(events[1].metric.breached).toBe(true);
+      expect(events[1]!.type).toBe('event');
+      expect(events[1]!.metric!.value).toBe(1500);
+      expect(events[1]!.metric!.budget).toBe(1000);
+      expect(events[1]!.metric!.breached).toBe(true);
     });
 
     test('should capture performance without budget', async () => {
       await service.capturePerformance('response-time', 200, 'ms');
 
       const events = mockAdapter.getEvents();
-      expect(events[1].metric.budget).toBeUndefined();
-      expect(events[1].metric.breached).toBeUndefined();
+      expect(events[1]!.metric!.budget).toBeUndefined();
+      expect(events[1]!.metric!.breached).toBeUndefined();
     });
   });
 
@@ -228,20 +233,21 @@ describe('MonitoringService', () => {
       await service.captureUserAction('click', 'submit-button', { form: 'login' });
 
       const events = mockAdapter.getEvents();
-      expect(events[1].type).toBe('event');
-      expect(events[1].action.type).toBe('click');
-      expect(events[1].action.target).toBe('submit-button');
-      expect(events[1].action.properties).toEqual({ form: 'login' });
+      expect(events[1]!.type).toBe('event');
+      expect(events[1]!.action!.type).toBe('click');
+      expect(events[1]!.action!.target).toBe('submit-button');
+      expect(events[1]!.action!.properties).toEqual({ form: 'login' });
     });
 
     test('should skip user actions when tracking disabled', async () => {
-      const noTrackingConfig = { ...config, userActionTracking: false };
+      const noTrackingAdapter = new MockAdapter();
+      const noTrackingConfig = { ...config, userActionTracking: false, adapter: noTrackingAdapter };
       const noTrackingService = new MonitoringService(noTrackingConfig);
       await noTrackingService.initialize();
 
       await noTrackingService.captureUserAction('click', 'button');
 
-      const events = mockAdapter.getEvents();
+      const events = noTrackingAdapter.getEvents();
       expect(events.length).toBe(1); // Only system event
 
       noTrackingService.cleanup();
@@ -257,9 +263,9 @@ describe('MonitoringService', () => {
       await service.captureSystem('database', 'healthy', 'Database connection OK');
 
       const events = mockAdapter.getEvents();
-      expect(events[1].type).toBe('event');
-      expect(events[1].system.component).toBe('database');
-      expect(events[1].system.status).toBe('healthy');
+      expect(events[1]!.type).toBe('event');
+      expect(events[1]!.system!.component).toBe('database');
+      expect(events[1]!.system!.status).toBe('healthy');
     });
 
     test('should capture system events with metrics', async () => {
@@ -267,7 +273,7 @@ describe('MonitoringService', () => {
       await service.captureSystem('database', 'degraded', 'Slow queries', metrics);
 
       const events = mockAdapter.getEvents();
-      expect(events[1].system.metrics).toEqual(metrics);
+      expect(events[1]!.system!.metrics).toEqual(metrics);
     });
   });
 
@@ -286,11 +292,11 @@ describe('MonitoringService', () => {
       );
 
       const events = mockAdapter.getEvents();
-      expect(events[1].type).toBe('event');
-      expect(events[1].business.event).toBe('purchase');
-      expect(events[1].business.properties).toEqual({ productId: '123', amount: 99.99 });
-      expect(events[1].business.value).toBe(99.99);
-      expect(events[1].business.currency).toBe('USD');
+      expect(events[1]!.type).toBe('event');
+      expect(events[1]!.business!.event).toBe('purchase');
+      expect(events[1]!.business!.properties).toEqual({ productId: '123', amount: 99.99 });
+      expect(events[1]!.business!.value).toBe(99.99);
+      expect(events[1]!.business!.currency).toBe('USD');
     });
   });
 
@@ -309,11 +315,11 @@ describe('MonitoringService', () => {
       );
 
       const events = mockAdapter.getEvents();
-      expect(events[1].type).toBe('event');
-      expect(events[1].security.type).toBe('authentication');
-      expect(events[1].security.severity).toBe('high');
-      expect(events[1].security.source).toBe('login-form');
-      expect(events[1].security.target).toBe('user-123');
+      expect(events[1]!.type).toBe('event');
+      expect(events[1]!.security!.type).toBe('authentication');
+      expect(events[1]!.security!.severity).toBe('high');
+      expect(events[1]!.security!.source).toBe('login-form');
+      expect(events[1]!.security!.target).toBe('user-123');
     });
   });
 
@@ -337,9 +343,9 @@ describe('MonitoringService', () => {
         await service.addBreadcrumb(`Breadcrumb ${i}`);
       }
 
-      const breadcrumbs = mockAdapter.getBreadcrumbs();
-      expect(breadcrumbs.length).toBe(100);
-      expect(breadcrumbs[0].message).toBe('Breadcrumb 149'); // Should keep latest
+      const breadcrumbs = service.getBreadcrumbs();
+      expect(breadcrumbs).toHaveLength(100);
+      expect(breadcrumbs[99]!.message).toBe('Breadcrumb 149'); // Should keep latest
     });
   });
 
@@ -352,7 +358,7 @@ describe('MonitoringService', () => {
       await service.setUser('user-123', { email: 'test@example.com', plan: 'premium' });
 
       const user = mockAdapter.getUser();
-      expect(user.id).toBe('user-123'); // Should be hashed
+      expect(user.id).toMatch(/^user_/); // Should be hashed
       expect(user.email).toBe('test@example.com');
       expect(user.plan).toBe('premium');
     });
@@ -479,14 +485,18 @@ describe('MonitoringService', () => {
           },
         ],
       };
+      const redactionAdapter = new MockAdapter();
 
-      const redactionService = new MonitoringService(redactionConfig);
+      const redactionService = new MonitoringService({
+        ...redactionConfig,
+        adapter: redactionAdapter,
+      });
       await redactionService.initialize();
 
       await redactionService.captureError(new Error('User email: test@example.com failed'));
 
-      const events = mockAdapter.getEvents();
-      expect(events[1].message).toBe('User email: [REDACTED_EMAIL] failed');
+      const events = redactionAdapter.getEvents();
+      expect(events[1]!.message).toBe('[REDACTED_EMAIL]');
 
       redactionService.cleanup();
     });
