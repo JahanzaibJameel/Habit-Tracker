@@ -59,6 +59,7 @@ export interface ErrorFallbackProps {
   recoveryStrategies: ErrorRecoveryStrategy[];
   isDevelopment: boolean;
   circuitBreakerOpen: boolean;
+  maxRetries?: number;
 }
 
 const DefaultProductionFallback: ComponentType<ErrorFallbackProps> = ({
@@ -67,12 +68,14 @@ const DefaultProductionFallback: ComponentType<ErrorFallbackProps> = ({
   retryCount,
   recoveryStrategies,
   circuitBreakerOpen,
+  maxRetries = 3,
 }) => {
   const canRetry = recoveryStrategies.includes(ErrorRecoveryStrategy.RETRY) && !circuitBreakerOpen;
-  const maxRetries = 3;
 
   return (
     <div
+      role="alert"
+      aria-live="polite"
       data-boundary-id={boundaryId}
       className="p-4 text-center bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/30 rounded-xl text-rose-900 dark:text-rose-100"
     >
@@ -219,7 +222,7 @@ export class ErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    const { onError, id } = this.props;
+    const { onError, id, maxErrorRate = 5, errorRateWindow = 60000 } = this.props;
 
     const errorEntry = {
       timestamp: Date.now(),
@@ -232,7 +235,19 @@ export class ErrorBoundary extends Component<
       errorHistory: [...prevState.errorHistory.slice(-9), errorEntry],
     }));
 
-    this.checkCircuitBreaker();
+    // Evaluate the circuit breaker against the history INCLUDING this error.
+    // The setState above is async, so this.state is still one error behind here.
+    const now = Date.now();
+    const recentErrors =
+      this.state.errorHistory.filter((entry) => now - entry.timestamp < errorRateWindow).length + 1;
+
+    if (recentErrors >= maxErrorRate) {
+      this.setState({ circuitBreakerOpen: true });
+
+      setTimeout(() => {
+        this.setState({ circuitBreakerOpen: false });
+      }, 300000);
+    }
 
     if (onError) {
       onError(error, errorInfo, id);
@@ -263,22 +278,6 @@ export class ErrorBoundary extends Component<
       clearTimeout(this.retryTimer);
     }
   }
-
-  private checkCircuitBreaker = () => {
-    const { maxErrorRate = 5, errorRateWindow = 60000 } = this.props;
-    const { errorHistory } = this.state;
-
-    const now = Date.now();
-    const recentErrors = errorHistory.filter((entry) => now - entry.timestamp < errorRateWindow);
-
-    if (recentErrors.length >= maxErrorRate) {
-      this.setState({ circuitBreakerOpen: true });
-
-      setTimeout(() => {
-        this.setState({ circuitBreakerOpen: false });
-      }, 300000);
-    }
-  };
 
   private handleRetry = () => {
     const { retryAttempts = 3, retryDelay = 1000, onRecovery, id } = this.props;
@@ -346,11 +345,11 @@ export class ErrorBoundary extends Component<
   };
 
   private getRecoveryStrategies = (): ErrorRecoveryStrategy[] => {
-    const { retry = true } = this.props;
+    const { retry = true, retryAttempts = 3 } = this.props;
     const { circuitBreakerOpen, retryCount } = this.state;
     const strategies: ErrorRecoveryStrategy[] = [ErrorRecoveryStrategy.FALLBACK];
 
-    if (retry && !circuitBreakerOpen && retryCount < 3) {
+    if (retry && !circuitBreakerOpen && retryCount < retryAttempts) {
       strategies.push(ErrorRecoveryStrategy.RETRY);
     }
 
@@ -362,9 +361,12 @@ export class ErrorBoundary extends Component<
 
   render() {
     const { hasError, error, errorInfo, retryCount, circuitBreakerOpen } = this.state;
-    const { children, fallback, devFallback, id } = this.props;
+    const { children, fallback, devFallback, id, retryAttempts = 3 } = this.props;
 
-    if (!hasError || !error || !errorInfo) {
+    // Show the fallback as soon as we know an error occurred. We must not wait
+    // for `errorInfo` (populated in componentDidCatch): doing so re-renders the
+    // throwing children before the fallback mounts, which escapes the error.
+    if (!hasError || !error) {
       return children;
     }
 
@@ -373,10 +375,12 @@ export class ErrorBoundary extends Component<
       ? devFallback || DefaultDevelopmentFallback
       : fallback || DefaultProductionFallback;
 
+    const resolvedErrorInfo: ErrorInfo = errorInfo ?? { componentStack: '' };
+
     return (
       <FallbackComponent
         error={error}
-        errorInfo={errorInfo}
+        errorInfo={resolvedErrorInfo}
         boundaryId={id}
         retryCount={retryCount}
         onRetry={this.handleRetry}
@@ -385,6 +389,7 @@ export class ErrorBoundary extends Component<
         recoveryStrategies={this.getRecoveryStrategies()}
         isDevelopment={isDevelopment}
         circuitBreakerOpen={circuitBreakerOpen}
+        maxRetries={retryAttempts}
       />
     );
   }
