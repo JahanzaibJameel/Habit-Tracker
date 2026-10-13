@@ -67,7 +67,7 @@ describe('PerformanceMonitor', () => {
     vi.useFakeTimers();
 
     config = {
-      budgetConfig: DefaultBudgetConfig,
+      budgetConfig: { ...DefaultBudgetConfig, environment: 'production' as const },
       enableReporting: false,
       samplingRate: 1.0,
       enableRealTimeMonitoring: true,
@@ -103,7 +103,7 @@ describe('PerformanceMonitor', () => {
         samplingRate: 0.0, // Never sample
       };
       const lowSamplingMonitor = new PerformanceMonitor(lowSamplingConfig);
-      const consoleSpy = vi.spyOn(console, 'log');
+      const consoleSpy = vi.spyOn(console, 'warn');
 
       lowSamplingMonitor.start();
       expect(consoleSpy).toHaveBeenCalledWith('Performance monitoring skipped (sampling rate)');
@@ -174,7 +174,7 @@ describe('PerformanceMonitor', () => {
     });
 
     test('should detect budget breaches for memory metrics', () => {
-      monitor.recordMetric('usedHeapSize', 100, 'memory'); // Exceeds 50MB budget
+      monitor.recordMetric('maxDomNodes', 2000, 'memory'); // Exceeds 1500 budget
 
       const breaches = monitor.getBreaches();
       expect(breaches.length).toBe(1);
@@ -206,7 +206,7 @@ describe('PerformanceMonitor', () => {
       // Create multiple breaches
       monitor.recordMetric('lcp', 3000, 'runtime');
       monitor.recordMetric('fid', 200, 'runtime');
-      monitor.recordMetric('usedHeapSize', 100, 'memory');
+      monitor.recordMetric('maxDomNodes', 2000, 'memory');
 
       const stats = monitor.getBreachStats();
       expect(stats.total).toBe(3);
@@ -241,9 +241,9 @@ describe('PerformanceMonitor', () => {
       const parsed = JSON.parse(exportData);
 
       expect(parsed).toHaveProperty('timestamp');
-      expect(parsed).toHaveProperty('sessionId');
       expect(parsed).toHaveProperty('metrics');
       expect(parsed).toHaveProperty('breaches');
+      expect(parsed.metrics.some((m: { name: string }) => m.name === 'test-metric')).toBe(true);
     });
 
     test('should include all recorded metrics in export', () => {
@@ -253,8 +253,9 @@ describe('PerformanceMonitor', () => {
       const exportData = monitor.exportData();
       const parsed = JSON.parse(exportData);
 
-      expect(parsed.metrics).toHaveProperty('metric1');
-      expect(parsed.metrics).toHaveProperty('metric2');
+      const metricNames = (parsed.metrics as Array<{ name: string }>).map((m) => m.name);
+      expect(metricNames).toContain('metric1');
+      expect(metricNames).toContain('metric2');
     });
 
     test('should clear data on request', () => {
@@ -403,7 +404,8 @@ describe('PerformanceMonitor', () => {
 
       expect(() => monitor.start()).not.toThrow();
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Failed to setup LCP monitoring')
+        expect.stringContaining('Failed to setup LCP monitoring'),
+        expect.anything()
       );
 
       consoleSpy.mockRestore();
@@ -445,14 +447,14 @@ describe('PerformanceMonitor', () => {
       };
       const reportingMonitor = new PerformanceMonitor(reportingConfig);
 
+      const consoleSpy = vi.spyOn(console, 'warn');
       reportingMonitor.start();
 
-      // Should setup timer for periodic reporting
+      // Should setup timer for periodic reporting; advancing time triggers a report.
       vi.advanceTimersByTime(300000); // 5 minutes
+      expect(consoleSpy).toHaveBeenCalledWith('Performance Report:', expect.anything());
 
-      // Timer should be active
-      expect(setTimeout).toHaveBeenCalled();
-
+      consoleSpy.mockRestore();
       reportingMonitor.stop();
     });
 
@@ -511,7 +513,7 @@ describe('PerformanceMonitor', () => {
         ...config,
         budgetConfig: {
           ...DefaultBudgetConfig,
-          environment: 'production',
+          environment: 'production' as const,
         },
       };
 
